@@ -1,0 +1,8 @@
+msgid "WELCOME_TEXT"
+msgstr "Hue-On-Off welcome text..."
+
+msgid "CLEAR_DATA"
+msgstr "Elimina dati"
+
+msgid "BRIDGE_IP"
+msgstr "Bridge IP:"

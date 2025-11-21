@@ -1,0 +1,301 @@
+import { getDeviceInfo } from '@zos/device'
+import { px } from '@zos/utils'
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = getDeviceInfo()
+
+export const COLORS = {
+  background: 0x000000,
+  text: 0xffffff,
+  highlight: 0x0055ff,
+  highlightText: 0xffffff,
+  warning: 0xff6600,
+  warningText: 0xffffff,
+  inactive: 0x666666,
+  success: 0x00aa00,
+  error: 0xff0000
+}
+
+export const LIGHT_MODELS = {
+  'LLC011': 'Bloom',
+  'LLC012': 'Bloom',
+  'LST001': 'LightStrip',
+  'LST002': 'LightStrip Plus',
+  'LCT001': 'Hue Bulb',
+  'LCT002': 'BR30',
+  'LCT003': 'GU10',
+  'LLC007': 'Aura',
+  'LLC006': 'Iris',
+  'LLC010': 'Iris',
+  'LLC013': 'StoryLight',
+  'LWB006': 'E27/B22',
+  'default': 'Light'
+}
+
+export function createLayout(lights = [], isPairing = false) {
+  if (isPairing) {
+    return createPairingLayout()
+  }
+  
+  if (lights.length === 0) {
+    return createInitialLayout()
+  }
+  
+  return createLightsLayout(lights)
+}
+
+function createInitialLayout() {
+  return {
+    type: 'page',
+    children: [
+      {
+        type: 'fill-rect',
+        x: 0,
+        y: 0,
+        w: SCREEN_WIDTH,
+        h: SCREEN_HEIGHT,
+        color: COLORS.background
+      },
+      {
+        type: 'text',
+        id: 'title',
+        x: 0,
+        y: px(30),
+        w: SCREEN_WIDTH,
+        h: px(60),
+        text: 'Hue Lights',
+        text_size: px(42),
+        color: COLORS.text,
+        align_h: 'center',
+        align_v: 'center'
+      },
+      {
+        type: 'text',
+        id: 'status',
+        x: 0,
+        y: px(100),
+        w: SCREEN_WIDTH,
+        h: px(40),
+        text: 'Bridge not connected',
+        text_size: px(26),
+        color: COLORS.error,
+        align_h: 'center',
+        align_v: 'center'
+      },
+      {
+        type: 'button',
+        id: 'pairButton',
+        x: px(90),
+        y: px(200),
+        w: px(300),
+        h: px(60),
+        text: 'PAIR BRIDGE',
+        text_size: px(26),
+        normal_color: COLORS.warning,
+        press_color: COLORS.highlight,
+        radius: px(10)
+      }
+    ]
+  }
+}
+
+function createPairingLayout() {
+  return {
+    type: 'page',
+    children: [
+      {
+        type: 'fill-rect',
+        x: 0,
+        y: 0,
+        w: SCREEN_WIDTH,
+        h: SCREEN_HEIGHT,
+        color: COLORS.warning
+      },
+      {
+        type: 'text',
+        x: 0,
+        y: px(80),
+        w: SCREEN_WIDTH,
+        h: px(60),
+        text: 'Hue Bridge',
+        text_size: px(36),
+        color: COLORS.warningText,
+        align_h: 'center',
+        align_v: 'center'
+      },
+      {
+        type: 'circle',
+        id: 'bridgeIcon',
+        center_x: SCREEN_WIDTH / 2,
+        center_y: px(200),
+        radius: px(50),
+        color: COLORS.warningText
+      },
+      {
+        type: 'text',
+        id: 'pairingText',
+        x: px(40),
+        y: px(280),
+        w: SCREEN_WIDTH - px(80),
+        h: px(120),
+        text: 'Pairing! Push the button on your Hue bridge.',
+        text_size: px(28),
+        color: COLORS.warningText,
+        align_h: 'center',
+        align_v: 'center',
+        text_style: 'wrap'
+      },
+      {
+        type: 'fill-rect',
+        id: 'progress',
+        x: px(190),
+        y: px(420),
+        w: px(10),
+        h: px(6),
+        color: COLORS.warningText,
+        radius: px(3)
+      }
+    ]
+  }
+}
+
+function createLightsLayout(lights) {
+  const lightItems = lights.map((light, index) => ({
+    type: 'group',
+    y: px(160 + index * 85),
+    children: [
+      {
+        type: 'fill-rect',
+        x: px(20),
+        y: 0,
+        w: SCREEN_WIDTH - px(40),
+        h: px(75),
+        color: getLightBgColor(light),
+        radius: px(10)
+      },
+      {
+        type: 'text',
+        x: px(30),
+        y: px(10),
+        w: SCREEN_WIDTH - px(60),
+        h: px(40),
+        text: light.name,
+        text_size: px(32),
+        color: light.ison ? COLORS.text : COLORS.inactive
+      },
+      {
+        type: 'text',
+        x: px(30),
+        y: px(45),
+        w: SCREEN_WIDTH - px(60),
+        h: px(30),
+        text: light.reachable ? `Brightness: ${light.bri}` : 'Unreachable',
+        text_size: px(24),
+        color: light.ison ? COLORS.text : COLORS.inactive
+      },
+      {
+        type: 'button',
+        id: `light_${index}`,
+        x: px(20),
+        y: 0,
+        w: SCREEN_WIDTH - px(40),
+        h: px(75),
+        text: '',
+        normal_color: 0x00000000,
+        press_color: 0x33ffffff,
+        radius: px(10)
+      }
+    ]
+  }))
+
+  return {
+    type: 'page',
+    children: [
+      {
+        type: 'fill-rect',
+        x: 0,
+        y: 0,
+        w: SCREEN_WIDTH,
+        h: SCREEN_HEIGHT,
+        color: COLORS.background
+      },
+      {
+        type: 'text',
+        x: 0,
+        y: px(20),
+        w: SCREEN_WIDTH,
+        h: px(50),
+        text: 'Hue Lights',
+        text_size: px(38),
+        color: COLORS.text,
+        align_h: 'center',
+        align_v: 'center'
+      },
+      {
+        type: 'text',
+        id: 'status',
+        x: 0,
+        y: px(75),
+        w: SCREEN_WIDTH,
+        h: px(35),
+        text: `${lights.length} lights`,
+        text_size: px(24),
+        color: COLORS.text,
+        align_h: 'center',
+        align_v: 'center'
+      },
+      ...lightItems.slice(0, 3), // Show up to 3 lights (scrolling would need scroll_list)
+      {
+        type: 'button',
+        id: 'allOnButton',
+        x: px(30),
+        y: SCREEN_HEIGHT - px(110),
+        w: px(190),
+        h: px(50),
+        text: 'ALL ON',
+        text_size: px(22),
+        normal_color: COLORS.highlight,
+        press_color: COLORS.success,
+        radius: px(8)
+      },
+      {
+        type: 'button',
+        id: 'allOffButton',
+        x: SCREEN_WIDTH - px(220),
+        y: SCREEN_HEIGHT - px(110),
+        w: px(190),
+        h: px(50),
+        text: 'ALL OFF',
+        text_size: px(22),
+        normal_color: COLORS.highlight,
+        press_color: COLORS.error,
+        radius: px(8)
+      },
+      {
+        type: 'button',
+        id: 'refreshButton',
+        x: px(190),
+        y: SCREEN_HEIGHT - px(170),
+        w: px(100),
+        h: px(45),
+        text: 'REFRESH',
+        text_size: px(18),
+        normal_color: 0x333333,
+        press_color: COLORS.highlight,
+        radius: px(8)
+      }
+    ]
+  }
+}
+
+function getLightBgColor(light) {
+  if (!light.ison || !light.hex) {
+    return 0x1a1a1a
+  }
+  
+  const hex = light.hex.replace('#', '')
+  if (hex === '000000') return 0x1a1a1a
+  
+  const color = parseInt(hex, 16)
+  // Darken for better text visibility
+  return ((color >> 2) & 0x3f3f3f) + 0x202020
+}

@@ -1,0 +1,53 @@
+msgid "INDEX_SEARCHING_BRIDGE"
+msgstr "Searching for Hue Bridge on your network..."
+
+msgid "INDEX_BRIDGE_FOUND"
+msgstr "Bridge Found!"
+
+msgid "INDEX_PRESS_BUTTON"
+msgstr "Press the button on your Hue Bridge to pair"
+
+msgid "INDEX_WAIT_PRESS"
+msgstr "Waiting for button press..."
+
+msgid "INDEX_PAIRED_SUCCESS"
+msgstr "Paired Successfully!"
+
+msgid "INDEX_LOADING"
+msgstr "Loading your Hue setup..."
+
+msgid "PROGRESS_ROOMS"
+msgstr "Rooms: %d"
+
+msgid "PROGRESS_ZONES"
+msgstr "Zones: %d"
+
+msgid "PROGRESS_LIGHTS"
+msgstr "Lights: %d"
+
+msgid "PROGRESS_SCENES"
+msgstr "Scenes: %d"
+
+msgid "INDEX_CONNECTION_ERROR"
+msgstr "Connection Error"
+
+msgid "INDEX_CONNECTION_ERROR_DESC"
+msgstr "Could not connect to Hue Bridge"
+
+msgid "INDEX_RETRY"
+msgstr "RETRY"
+
+msgid "BRIDGE_NOT_FOUND"
+msgstr "No bridge found on network"
+
+msgid "PAIRING_FAILED"
+msgstr "Pairing failed"
+
+msgid "BUTTON_NOT_PRESSED"
+msgstr "Press the link button on the bridge and try again"
+
+msgid "INITIAL_CONNECTION_FAILED"
+msgstr "Initial connection check failed"
+
+msgid "NAVIGATING_TO_GROUPS"
+msgstr "Navigating to groups page"
