@@ -2,6 +2,7 @@ import { BasePage } from '@zeppos/zml/base-page'
 import { px } from '@zos/utils'
 import { setPageBrightTime } from '@zos/display'
 import { getLogger } from '../utils/logger.js'
+import { getText } from '@zos/i18n'
 import { createWidget, deleteWidget, widget, align, prop } from '@zos/ui'
 import { push } from '@zos/router'
 
@@ -137,7 +138,7 @@ Page(
       const isZones = this.state.currentTab === 'ZONES'
       this.createTrackedWidget(widget.BUTTON, {
         x: px(250), y: tabY, w: tabW, h: tabH,
-        text: 'ZONE',
+        text: getText('ZONES'),
         color: isZones ? 0xFFFFFF : 0xAAAAAA,
         normal_color: isZones ? COLORS.activeTab : COLORS.inactiveTab,
         press_color: COLORS.highlight,

@@ -19,8 +19,14 @@ msgstr "Loading your Hue setup..."
 msgid "PROGRESS_ROOMS"
 msgstr "Rooms: %d"
 
+msgid "ROOMS"
+msgstr "Rooms"
+
 msgid "PROGRESS_ZONES"
 msgstr "Zones: %d"
+
+msgid "ZONES"
+msgstr "Zones"
 
 msgid "PROGRESS_LIGHTS"
 msgstr "Lights: %d"
@@ -51,3 +57,12 @@ msgstr "Initial connection check failed"
 
 msgid "NAVIGATING_TO_GROUPS"
 msgstr "Navigating to groups page"
+
+msgid "GROUP_ON"
+msgstr "Turn On"
+
+msgid "GROUP_OFF"
+msgstr "Turn Off"
+
+msgid "BRIGHTNESS"
+msgstr "Brightness: %d"

@@ -781,10 +781,10 @@ AppSideService(
 
     async handleToggleLight(req, res) {
       try {
-        const { id, state } = req.params
-        console.log(`Toggle light ${id} to ${state}`)
+        const { lightId, state } = req.params
+        console.log(`Toggle light ${lightId} to ${state}`)
 
-        await hueBridge.toggleLight(id, state)
+        await hueBridge.toggleLight(lightId, state)
         res(null, { success: true })
       } catch (error) {
         console.error('Toggle light error:', error)
@@ -793,46 +793,46 @@ AppSideService(
     },
 
     async handleSetBrightness(req, res) {
-  try {
-    const { lightId, brightness } = req.params // ← FIX: usa lightId
-    console.log(`Set brightness ${lightId} to ${brightness}`)
+      try {
+        const { lightId, brightness } = req.params
+        console.log(`Set brightness ${lightId} to ${brightness}`)
 
-    await hueBridge.setLightBrightness(lightId, brightness)
-    res(null, { success: true })
-  } catch (error) {
-    console.error('Set brightness error:', error)
-    res({ error: error.message })
-  }
-},
+        await hueBridge.setLightBrightness(lightId, brightness)
+        res(null, { success: true })
+      } catch (error) {
+        console.error('Set brightness error:', error)
+        res({ error: error.message })
+      }
+    },
 
 
 
 
     async handleSetColor(req, res) {
-  try {
-    const { lightId, hex, rgb, hue, sat, bri } = req.params
-    console.log(`Set color ${lightId} - hex: ${hex}, rgb:`, rgb)
+      try {
+        const { lightId, hex, rgb, hue, sat, bri } = req.params
+        console.log(`Set color ${lightId} - hex: ${hex}, rgb:`, rgb)
 
-    // Se abbiamo RGB, convertiamo a HSB
-    let colorParams = { hue, sat, bri }
+        // Se abbiamo RGB, convertiamo a HSB
+        let colorParams = { hue, sat, bri }
 
-    if (rgb && (!hue || !sat)) {
-      console.log('Converting RGB to HSB...')
-      const hsb = rgbToHsb(rgb.r, rgb.g, rgb.b)
-      colorParams = {
-        hue: hsb.hue,
-        sat: hsb.sat,
-        bri: bri || hsb.bri // Usa bri dal param o dal calcolo
-      }
-    }
+        if (rgb && (!hue || !sat)) {
+          console.log('Converting RGB to HSB...')
+          const hsb = rgbToHsb(rgb.r, rgb.g, rgb.b)
+          colorParams = {
+            hue: hsb.hue,
+            sat: hsb.sat,
+            bri: bri || hsb.bri // Usa bri dal param o dal calcolo
+          }
+        }
 
-    await hueBridge.setLightColor(lightId, colorParams)
-      res(null, { success: true })
-    } catch (error) {
-      console.error('Set color error:', error)
-      res({ error: error.message })
-    }
-  },
+        await hueBridge.setLightColor(lightId, colorParams)
+          res(null, { success: true })
+        } catch (error) {
+          console.error('Set color error:', error)
+          res({ error: error.message })
+        }
+      },
 
     async handleAllLights(req, res) {
       try {

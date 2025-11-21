@@ -1,6 +1,7 @@
 import { BasePage } from '@zeppos/zml/base-page'
 import { px } from '@zos/utils'
 import { setPageBrightTime } from '@zos/display'
+import { getText } from '@zos/i18n'
 import { getLogger } from '../utils/logger.js'
 import { createWidget, deleteWidget, widget, align, prop, text_style } from '@zos/ui'
 
@@ -41,6 +42,7 @@ Page(
     widgets: [],
     brightnessSliderWidget: null,
     brightnessSliderFillWidget: null,
+    brightnessLabel: null,
 
     onInit(p) {
       let params = {}
@@ -91,13 +93,14 @@ Page(
     },
 
     getLightCapabilities(light) {
+      logger.log(light.capabilities);
       const type = light.type || '';
 
       // Assumiamo che tutte le luci dimmerabili e a colore supportino la luminosità
       let caps = ['brightness'];
 
       // Una logica semplificata per il colore, basata sul nome del tipo di luce Hue.
-      if (type.includes('color') || type.includes('Color')) {
+      if (light.capabilities.includes('color') || type.includes('Color')) {
         caps.push('color');
       }
 
@@ -179,7 +182,6 @@ Page(
       })
     },
 
-// Nel file light-detail.js (Sostituire renderPage)
 
     renderPage() {
       this.clearAllWidgets()
@@ -210,6 +212,8 @@ Page(
 
       const lightOn = !!light.ison; // *** FIX: Usa light.ison ***
       const capabilities = this.getLightCapabilities(light); // Usa il nuovo helper
+
+      logger.debug(capabilities);
 
       // Background with light color if on
       // *** FIX: Usa lightOn ***
@@ -247,8 +251,6 @@ Page(
       }
     },
 
-    // Nel file light-detail.js (Sostituire renderMainToggle)
-
     renderMainToggle(yPos) {
       const light = this.state.light
       const lightOn = !!light.ison; // *** FIX: Usa light.ison ***
@@ -271,7 +273,7 @@ Page(
 
       this.createTrackedWidget(widget.BUTTON, {
         x: px(40), y: yPos, w: px(400), h: px(80),
-        text: '',
+        text: getText('LIGHT_TOGGLE'),
         normal_color: 0x00000000,
         press_color: 0x33ffffff,
         radius: px(12),
@@ -287,9 +289,9 @@ Page(
       const brightnessPercent = Math.round(brightness / 254 * 100)
 
       // Label
-      this.createTrackedWidget(widget.TEXT, {
+      this.brightnessLabel = this.createTrackedWidget(widget.TEXT, {
         x: px(40), y: yPos, w: px(400), h: px(35),
-        text: `Brightness: ${brightnessPercent}%`,
+        text: getText('BRIGHTNESS', brightnessPercent),
         text_size: px(26),
         color: COLORS.text,
         align_h: align.LEFT,
@@ -338,7 +340,8 @@ Page(
         normal_color: COLORS.inactive,
         press_color: COLORS.highlight,
         radius: px(8),
-        click_func: () => this.adjustBrightness(-25)
+        click_func: () => {
+          this.adjustBrightness(-25)}
       })
 
       this.createTrackedWidget(widget.BUTTON, {
@@ -517,6 +520,13 @@ Page(
         const fillWidth = Math.max(px(10), Math.round(px(400) * brightness / 254))
         try {
           this.brightnessSliderFillWidget.setProperty(prop.W, fillWidth)
+        } catch {}
+      }
+
+      if (this.brightnessLabel) {
+        const brightnessPercent = Math.round(brightness / 254 * 100)
+        try {
+          this.brightnessLabel.setProperty(text, getText('BRIGHTNESS', brightnessPercent))
         } catch {}
       }
 

@@ -19,8 +19,14 @@ msgstr "Caricamento della configurazione Hue..."
 msgid "PROGRESS_ROOMS"
 msgstr "Stanze: %d"
 
+msgid "ROOMS"
+msgstr "Stanze"
+
 msgid "PROGRESS_ZONES"
 msgstr "Zone: %d"
+
+msgid "ZONES"
+msgstr "Zone"
 
 msgid "PROGRESS_LIGHTS"
 msgstr "Luci: %d"
@@ -51,3 +57,12 @@ msgstr "Controllo iniziale della connessione fallito"
 
 msgid "NAVIGATING_TO_GROUPS"
 msgstr "Navigazione alla pagina gruppi"
+
+msgid "GROUP_ON"
+msgstr "Accendi"
+
+msgid "GROUP_OFF"
+msgstr "Spegni"
+
+msgid "BRIGHTNESS"
+msgstr "Luminosità: %d"

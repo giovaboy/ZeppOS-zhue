@@ -2,6 +2,7 @@ import { BasePage } from '@zeppos/zml/base-page'
 import { px } from '@zos/utils'
 import { setPageBrightTime } from '@zos/display'
 import { getLogger } from '../utils/logger.js'
+import { getText } from '@zos/i18n'
 import { createWidget, deleteWidget, widget, align, prop, text_style } from '@zos/ui'
 import { push, back } from '@zos/router'
 import { LIGHT_MODELS } from '../utils/constants.js'
@@ -25,8 +26,8 @@ const COLORS = {
 // Parametrizzazioni utente (da salvare in settings)
 const USER_SETTINGS = {
   show_global_toggle: true,
-  show_scenes: true,
-  display_order: 'SCENES_FIRST' // or 'LIGHTS_FIRST'
+  show_scenes: false,
+  display_order: 'LIGHTS_FIRST' // or 'LIGHTS_FIRST'
 }
 
 Page(
@@ -294,7 +295,7 @@ Page(
 
       this.createTrackedWidget(widget.BUTTON, {
         x: px(80), y: px(60), w: px(320), h: px(60),
-        text: anyOn ? 'SPEGNI TUTTO' : 'ACCENDI TUTTO',
+        text: anyOn ? getText('GROUP_OFF') : getText('GROUP_ON'),
         text_size: px(28),
         normal_color: buttonColor,
         press_color: 0x333333,
