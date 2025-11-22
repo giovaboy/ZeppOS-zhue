@@ -1,10 +1,11 @@
 import { BasePage } from '@zeppos/zml/base-page'
 import { px } from '@zos/utils'
+import { onGesture, onKey, GESTURE_LEFT, KEY_BACK, KEY_EVENT_CLICK } from '@zos/interaction'
 import { setPageBrightTime } from '@zos/display'
 import { getLogger } from '../utils/logger.js'
 import { getText } from '@zos/i18n'
 import { createWidget, deleteWidget, widget, align, prop } from '@zos/ui'
-import { push } from '@zos/router'
+import { exit, home, push } from '@zos/router'
 
 const logger = getLogger('hue-groups-page')
 
@@ -35,6 +36,24 @@ Page(
 
     build() {
       setPageBrightTime({ brightTime: 60000 })
+      onGesture({
+        callback: (event) => {
+          if (event === GESTURE_LEFT) {
+            logger.debug('GESTURE_LEFT')
+            exit()
+          }
+          return true
+        },
+      })
+      onKey({
+      callback: (key, keyEvent) => {
+        if (key === KEY_BACK && keyEvent === KEY_EVENT_CLICK) {
+          logger.debug('KEY_BACK click')
+          exit()
+        }
+        return true
+      },
+    })
       this.loadGroupsData()
     },
 
@@ -86,7 +105,7 @@ Page(
       this.clearAllWidgets()
       this.createTrackedWidget(widget.TEXT, {
         x: px(20), y: px(200), w: px(440), h: px(100),
-        text: `ERRORE: ${msg}`, text_size: px(24), color: 0xFF0000,
+        text: `ERROR: ${msg}`, text_size: px(24), color: 0xFF0000,
         align_h: align.CENTER_H, align_v: align.CENTER_V
       })
       this.createTrackedWidget(widget.BUTTON, {
@@ -187,7 +206,7 @@ Page(
         y: px(120),
         w: px(480),
         h: px(290),
-        item_space: px(10), // px() reintrodotto
+        item_space: px(10),
 
         item_config: [{
           type_id: 1,
