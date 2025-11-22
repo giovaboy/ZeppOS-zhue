@@ -262,15 +262,17 @@ Page(
         x: 0, y: px(10), w: px(480), h: px(40),
         text: this.state.groupName || 'Dettaglio Gruppo',
         text_size: px(34),
-        color: COLORS.text, align_h: align.CENTER_H
+        color: COLORS.text,
+        align_h: align.CENTER_H,
+        align_v: align.CENTER_V
       })
 
       // Bottone Indietro (Back)
-      this.createTrackedWidget(widget.TEXT, {
+      /*this.createTrackedWidget(widget.TEXT, {
         x: px(10), y: px(10), w: px(60), h: px(40),
         text: '<', text_size: px(40), color: COLORS.highlight,
         click_func: () => back()
-      })
+      })*/
 
       // Loading State
       if (this.state.isLoading) {
@@ -424,7 +426,6 @@ Page(
           item_bg_color: COLORS.lightBg,
           item_bg_radius: px(10),
           item_height: px(90),
-
           text_view: [
             // RIGA 1: Campione di Colore (Swatch)
             {

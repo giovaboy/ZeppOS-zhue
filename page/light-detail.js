@@ -1,6 +1,7 @@
 import { BasePage } from '@zeppos/zml/base-page'
 import { px } from '@zos/utils'
 import { setPageBrightTime } from '@zos/display'
+import { setScrollLock } from '@zos/page'
 import { getText } from '@zos/i18n'
 import { getLogger } from '../utils/logger.js'
 import { createWidget, deleteWidget, widget, align, prop, text_style } from '@zos/ui'
@@ -68,6 +69,7 @@ Page(
     build() {
       logger.log('Building Light Detail page')
       setPageBrightTime({ brightTime: 60000 })
+      setScrollLock({lock: false})
       this.loadLightDetail()
     },
 
@@ -78,6 +80,7 @@ Page(
       this.widgets = []
       this.brightnessSliderWidget = null
       this.brightnessSliderFillWidget = null
+      this.brightnessLabel = null
     },
 
     createTrackedWidget(type, props) {
@@ -186,18 +189,8 @@ Page(
     renderPage() {
       this.clearAllWidgets()
 
-       // Header
-      this.createTrackedWidget(widget.TEXT, {
-        x: px(20), y: px(20), w: px(380), h: px(50),
-        text: this.state.lightName,
-        text_size: px(32),
-        color: COLORS.text,
-        align_h: align.LEFT,
-        align_v: align.CENTER_V
-      })
-
       // Back button
-      this.createTrackedWidget(widget.BUTTON, {
+      /*this.createTrackedWidget(widget.BUTTON, {
         x: px(410), y: px(20), w: px(50), h: px(50),
         text: '←',
         text_size: px(32),
@@ -205,12 +198,12 @@ Page(
         press_color: COLORS.success,
         radius: px(8),
         click_func: () => this.goBack()
-      })
+      })*/
 
       const light = this.state.light
       if (!light) return
 
-      const lightOn = !!light.ison; // *** FIX: Usa light.ison ***
+      const lightOn = !!light.ison;
       const capabilities = this.getLightCapabilities(light); // Usa il nuovo helper
 
       logger.debug(capabilities);
@@ -224,10 +217,17 @@ Page(
         color: bgColor
       })
 
-      // Header (omesso per brevità, il tuo codice è qui)
-      // ...
+      // Header
+      this.createTrackedWidget(widget.TEXT, {
+        x: 0, y: px(20), w: px(480), h: px(50),
+        text: this.state.lightName,
+        text_size: px(32),
+        color: COLORS.text,
+        align_h: align.CENTER_H,
+        align_v: align.CENTER_V
+      })
 
-      let currentY = px(90)
+      let currentY = px(80)
 
       // Main toggle
       currentY = this.renderMainToggle(currentY)
@@ -256,8 +256,8 @@ Page(
       const lightOn = !!light.ison; // *** FIX: Usa light.ison ***
       const toggleColor = lightOn ? COLORS.success : COLORS.error // *** FIX: Usa lightOn ***
 
-      this.createTrackedWidget(widget.FILL_RECT, {
-        x: px(40), y: yPos, w: px(400), h: px(80),
+    /*  this.createTrackedWidget(widget.FILL_RECT, {
+        x: px(60), y: yPos, w: px(360), h: px(60),
         color: toggleColor,
         radius: px(12)
       })
@@ -269,18 +269,18 @@ Page(
         color: 0xffffff,
         align_h: align.CENTER_H,
         align_v: align.CENTER_V
-      })
+      })*/
 
       this.createTrackedWidget(widget.BUTTON, {
-        x: px(40), y: yPos, w: px(400), h: px(80),
+        x: px(60), y: yPos, w: px(360), h: px(60),
         text: getText('LIGHT_TOGGLE'),
-        normal_color: 0x00000000,
+        normal_color: toggleColor,
         press_color: 0x33ffffff,
         radius: px(12),
         click_func: () => this.toggleLight()
       })
 
-      return yPos + px(95)
+      return yPos + px(80)
     },
 
     renderBrightnessSlider(yPos) {
@@ -384,16 +384,16 @@ Page(
       basicColors.forEach((color, i) => {
         const x = startX + i * (colorSize + spacing)
 
-        this.createTrackedWidget(widget.FILL_RECT, {
+        /*this.createTrackedWidget(widget.FILL_RECT, {
           x, y: colorsY, w: colorSize, h: colorSize,
           color: parseInt(color.hex.replace('#', ''), 16),
           radius: px(8)
-        })
+        })*/
 
         this.createTrackedWidget(widget.BUTTON, {
           x, y: colorsY, w: colorSize, h: colorSize,
           text: '',
-          normal_color: 0x00000000,
+          normal_color:parseInt(color.hex.replace('#', ''), 16),
           press_color: 0x44ffffff,
           radius: px(8),
           click_func: () => this.setLightColor(color.hex)
