@@ -221,7 +221,7 @@ Page(
           text_view_count: 3,
           image_view: [],
           image_view_count: 0,
-          item_height: px(100) // px() reintrodotto
+          item_height: px(100)
         }],
         item_config_count: 1,
 
