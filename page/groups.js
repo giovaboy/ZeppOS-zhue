@@ -223,7 +223,7 @@ Page(
           image_view_count: 0,
           item_height: px(100) // px() reintrodotto
         }],
-        item_config_count: 1, // Esplicito
+        item_config_count: 1,
 
         // 2. DATI BINDING IMMEDIATO (come nell'esempio ufficiale)
         data_type_config: dataConfig,
