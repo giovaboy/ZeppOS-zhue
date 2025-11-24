@@ -1,10 +1,10 @@
 import { BasePage } from '@zeppos/zml/base-page'
-import { COLORS } from 'zosLoader:./index.[pf].layout.js'
+import { layout, LOADING_TEXT_WIDGET, LOADING_IMG_ANIM_WIDGET } from 'zosLoader:./index.[pf].layout.js'
 import { px } from '@zos/utils'
 import { getText } from '@zos/i18n'
 import { setPageBrightTime } from '@zos/display'
 import { getLogger } from '../utils/logger.js'
-import { createWidget, deleteWidget, widget, align, prop, text_style } from '@zos/ui'
+import { createWidget, deleteWidget, widget, align, prop, text_style, anim_status } from '@zos/ui'
 import { push, replace } from '@zos/router'
 
 const logger = getLogger('hue-welcome-page')
@@ -43,15 +43,29 @@ Page(
     build() {
       logger.log('Building Welcome page')
       setPageBrightTime({ brightTime: 60000 })
+      this.showLoading()
       this.checkInitialConnection()
     },
-
+        showLoading() {
+      logger.debug('page showLoading invoked')
+      this.state.loadingText = createWidget(widget.TEXT, { ...LOADING_TEXT_WIDGET });
+      this.state.loadingImgAnim = createWidget(widget.IMG_ANIM, { ...LOADING_IMG_ANIM_WIDGET });
+    },
+    hideLoading() {
+      logger.debug('page hideLoading invoked')
+      this.state.loadingText.setProperty(prop.VISIBLE, false);
+      this.state.loadingImgAnim.setProperty(prop.VISIBLE, false);
+      this.state.loadingImgAnim.setProperty(prop.ANIM_STATUS, anim_status.STOP);
+      deleteWidget(this.state.loadingText)
+      deleteWidget(this.state.loadingImgAnim)
+    },
     checkInitialConnection() {
       logger.log('Checking initial connection...')
 
       this.request({ method: 'CHECK_CONNECTION' })
         .then(result => {
           logger.log('Connection check result:', result)
+          this.hideLoading()
 
           if (result.connected) {
             // Bridge già connesso -> vai alla lista luci/gruppi

@@ -15,7 +15,9 @@ const COLORS = {
   highlight: 0x0055ff,
   cardBg: 0x222222,
   activeTab: 0x0055ff,
-  inactiveTab: 0x1a1a1a
+  activeTabText: 0xffffff,
+  inactiveTab: 0x1a1a1a,
+  inactiveTabText: 0xAAAAAA
 }
 
 Page(
@@ -124,7 +126,7 @@ Page(
 
       this.createTrackedWidget(widget.TEXT, {
         x: 0, y: px(10), w: px(480), h: px(40),
-        text: 'Hue Groups', text_size: px(36),
+        text: getText('GROUPS'), text_size: px(36),
         color: COLORS.text, align_h: align.CENTER_H
       })
 
@@ -147,7 +149,7 @@ Page(
       this.createTrackedWidget(widget.BUTTON, {
         x: px(30), y: tabY, w: tabW, h: tabH,
         text: getText('ROOMS'),
-        color: isRooms ? 0xFFFFFF : 0xAAAAAA,
+        color: isRooms ? COLORS.activeTabText : COLORS.inactiveTabText,
         normal_color: isRooms ? COLORS.activeTab : COLORS.inactiveTab,
         press_color: COLORS.highlight,
         radius: px(10),
@@ -158,7 +160,7 @@ Page(
       this.createTrackedWidget(widget.BUTTON, {
         x: px(250), y: tabY, w: tabW, h: tabH,
         text: getText('ZONES'),
-        color: isZones ? 0xFFFFFF : 0xAAAAAA,
+        color: isZones ? COLORS.activeTabText : COLORS.inactiveTabText,
         normal_color: isZones ? COLORS.activeTab : COLORS.inactiveTab,
         press_color: COLORS.highlight,
         radius: px(10),
@@ -211,11 +213,11 @@ Page(
         item_config: [{
           type_id: 1,
           item_bg_color: COLORS.cardBg,
-          item_bg_radius: px(10), // px() reintrodotto
+          item_bg_radius: 10,
           text_view: [
             // TUTTI i valori di posizione/dimensione usano px()
-            { x: px(20), y: px(20), w: px(280), h: px(30), key: 'name', color: 0xFFFFFF, text_size: px(28), action: true }, // action: true per sicurezza
-            { x: px(20), y: px(55), w: px(200), h: px(25), key: 'status', color: 0xAAAAAA, text_size: px(20) },
+            { x: px(45), y: px(20), w: px(280), h: px(30), key: 'name', color: 0xFFFFFF, text_size: px(28), align_h: align.LEFT, action: true },
+            { x: px(45), y: px(55), w: px(200), h: px(25), key: 'status', color: 0xAAAAAA, text_size: px(20), align_h: align.LEFT },
             { x: px(340), y: px(30), w: px(100), h: px(40), key: 'on_off', color: 0xFFFFFF, text_size: px(28) }
           ],
           text_view_count: 3,

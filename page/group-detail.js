@@ -438,16 +438,16 @@ Page(
             },
 
             // RIGA 2: Nome della luce (Spostato a destra)
-            { x: px(45), y: px(15), w: px(330), h: px(30), key: 'name', color: 0xFFFFFF, text_size: px(28) },
+            { x: px(45), y: px(15), w: px(330), h: px(30), key: 'name', color: 0xFFFFFF, text_size: px(28), align_h: align.LEFT, action: true },
 
             // RIGA 3: Status (es. Bri: 80% / Spenta) (Spostato a destra)
-            { x: px(45), y: px(45), w: px(330), h: px(25), key: 'status_text', color: COLORS.inactive, text_size: px(20) },
+            { x: px(45), y: px(45), w: px(330), h: px(25), key: 'status_text', color: COLORS.inactive, text_size: px(20), align_h: align.LEFT },
           ],
           text_view_count: 3, // Deve essere 3
 
           // Icona/Bottone Toggle
           image_view: [
-            { x: px(380), y: px(10), w: px(70), h: px(70), key: 'icon', action: true }
+            { x: px(380), y: px(10), w: px(70), h: px(70), key: 'icon', auto_scale: true, action: true }
           ],
           image_view_count: 1
         },

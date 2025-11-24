@@ -1,3 +1,6 @@
+msgid "loading"
+msgstr "Caricamento..."
+
 msgid "INDEX_SEARCHING_BRIDGE"
 msgstr "Ricerca del bridge Hue in corso..."
 
@@ -15,6 +18,9 @@ msgstr "Accoppiamento completato!"
 
 msgid "INDEX_LOADING"
 msgstr "Caricamento della configurazione Hue..."
+
+msgid "GROUPS"
+msgstr "Gruppi"
 
 msgid "PROGRESS_ROOMS"
 msgstr "Stanze: %d"

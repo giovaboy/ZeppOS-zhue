@@ -1,35 +1,44 @@
 import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
+import { createWidget, deleteWidget, widget, align, prop, text_style, event, getTextLayout, anim_status, setStatusBarVisible } from '@zos/ui'
+import { getText } from '@zos/i18n'
+import { getLogger } from '../utils/logger.js'
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = getDeviceInfo()
+const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo();
+const TEXT_SIZE = DEVICE_WIDTH / 16;
 
-export const COLORS = {
-  background: 0x000000,
-  text: 0xffffff,
-  highlight: 0x0055ff,
-  highlightText: 0xffffff,
-  warning: 0xff6600,
-  warningText: 0xffffff,
-  inactive: 0x666666,
-  success: 0x00aa00,
-  error: 0xff0000
-}
+const NOTIFICATION_X = 30
+const NOTIFICATION_Y = 350
+const NOTIFICATION_WIDTH = DEVICE_WIDTH - (NOTIFICATION_X * 2)
+const NOTIFICATION_H_MIN = 40
+const NOTIFICATION_TEXT_SIZE = 32
 
-export const LIGHT_MODELS = {
-  'LLC011': 'Bloom',
-  'LLC012': 'Bloom',
-  'LST001': 'LightStrip',
-  'LST002': 'LightStrip Plus',
-  'LCT001': 'Hue Bulb',
-  'LCT002': 'BR30',
-  'LCT003': 'GU10',
-  'LLC007': 'Aura',
-  'LLC006': 'Iris',
-  'LLC010': 'Iris',
-  'LLC013': 'StoryLight',
-  'LWB006': 'E27/B22',
-  'default': 'Light'
-}
+const logger = getLogger('hue-on-off-layout')
+
+setStatusBarVisible(false)
+
+export const LOADING_TEXT_WIDGET = {
+  x: 0,
+  y: (DEVICE_HEIGHT/2)+155,
+  w: DEVICE_WIDTH, h: TEXT_SIZE*1.5,
+  text_size: TEXT_SIZE,
+  color: COLOR_WHITE,
+  align_h: align.CENTER_H,
+  align_v: align.CENTER_V,
+  text_style: text_style.WRAP,
+  text: getText('loading')
+};
+
+export const LOADING_IMG_ANIM_WIDGET = {//155*155
+    anim_path: 'anim',
+    anim_prefix: 'loading',
+    anim_ext: 'png',
+    anim_fps: 24,
+    anim_size: 54,
+    repeat_count: 0,
+    anim_status: anim_status.START,
+    x: (DEVICE_WIDTH/2)-(155/2), y: DEVICE_HEIGHT/2
+  };
 
 export function createLayout(lights = [], isPairing = false) {
   if (isPairing) {
@@ -51,8 +60,8 @@ function createInitialLayout() {
         type: 'fill-rect',
         x: 0,
         y: 0,
-        w: SCREEN_WIDTH,
-        h: SCREEN_HEIGHT,
+        w: DEVICE_WIDTH,
+        h: DEVICE_HEIGHT,
         color: COLORS.background
       },
       {
@@ -60,7 +69,7 @@ function createInitialLayout() {
         id: 'title',
         x: 0,
         y: px(30),
-        w: SCREEN_WIDTH,
+        w: DEVICE_WIDTH,
         h: px(60),
         text: 'Hue Lights',
         text_size: px(42),
@@ -73,7 +82,7 @@ function createInitialLayout() {
         id: 'status',
         x: 0,
         y: px(100),
-        w: SCREEN_WIDTH,
+        w: DEVICE_WIDTH,
         h: px(40),
         text: 'Bridge not connected',
         text_size: px(26),
@@ -106,15 +115,15 @@ function createPairingLayout() {
         type: 'fill-rect',
         x: 0,
         y: 0,
-        w: SCREEN_WIDTH,
-        h: SCREEN_HEIGHT,
+        w: DEVICE_WIDTH,
+        h: DEVICE_HEIGHT,
         color: COLORS.warning
       },
       {
         type: 'text',
         x: 0,
         y: px(80),
-        w: SCREEN_WIDTH,
+        w: DEVICE_WIDTH,
         h: px(60),
         text: 'Hue Bridge',
         text_size: px(36),
@@ -125,7 +134,7 @@ function createPairingLayout() {
       {
         type: 'circle',
         id: 'bridgeIcon',
-        center_x: SCREEN_WIDTH / 2,
+        center_x: DEVICE_WIDTH / 2,
         center_y: px(200),
         radius: px(50),
         color: COLORS.warningText
@@ -135,7 +144,7 @@ function createPairingLayout() {
         id: 'pairingText',
         x: px(40),
         y: px(280),
-        w: SCREEN_WIDTH - px(80),
+        w: DEVICE_WIDTH - px(80),
         h: px(120),
         text: 'Pairing! Push the button on your Hue bridge.',
         text_size: px(28),
@@ -167,7 +176,7 @@ function createLightsLayout(lights) {
         type: 'fill-rect',
         x: px(20),
         y: 0,
-        w: SCREEN_WIDTH - px(40),
+        w: DEVICE_WIDTH - px(40),
         h: px(75),
         color: getLightBgColor(light),
         radius: px(10)
@@ -176,7 +185,7 @@ function createLightsLayout(lights) {
         type: 'text',
         x: px(30),
         y: px(10),
-        w: SCREEN_WIDTH - px(60),
+        w: DEVICE_WIDTH - px(60),
         h: px(40),
         text: light.name,
         text_size: px(32),
@@ -186,7 +195,7 @@ function createLightsLayout(lights) {
         type: 'text',
         x: px(30),
         y: px(45),
-        w: SCREEN_WIDTH - px(60),
+        w: DEVICE_WIDTH - px(60),
         h: px(30),
         text: light.reachable ? `Brightness: ${light.bri}` : 'Unreachable',
         text_size: px(24),
@@ -197,7 +206,7 @@ function createLightsLayout(lights) {
         id: `light_${index}`,
         x: px(20),
         y: 0,
-        w: SCREEN_WIDTH - px(40),
+        w: DEVICE_WIDTH - px(40),
         h: px(75),
         text: '',
         normal_color: 0x00000000,
@@ -214,15 +223,15 @@ function createLightsLayout(lights) {
         type: 'fill-rect',
         x: 0,
         y: 0,
-        w: SCREEN_WIDTH,
-        h: SCREEN_HEIGHT,
+        w: DEVICE_WIDTH,
+        h: DEVICE_HEIGHT,
         color: COLORS.background
       },
       {
         type: 'text',
         x: 0,
         y: px(20),
-        w: SCREEN_WIDTH,
+        w: DEVICE_WIDTH,
         h: px(50),
         text: 'Hue Lights',
         text_size: px(38),
@@ -235,7 +244,7 @@ function createLightsLayout(lights) {
         id: 'status',
         x: 0,
         y: px(75),
-        w: SCREEN_WIDTH,
+        w: DEVICE_WIDTH,
         h: px(35),
         text: `${lights.length} lights`,
         text_size: px(24),
@@ -248,7 +257,7 @@ function createLightsLayout(lights) {
         type: 'button',
         id: 'allOnButton',
         x: px(30),
-        y: SCREEN_HEIGHT - px(110),
+        y: DEVICE_HEIGHT - px(110),
         w: px(190),
         h: px(50),
         text: 'ALL ON',
@@ -260,8 +269,8 @@ function createLightsLayout(lights) {
       {
         type: 'button',
         id: 'allOffButton',
-        x: SCREEN_WIDTH - px(220),
-        y: SCREEN_HEIGHT - px(110),
+        x: DEVICE_WIDTH - px(220),
+        y: DEVICE_HEIGHT - px(110),
         w: px(190),
         h: px(50),
         text: 'ALL OFF',
@@ -274,7 +283,7 @@ function createLightsLayout(lights) {
         type: 'button',
         id: 'refreshButton',
         x: px(190),
-        y: SCREEN_HEIGHT - px(170),
+        y: DEVICE_HEIGHT - px(170),
         w: px(100),
         h: px(45),
         text: 'REFRESH',

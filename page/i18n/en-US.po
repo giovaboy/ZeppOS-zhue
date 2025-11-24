@@ -1,3 +1,6 @@
+msgid "loading"
+msgstr "Loading..."
+
 msgid "INDEX_SEARCHING_BRIDGE"
 msgstr "Searching for Hue Bridge on your network..."
 
@@ -15,6 +18,9 @@ msgstr "Paired Successfully!"
 
 msgid "INDEX_LOADING"
 msgstr "Loading your Hue setup..."
+
+msgid "GROUPS"
+msgstr "Groups"
 
 msgid "PROGRESS_ROOMS"
 msgstr "Rooms: %d"
