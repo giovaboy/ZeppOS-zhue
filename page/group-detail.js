@@ -389,10 +389,6 @@ Page(
 
       logger.log(`ScrollList items: ${data.length}, data_type_config count: ${dataConfig.length}`)
 
-      // Definizione delle 3 configurazioni di riga - TUTTE USANO widget_set
-      // Nel file group-detail.js / dentro renderGroupContentScroll() (sostituisci itemConfig)
-
-      // Definizione delle 3 configurazioni di riga - TUTTE USANO widget_set
       const itemConfig = [
         // Type 1: Header (Titolo Sezione)
         {
@@ -431,7 +427,7 @@ Page(
             {
                 x: px(20), y: px(20), w: px(16), h: px(16),
                 key: 'swatch_text', // Prende il valore ' ' (spazio) dal dato
-                item_bg_color: 'swatch_bg_color', // CRITICO: Usa la chiave dinamica del dato
+                item_bg_color: swatch_bg_color, // CRITICO: Usa la chiave dinamica del dato
                 color: 0x00000000, // Testo trasparente
                 text_size: 1, // Dimensione minima
                 item_bg_radius: px(4) // Bordo arrotondato
