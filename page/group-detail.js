@@ -259,12 +259,12 @@ Page(
 
       // Header: Nome del Gruppo
       this.createTrackedWidget(widget.TEXT, {
-        x: 0, y: px(10), w: px(480), h: px(40),
-        text: this.state.groupName || 'Dettaglio Gruppo',
+        x: 0, y: 0, w: px(480), h: px(50),
+        text: this.state.groupName || getText('GROUP_DETAIL'),
         text_size: px(34),
         color: COLORS.text,
         align_h: align.CENTER_H,
-        align_v: align.CENTER_V
+        align_v: align.TOP
       })
 
       // Bottone Indietro (Back)
@@ -486,10 +486,10 @@ Page(
             }
         }
       })
-
+/*
       if (!this.listWidget) {
          logger.error("FATAL: SCROLL_LIST creation failed in detail page. The configuration failed.");
-      }
+      }*/
     },
 
     onDestroy() {

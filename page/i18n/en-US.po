@@ -64,6 +64,9 @@ msgstr "Initial connection check failed"
 msgid "NAVIGATING_TO_GROUPS"
 msgstr "Navigating to groups page"
 
+msgid "GROUP_DETAIL"
+msgstr "Group detail"
+
 msgid "GROUP_ON"
 msgstr "Turn On"
 

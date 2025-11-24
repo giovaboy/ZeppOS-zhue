@@ -1,5 +1,5 @@
 import { BasePage } from '@zeppos/zml/base-page'
-import { layout, LOADING_TEXT_WIDGET, LOADING_IMG_ANIM_WIDGET } from 'zosLoader:./index.[pf].layout.js'
+import { LOADING_TEXT_WIDGET, LOADING_IMG_ANIM_WIDGET } from 'zosLoader:./index.[pf].layout.js'
 import { px } from '@zos/utils'
 import { getText } from '@zos/i18n'
 import { setPageBrightTime } from '@zos/display'

@@ -103,6 +103,28 @@ Page(
         })
     },
 
+    toggleGroup(group) {
+      logger.log('Toggle group:', group.name)
+
+      const currentOnState = group.on_off;
+      const newState = !currentOnState;
+
+      this.request({
+        method: 'TOGGLE_GROUP',
+        params: {
+          groupId: group.id,
+          state: newState
+        }
+      })
+        .then(result => {
+          if (result.success) {
+                group.on_off = newState // Aggiorna lo stato annidato
+            this.renderPage()
+          }
+        })
+        .catch(err => logger.error('Toggle group error:', err))
+    },
+
     renderErrorState(msg) {
       this.clearAllWidgets()
       this.createTrackedWidget(widget.TEXT, {
@@ -125,9 +147,9 @@ Page(
       })
 
       this.createTrackedWidget(widget.TEXT, {
-        x: 0, y: px(10), w: px(480), h: px(40),
+        x: 0, y: 0, w: px(480), h: px(50),
         text: getText('GROUPS'), text_size: px(36),
-        color: COLORS.text, align_h: align.CENTER_H
+        color: COLORS.text, align_h: align.CENTER_H, align_v: align.TOP
       })
 
       this.renderTabs()
@@ -184,7 +206,7 @@ Page(
       const listData = data.map(item => ({
         name: item.name,
         status: `${item.lights?.length || 0} luci`,
-        on_off: (item.anyOn === true) ? 'ON' : 'OFF',
+        on_off: (item.anyOn === true) ? getText('ON') : getText('OFF'),
         raw: item
       }))
 
@@ -218,7 +240,7 @@ Page(
             // TUTTI i valori di posizione/dimensione usano px()
             { x: px(45), y: px(20), w: px(280), h: px(30), key: 'name', color: 0xFFFFFF, text_size: px(28), align_h: align.LEFT, action: true },
             { x: px(45), y: px(55), w: px(200), h: px(25), key: 'status', color: 0xAAAAAA, text_size: px(20), align_h: align.LEFT },
-            { x: px(340), y: px(30), w: px(100), h: px(40), key: 'on_off', color: 0xFFFFFF, text_size: px(28) }
+            { x: px(340), y: px(30), w: px(100), h: px(40), key: 'on_off', color: 0xFFFFFF, text_size: px(28), action: true}
           ],
           text_view_count: 3,
           image_view: [],
@@ -242,22 +264,24 @@ Page(
                     groupName: item.raw.name
                 })
             const paramsString = JSON.stringify({
-                groupId: item.raw.id,
+                    groupId: item.raw.id,
                     groupType: item.raw.type,
                     groupName: item.raw.name
             })
-            push({
-                url: 'page/group-detail',
-                params: paramsString
-            })
+            if (data_key === 'on_off') {
+                    this.toggleGroup(item)
+                } else {
+              push({
+                  url: 'page/group-detail',
+                  params: paramsString
+              })
+            }
         }
       })
 
-      // Rimosso il safety check superfluo e setProperty inutile.
-
-      if (!this.listWidget) {
+      /*if (!this.listWidget) {
          logger.error("FATAL: SCROLL_LIST creation failed (this.listWidget is null) even after final fix.");
-      }
+      }*/
     },
 
     onDestroy() {

@@ -64,6 +64,9 @@ msgstr "Controllo iniziale della connessione fallito"
 msgid "NAVIGATING_TO_GROUPS"
 msgstr "Navigazione alla pagina gruppi"
 
+msgid "GROUP_DETAIL"
+msgstr "Dettaglio gruppo"
+
 msgid "GROUP_ON"
 msgstr "Accendi"
 

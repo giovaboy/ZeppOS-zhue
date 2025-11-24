@@ -923,10 +923,10 @@ AppSideService(
 
     async HandleToggleGroup(req, res) {
       try {
-        const { id, state } = req.params
-        console.log(`Toggle group ${id} to ${state}`)
+        const { groupId, state } = req.params
+        console.log(`Toggle group ${groupId} to ${state}`)
 
-        await hueBridge.toggleGroup(id, state)
+        await hueBridge.toggleGroup(groupId, state)
         res(null, { success: true })
       } catch (error) {
         console.error('Toggle group error:', error)
