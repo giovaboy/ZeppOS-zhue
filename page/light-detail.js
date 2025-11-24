@@ -180,7 +180,7 @@ Page(
         text_size: px(26),
         normal_color: COLORS.highlight,
         press_color: COLORS.success,
-        radius: px(10),
+        radius: 10,
         click_func: () => this.goBack()
       })
     },
@@ -276,7 +276,7 @@ Page(
         text: getText('LIGHT_TOGGLE'),
         normal_color: toggleColor,
         press_color: 0x33ffffff,
-        radius: px(12),
+        radius: 12,
         click_func: () => this.toggleLight()
       })
 
@@ -306,14 +306,14 @@ Page(
       this.brightnessSliderWidget = this.createTrackedWidget(widget.FILL_RECT, {
         x: px(40), y: sliderY, w: sliderWidth, h: px(40),
         color: COLORS.sliderBg,
-        radius: px(8)
+        radius: 8
       })
 
       // Slider fill
       this.brightnessSliderFillWidget = this.createTrackedWidget(widget.FILL_RECT, {
         x: px(40), y: sliderY, w: fillWidth, h: px(40),
         color: COLORS.sliderFill,
-        radius: px(8)
+        radius: 8
       })
 
       // Touch area for slider (simplified - real implementation would need gesture events)
@@ -322,7 +322,7 @@ Page(
         text: '',
         normal_color: 0x00000000,
         press_color: 0x00000000,
-        radius: px(8),
+        radius: 8,
         click_func: () => {
           // Note: This is simplified. Real slider would use touch events
           // to calculate position and update brightness dynamically
@@ -339,7 +339,7 @@ Page(
         text_size: px(40),
         normal_color: COLORS.inactive,
         press_color: COLORS.highlight,
-        radius: px(8),
+        radius: 8,
         click_func: () => {
           this.adjustBrightness(-25)}
       })
