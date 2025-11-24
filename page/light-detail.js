@@ -196,7 +196,7 @@ Page(
         text_size: px(32),
         normal_color: COLORS.highlight,
         press_color: COLORS.success,
-        radius: px(8),
+        radius: 8,
         click_func: () => this.goBack()
       })*/
 
@@ -350,7 +350,7 @@ Page(
         text_size: px(40),
         normal_color: COLORS.inactive,
         press_color: COLORS.highlight,
-        radius: px(8),
+        radius: 8,
         click_func: () => this.adjustBrightness(25)
       })
 
@@ -395,7 +395,7 @@ Page(
           text: '',
           normal_color:parseInt(color.hex.replace('#', ''), 16),
           press_color: 0x44ffffff,
-          radius: px(8),
+          radius: 8,
           click_func: () => this.setLightColor(color.hex)
         })
       })
@@ -462,7 +462,7 @@ Page(
           text: '',
           normal_color: 0x00000000,
           press_color: 0x33ffffff,
-          radius: px(8),
+          radius: 8,
           click_func: () => this.applyFavoriteColor(fav)
         })
       })
