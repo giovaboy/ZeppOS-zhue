@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@zeppos/zml": "^0.0.41",
-    "@zeppos/zpm": "^3.2.8",
-    "node-hue-api": "^5.0.0-beta.16"
+    "@zeppos/zpm": "^3.2.8"
   }
 }
