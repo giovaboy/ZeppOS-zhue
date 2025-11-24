@@ -1,6 +1,6 @@
 import { BasePage } from '@zeppos/zml/base-page'
 import { px } from '@zos/utils'
-import { onGesture, onKey, GESTURE_LEFT, KEY_BACK, KEY_EVENT_CLICK } from '@zos/interaction'
+import { onGesture, onKey, GESTURE_RIGHT, KEY_BACK, KEY_EVENT_CLICK } from '@zos/interaction'
 import { setPageBrightTime } from '@zos/display'
 import { getLogger } from '../utils/logger.js'
 import { getText } from '@zos/i18n'
@@ -38,8 +38,8 @@ Page(
       setPageBrightTime({ brightTime: 60000 })
       onGesture({
         callback: (event) => {
-          if (event === GESTURE_LEFT) {
-            logger.debug('GESTURE_LEFT')
+          if (event === GESTURE_RIGHT) {
+            logger.debug('GESTURE_RIGHT')
             exit()
           }
           return true
