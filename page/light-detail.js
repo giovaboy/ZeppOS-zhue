@@ -448,19 +448,19 @@ Page(
           color: parseInt(fav.hex.replace('#', ''), 16)
         })
 
-        this.createTrackedWidget(widget.TEXT, {
+        /*this.createTrackedWidget(widget.TEXT, {
           x: px(100), y: itemY, w: px(300), h: itemHeight,
           text: fav.name,
           text_size: px(22),
           color: COLORS.text,
           align_h: align.LEFT,
           align_v: align.CENTER_V
-        })
+        })*/
 
         this.createTrackedWidget(widget.BUTTON, {
           x: px(40), y: itemY, w: px(400), h: itemHeight,
-          text: '',
-          normal_color: 0x00000000,
+          text: fav.name,
+          normal_color: parseInt(fav.hex.replace('#', ''), 16),
           press_color: 0x33ffffff,
           radius: 8,
           click_func: () => this.applyFavoriteColor(fav)
