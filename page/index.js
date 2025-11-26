@@ -6,6 +6,7 @@ import { setPageBrightTime } from '@zos/display'
 import { getLogger } from '../utils/logger.js'
 import { createWidget, deleteWidget, widget, align, prop, text_style, anim_status } from '@zos/ui'
 import { push, replace } from '@zos/router'
+import { COLORS } from '../utils/constants.js'
 
 const logger = getLogger('hue-welcome-page')
 
