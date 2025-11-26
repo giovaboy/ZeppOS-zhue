@@ -1,5 +1,3 @@
-export const SCREEN_WIDTH = px(480)
-export const SCREEN_HEIGHT = px(480)
 
 export const COLORS = {
   background: 0x000000,

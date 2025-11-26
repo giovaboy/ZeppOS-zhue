@@ -1,5 +1,5 @@
 import { BasePage } from '@zeppos/zml/base-page'
-import { LOADING_TEXT_WIDGET, LOADING_IMG_ANIM_WIDGET } from 'zosLoader:./index.[pf].layout.js'
+import { LOADING_TEXT_WIDGET, LOADING_IMG_ANIM_WIDGET, DEVICE_WIDTH, DEVICE_HEIGHT, TEXT_SIZE } from 'zosLoader:./index.[pf].layout.js'
 import { px } from '@zos/utils'
 import { getText } from '@zos/i18n'
 import { setPageBrightTime } from '@zos/display'
@@ -46,7 +46,7 @@ Page(
       this.showLoading()
       this.checkInitialConnection()
     },
-        showLoading() {
+    showLoading() {
       logger.debug('page showLoading invoked')
       this.state.loadingText = createWidget(widget.TEXT, { ...LOADING_TEXT_WIDGET });
       this.state.loadingImgAnim = createWidget(widget.IMG_ANIM, { ...LOADING_IMG_ANIM_WIDGET });
@@ -66,7 +66,6 @@ Page(
         .then(result => {
           logger.log('Connection check result:', result)
           this.hideLoading()
-
           if (result.connected) {
             // Bridge già connesso -> vai alla lista luci/gruppi
             // (per ora usiamo GET_LIGHTS per verificare se ci sono dati)
@@ -159,12 +158,12 @@ Page(
     // --- SEARCHING_BRIDGE STATE ---
     renderSearchingState() {
       this.createTrackedWidget(widget.FILL_RECT, {
-        x: 0, y: 0, w: px(480), h: px(480),
+        x: 0, y: 0, w: DEVICE_WIDTH, h: DEVICE_HEIGHT,
         color: COLORS.background
       })
 
       this.createTrackedWidget(widget.TEXT, {
-        x: 0, y: px(40), w: px(480), h: px(60),
+        x: 0, y: px(40), w: DEVICE_WIDTH, h: px(60),
         text: 'Hue Bridge',
         text_size: px(40),
         color: COLORS.text,
@@ -174,17 +173,17 @@ Page(
 
       // Spinner animato
       const spinner = this.createTrackedWidget(widget.CIRCLE, {
-        center_x: px(240),
+        center_x: DEVICE_WIDTH / 2,
         center_y: px(180),
-        radius: px(40),
+        radius: 40,
         color: COLORS.highlight,
         alpha: 150
       })
       this.animateSpinner(spinner)
 
       this.createTrackedWidget(widget.TEXT, {
-        x: px(40), y: px(260), w: px(400), h: px(80),
-        text: 'Searching for Hue Bridge on your network...',
+        x: px(40), y: px(260), w: DEVICE_WIDTH - 80, h: px(80),
+        text: getText('SEARCHING_BRIDGE'),
         text_size: px(26),
         color: COLORS.text,
         align_h: align.CENTER_H,
@@ -193,7 +192,7 @@ Page(
       })
 
       this.createTrackedWidget(widget.TEXT, {
-        x: 0, y: px(360), w: px(480), h: px(40),
+        x: 0, y: px(360), w: DEVICE_WIDTH, h: px(40),
         text: 'Make sure your bridge is powered on',
         text_size: px(20),
         color: COLORS.inactive,
@@ -205,7 +204,7 @@ Page(
       const progressBar = this.createTrackedWidget(widget.FILL_RECT, {
         x: px(140), y: px(420), w: px(10), h: px(6),
         color: COLORS.highlight,
-        radius: px(3)
+        radius: 3
       })
       this.animateProgressBar(progressBar)
     },
@@ -213,12 +212,12 @@ Page(
     // --- WAITING_FOR_PRESS STATE ---
     renderWaitingState() {
       this.createTrackedWidget(widget.FILL_RECT, {
-        x: 0, y: 0, w: px(480), h: px(480),
+        x: 0, y: 0, w: DEVICE_WIDTH, h: DEVICE_HEIGHT,
         color: COLORS.warning
       })
 
       this.createTrackedWidget(widget.TEXT, {
-        x: 0, y: px(50), w: px(480), h: px(50),
+        x: 0, y: px(50), w: DEVICE_WIDTH, h: px(50),
         text: 'Bridge Found!',
         text_size: px(38),
         color: COLORS.warningText,
@@ -227,17 +226,24 @@ Page(
       })
 
       // Icona bridge pulsante
-      const bridgeIcon = this.createTrackedWidget(widget.CIRCLE, {
-        center_x: px(240),
+     /*const bridgeIcon = this.createTrackedWidget(widget.CIRCLE, {
+        center_x: DEVICE_WIDTH / 2,
         center_y: px(180),
-        radius: px(50),
+        radius: 50,
         color: COLORS.warningText
       })
-      this.animatePulse(bridgeIcon)
+      this.animatePulse(bridgeIcon)*/
+      createWidget(widget.IMG, {
+        x: 0,
+        y: 0,
+        center_x: DEVICE_WIDTH / 2,
+        center_y: px(180),
+        src: 'icons/push-linkv2.png'
+      })
 
       this.createTrackedWidget(widget.TEXT, {
-        x: px(40), y: px(270), w: px(400), h: px(100),
-        text: 'Press the button on your Hue Bridge to pair',
+        x: px(40), y: px(270), w: DEVICE_WIDTH - px(80), h: px(100),
+        text: getText('PRESS_BUTTON_TO_PAIR'),//'Press the button on your Hue Bridge to pair'
         text_size: px(28),
         color: COLORS.warningText,
         align_h: align.CENTER_H,
@@ -308,7 +314,6 @@ Page(
         align_h: align.LEFT
       })
 
-      // Note: rooms, zones, scenes verranno aggiunti quando implementati
     },
 
     // --- ERROR STATE ---

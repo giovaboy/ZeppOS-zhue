@@ -51,6 +51,7 @@ async function safeJson(resp) {
 
 class HueBridgeManager {
   constructor() {
+     console.log('HueBridgeManager initializing')
     this.bridgeIp = settingsLib.getItem(BRIDGE_IP_KEY) || null
     this.username = settingsLib.getItem(USERNAME_KEY) || null
     this.apiVersion = settingsLib.getItem(API_VERSION_KEY) || 'v1'
@@ -80,8 +81,6 @@ class HueBridgeManager {
     this.username = null
     this.apiVersion = 'v1'
   }
-
-
 
   async discoverBridges() {
     console.log('Discovering bridges...')
@@ -157,10 +156,12 @@ class HueBridgeManager {
   }
 
   async checkConnection() {
-    if (!this.bridgeIp || !this.username)
+    if (!this.bridgeIp || !this.username) {
+      console.log('Not configured')
       return { connected: false, reason: 'Not configured' }
-
+    }
     try {
+      console.log('configured')
       await this.getLights()
       return { connected: true }
     } catch (e) {
@@ -637,6 +638,12 @@ AppSideService(
 
     onSettingsChange({ key, newValue, oldValue }) {
       console.log('settings changed:', key, ':', oldValue, '>', newValue)
+       switch (key) {
+        case 'data:clear': {
+          this.settings.clear()
+          break
+        }
+      }
     },
 
     onRequest(req, res) {

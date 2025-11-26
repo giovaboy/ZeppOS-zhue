@@ -49,6 +49,12 @@ msgstr "Could not connect to Hue Bridge"
 msgid "INDEX_RETRY"
 msgstr "RETRY"
 
+msgid "SEARCHING_BRIDGE"
+msgstr "Searching for Hue Bridge on your network..."
+
+msgid "PRESS_BUTTON_TO_PAIR"
+msgstr "Press the button on your Hue Bridge to pair"
+
 msgid "BRIDGE_NOT_FOUND"
 msgstr "No bridge found on network"
 

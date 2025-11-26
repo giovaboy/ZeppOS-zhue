@@ -3,15 +3,10 @@ import { px } from '@zos/utils'
 import { createWidget, deleteWidget, widget, align, prop, text_style, event, getTextLayout, anim_status, setStatusBarVisible } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { getLogger } from '../utils/logger.js'
+import { COLORS } from '../utils/constants.js'
 
 const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo();
 const TEXT_SIZE = DEVICE_WIDTH / 16;
-
-const NOTIFICATION_X = 30
-const NOTIFICATION_Y = 350
-const NOTIFICATION_WIDTH = DEVICE_WIDTH - (NOTIFICATION_X * 2)
-const NOTIFICATION_H_MIN = 40
-const NOTIFICATION_TEXT_SIZE = 32
 
 const logger = getLogger('hue-on-off-layout')
 
@@ -22,7 +17,7 @@ export const LOADING_TEXT_WIDGET = {
   y: (DEVICE_HEIGHT/2)+155,
   w: DEVICE_WIDTH, h: TEXT_SIZE*1.5,
   text_size: TEXT_SIZE,
-  color: COLOR_WHITE,
+  color: COLORS.text,
   align_h: align.CENTER_H,
   align_v: align.CENTER_V,
   text_style: text_style.WRAP,
