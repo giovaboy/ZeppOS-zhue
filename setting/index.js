@@ -3,7 +3,7 @@ import { gettext } from 'i18n'
 AppSettingsPage({
   build(props) {
     return Section({}, [
- View(
+      View(
         {
           style: {
             marginTop: '50px',
@@ -12,8 +12,6 @@ AppSettingsPage({
         },
         [Text({}, [gettext('WELCOME_TEXT')])],
       ),
-
-
 
       View(
         {
@@ -31,7 +29,7 @@ AppSettingsPage({
               props.settingsStorage.clear()
             },
           })])
-          ,View(
+      , View(
         {
           style: {
             marginTop: '50px',

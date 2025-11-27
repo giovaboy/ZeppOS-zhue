@@ -1,15 +1,15 @@
 import { BasePage } from '@zeppos/zml/base-page'
-import { px } from '@zos/utils'
 import { setPageBrightTime } from '@zos/display'
 import { getLogger } from '../utils/logger.js'
 import { getText } from '@zos/i18n'
-import { createWidget, deleteWidget, widget, align, prop, text_style } from '@zos/ui'
-import { push, back } from '@zos/router'
+import { createWidget, deleteWidget } from '@zos/ui'
+import { push } from '@zos/router'
 import { LIGHT_MODELS } from '../utils/constants.js'
+import { renderGroupDetailPage } from 'zosLoader:./group-detail.[pf].layout.js' // <--- NUOVO IMPORT
 
 const logger = getLogger('hue-group-detail-page')
 
-const COLORS = {
+const COLORS = { // Manteniamo i colori qui, li passiamo al layout
   background: 0x000000,
   text: 0xffffff,
   highlight: 0x0055ff,
@@ -20,14 +20,14 @@ const COLORS = {
   sceneBg: 0x0a2540,
   toggleOn: 0x00aa00,
   toggleOff: 0x444444,
-  sectionHeader: 0x0088ff // Aggiunto per coerenza
+  sectionHeader: 0x0088ff
 }
 
 // Parametrizzazioni utente (da salvare in settings)
 const USER_SETTINGS = {
   show_global_toggle: true,
   show_scenes: false,
-  display_order: 'LIGHTS_FIRST' // or 'LIGHTS_FIRST'
+  display_order: 'LIGHTS_FIRST'
 }
 
 Page(
@@ -38,7 +38,8 @@ Page(
       groupName: '',
       lights: [],
       scenes: [],
-      isLoading: false
+      isLoading: false,
+      error: null // Aggiunto stato errore per coerenza
     },
 
     widgets: [],
@@ -49,14 +50,12 @@ Page(
 
       let params = {}
       if (typeof p === 'string' && p.startsWith('{')) {
-          // Se riceviamo una stringa JSON (il nostro fix)
           try {
               params = JSON.parse(p)
           } catch (e) {
               logger.error('Failed to parse params string:', e)
           }
       } else if (typeof p === 'object' && p !== null) {
-          // Se riceviamo un oggetto diretto (il comportamento di default)
           params = p
       }
 
@@ -71,15 +70,16 @@ Page(
 
     build() {
       setPageBrightTime({ brightTime: 60000 })
-      // NUOVO CHECK DI SICUREZZA QUI
+
       if (this.state.groupId) {
           this.loadGroupDetail()
       } else {
-          // Se non c'è ID, mostra un errore a schermo.
-          this.renderErrorState("ID Gruppo Mancante. Torna Indietro.")
+          this.state.error = "ID Gruppo Mancante. Torna Indietro."
+          this.renderPage()
       }
     },
 
+    // --- HELPER WIDGET ---
     createTrackedWidget(type, props) {
       const w = createWidget(type, props)
       if (!this.widgets) this.widgets = []
@@ -101,35 +101,64 @@ Page(
 
     loadGroupDetail() {
       this.state.isLoading = true
-      this.renderPage()
+      this.state.error = null
+      this.renderPage() 
+      
+      logger.log('Inizio richiesta GET_GROUP_DETAIL per Gruppo ID:', this.state.groupId)
 
       this.request({
         method: 'GET_GROUP_DETAIL',
         params: { groupId: this.state.groupId }
       })
         .then(result => {
+          logger.log('Risposta App Side ricevuta:', result)
+          this.state.isLoading = false
+          
           if (result.success && result.data) {
-            this.state.lights = result.data.lights || []
+            
+            const rawLights = result.data.lights || [];
+            
+            // Logghiamo le luci RAW appena ricevute
+            logger.log('Luci RAW ricevute (totale):', rawLights.length)
+            
+            // Pulizia e Filtraggio (il filtro che abbiamo aggiunto prima)
+            this.state.lights = rawLights.filter(light => 
+                light && 
+                light.id && 
+                typeof light.ison !== 'undefined'
+            );
+            
+            // Logghiamo le luci filtrate
+            logger.log('Luci filtrate e valide (totale):', this.state.lights.length)
+            
             this.state.scenes = result.data.scenes || []
-            this.state.isLoading = false
             this.renderPage()
           } else {
+            // Logghiamo il fallimento della risposta
+            logger.error('Risposta App Side fallita:', result.message || 'Nessun messaggio di errore specificato.')
             this.state.isLoading = false
-            this.renderErrorState('Failed to load detail')
+            this.state.error = 'Failed to load detail'
+            this.renderPage()
           }
         })
         .catch(err => {
-          logger.error('Load group detail error:', err)
+          // ... (la gestione degli errori rimane la stessa)
+          const errorMessage = (err && err.message) 
+            ? err.message 
+            : getText('NETWORK_ERROR') || 'Unknown Network Error (Check App Side)' 
+            
+          logger.error('Load group detail error (CATCH):', errorMessage, err)
+
           this.state.isLoading = false
-          this.renderErrorState(err.message || 'Network Error')
+          this.state.error = errorMessage
+          this.renderPage()
         })
     },
 
+    // ... toggleGroup, toggleLight, applyScene, navigateToLightDetail (rimangono invariate nella logica)
     toggleGroup() {
       const anyOn = this.state.lights.some(light => !!light.ison)
       const newState = !anyOn
-
-      logger.log(`Toggle group ${this.state.groupName} to ${newState}`)
 
       this.request({
         method: 'TOGGLE_GROUP',
@@ -141,10 +170,8 @@ Page(
       })
         .then(result => {
           if (result.success) {
-            logger.log('Group toggled successfully. Updating state.')
-            // Aggiorna lo stato locale
             this.state.lights.forEach(light => {
-                 light.ison = newState // Aggiorna lo stato annidato
+                 light.ison = newState
             })
             this.renderPage()
           }
@@ -153,8 +180,6 @@ Page(
     },
 
     toggleLight(light) {
-      logger.log('Toggle light:', light.name)
-
       const currentOnState = light.ison;
       const newState = !currentOnState;
 
@@ -167,7 +192,7 @@ Page(
       })
         .then(result => {
           if (result.success) {
-                light.ison = newState // Aggiorna lo stato annidato
+                 light.ison = newState
             this.renderPage()
           }
         })
@@ -175,8 +200,6 @@ Page(
     },
 
     applyScene(scene) {
-      logger.log('Apply scene:', scene.name)
-
       this.request({
         method: 'APPLY_SCENE',
         params: {
@@ -186,8 +209,6 @@ Page(
       })
         .then(result => {
           if (result.success) {
-            logger.log('Scene applied successfully')
-            // Aggiorna lo stato delle luci dopo un breve ritardo per sincronizzare
             setTimeout(() => this.loadGroupDetail(), 500)
           }
         })
@@ -195,8 +216,6 @@ Page(
     },
 
     navigateToLightDetail(light) {
-      logger.log('Navigate to light detail:', light.name)
-
       const paramsString = JSON.stringify({
           lightId: light.id,
           lightName: light.name
@@ -208,10 +227,11 @@ Page(
       })
     },
 
-    getLightSwatchColor(light) {
+    // --- HELPER DATA FUNCTION ---
 
+    getLightSwatchColor(light) {
       if (!light.ison) {
-        return COLORS.inactive; // Spenta: colore grigio
+        return COLORS.inactive;
       }
 
       const isColorModeActive = light.colormode === 'hs' || light.colormode === 'xy';
@@ -227,265 +247,80 @@ Page(
           return 0xFFCC66;
         }
       }
-
-      // Accesa in modalità bianco
-      return 0xFFCC66; // Giallo caldo
+      return 0xFFCC66;
     },
-    // ----------------------------------------------
 
-    // --- RENDERING ---
-
-    renderErrorState(msg) {
-      this.clearAllWidgets()
-      this.createTrackedWidget(widget.TEXT, {
-        x: px(20), y: px(200), w: px(440), h: px(100),
-        text: `ERRORE: ${msg}`, text_size: px(24), color: 0xFF0000,
-        align_h: align.CENTER_H, align_v: align.CENTER_V
-      })
-      this.createTrackedWidget(widget.BUTTON, {
-        x: px(140), y: px(350), w: px(200), h: px(60),
-        text: 'RETRY', normal_color: COLORS.highlight, press_color: 0x333333,
-        click_func: () => this.build()
-      })
-    },
+    // --- RENDERING MAIN ENTRY ---
 
     renderPage() {
       this.clearAllWidgets()
 
-      // Background
-      this.createTrackedWidget(widget.FILL_RECT, {
-        x: 0, y: 0, w: px(480), h: px(480), color: COLORS.background
-      })
-
-      // Header: Nome del Gruppo
-      this.createTrackedWidget(widget.TEXT, {
-        x: 0, y: 0, w: px(480), h: px(50),
-        text: this.state.groupName || getText('GROUP_DETAIL'),
-        text_size: px(34),
-        color: COLORS.text,
-        align_h: align.CENTER_H,
-        align_v: align.TOP
-      })
-
-      // Bottone Indietro (Back)
-      /*this.createTrackedWidget(widget.TEXT, {
-        x: px(10), y: px(10), w: px(60), h: px(40),
-        text: '<', text_size: px(40), color: COLORS.highlight,
-        click_func: () => back()
-      })*/
-
-      // Loading State
-      if (this.state.isLoading) {
-        this.createTrackedWidget(widget.TEXT, {
-          x: 0, y: px(200), w: px(480), h: px(50),
-          text: 'Loading...', text_size: px(28), color: COLORS.inactive,
-          align_h: align.CENTER_H
-        })
-        return
-      }
-
-      // 2. Pulsante Toggle Globale (sotto l'header)
-      this.renderGlobalToggle()
-
-      // 3. Contenuto Scrollabile (Scene e Luci)
-      this.renderGroupContentScroll()
-    },
-
-    renderGlobalToggle() {
-      const anyOn = this.state.lights.some(light => !!light.ison)
-      const buttonColor = anyOn ? COLORS.toggleOn : COLORS.toggleOff
-
-      this.createTrackedWidget(widget.BUTTON, {
-        x: px(80), y: px(60), w: px(320), h: px(60),
-        text: anyOn ? getText('GROUP_OFF') : getText('GROUP_ON'),
-        text_size: px(28),
-        normal_color: buttonColor,
-        press_color: 0x333333,
-        radius: px(30),
-        click_func: () => this.toggleGroup()
-      })
-    },
-
-// Nel file group-detail.js (sostituisci l'intera funzione renderGroupContentScroll)
-
-    renderGroupContentScroll() {
+      // 1. Prepara i dati della lista (ViewModel)
       const data = []
       const dataConfig = []
       let currentStart = 0
 
-      // 1. Aggiungi le SCENE
+      // Aggiungi le SCENE
       if (USER_SETTINGS.show_scenes && this.state.scenes.length > 0) {
-          data.push({ type: 'header', name: 'Scene' })
-          dataConfig.push({ start: currentStart, end: currentStart, type_id: 1 }) // Header type_id 1
+          data.push({ type: 'header', name: getText('SCENES') })
+          dataConfig.push({ start: currentStart, end: currentStart, type_id: 1 })
           currentStart++
 
           this.state.scenes.forEach(scene => {
-              data.push({ ...scene, type: 'scene' })
+               data.push({ ...scene, type: 'scene' })
           })
-          dataConfig.push({ start: currentStart, end: currentStart + this.state.scenes.length - 1, type_id: 2 }) // Scene type_id 2
+          dataConfig.push({ start: currentStart, end: currentStart + this.state.scenes.length - 1, type_id: 2 })
           currentStart += this.state.scenes.length
       }
 
-      // 2. Aggiungi le LUCI
+      // Aggiungi le LUCI
       if (this.state.lights.length > 0) {
-          data.push({ type: 'header', name: 'Luci', name_color: COLORS.text })
+          data.push({ type: 'header', name: getText('LIGHTS') || 'LIGHTS', name_color: COLORS.text })
           dataConfig.push({ start: currentStart, end: currentStart, type_id: 1 })
           currentStart++
 
           this.state.lights.forEach(light => {
               const isOn = !!light.ison;
-
-              logger.log(`Light ${light.id} (${light.name}): ON state is [${isOn}], RAW ON state is [${light.ison}], type: ${typeof light.ison}`);
-              // ----------------------------------------------------
-
-
               const modelInfo = LIGHT_MODELS[light.modelid] || LIGHT_MODELS.default
-              const baseIconName = modelInfo.icon
-
-              const swatchColor = this.getLightSwatchColor(light)
 
               let stateSuffix = '_off'
-
               if (isOn) {
                   const isColorModeActive = light.colormode === 'hs' || light.colormode === 'xy'
-
-                  if (isColorModeActive) {
-                      stateSuffix = '_color'
-
-                  } else {
-                      stateSuffix = '_on'
-                  }
+                  stateSuffix = isColorModeActive ? '_color' : '_on'
               }
-              // Testo dello stato per la seconda riga
-              const statusText = isOn
-                  ? `Bri: ${Math.round(light.bri / 254 * 100)}%`
-                  : 'Spenta';
+              const finalIconPath = `icons/${modelInfo.icon}${stateSuffix}.png`
 
-              const finalIconPath = `icons/${baseIconName}${stateSuffix}.png`
+              const statusText = isOn
+                  ? `${getText('BRIGHTNESS') || 'Bri'}: ${Math.round(light.bri / 254 * 100)}%`
+                  : getText('OFF') || 'Spenta';
 
               data.push({
-                  ...light,
+                  raw: light,
                   type: 'light',
                   icon: finalIconPath,
                   status_text: statusText,
-                  color: isOn ? 0xFFFFFF : COLORS.inactive, // Colore per il campo 'name'
-
-                  // CHIAVI PER IL CAMPIONE DI COLORE
-                  swatch_bg_color: swatchColor, // Colore dinamico per il background
-                  swatch_text: ' ' // Testo fittizio (spazio) per attivare il text_view
+                  color: isOn ? 0xFFFFFF : COLORS.inactive,
+                  swatch_bg_color: this.getLightSwatchColor(light),
+                  swatch_text: ' ',
+                  name: light.name
               })
           })
           dataConfig.push({ start: currentStart, end: currentStart + this.state.lights.length - 1, type_id: 3 })
       }
+      logger.log(`ScrollList Data Prepared: Headers/Items total = ${data.length}`)
 
-      if (data.length === 0) {
-         this.createTrackedWidget(widget.TEXT, {
-          x: 0, y: px(200), w: px(480), h: px(50),
-          text: 'Nessuna luce o scena trovata.', text_size: px(24), color: COLORS.inactive,
-          align_h: align.CENTER_H
-        })
-        return
-      }
+      const viewData = { data, dataConfig, lights: this.state.lights }
 
-      logger.log(`ScrollList items: ${data.length}, data_type_config count: ${dataConfig.length}`)
 
-      const itemConfig = [
-        // Type 1: Header (Titolo Sezione)
-        {
-          type_id: 1,
-          item_bg_color: COLORS.background,
-          item_bg_radius: px(0),
-          item_height: px(50),
-          text_view: [
-            { x: px(20), y: px(10), w: px(440), h: px(40), key: 'name', color: COLORS.sectionHeader, text_size: px(26) },
-          ],
-          text_view_count: 1,
-          image_view: [],
-          image_view_count: 0
-        },
-        // Type 2: Scene (Pulsante di Scena)
-        {
-          type_id: 2,
-          item_bg_color: COLORS.sceneBg,
-          item_bg_radius: px(10),
-          item_height: px(80),
-          text_view: [
-            { x: px(20), y: px(25), w: px(440), h: px(50), key: 'name', color: 0xFFFFFF, text_size: px(30) },
-          ],
-          text_view_count: 1,
-          image_view: [],
-          image_view_count: 0
-        },
-        // Type 3: Light item layout (CON CAMPIONE DI COLORE E TESTO CORRETTO)
-        {
-          type_id: 3,
-          item_bg_color: COLORS.lightBg,
-          item_bg_radius: px(10),
-          item_height: px(90),
-          text_view: [
-            // RIGA 1: Campione di Colore (Swatch)
-            {
-                x: px(20), y: px(20), w: px(16), h: px(16),
-                key: 'swatch_text', // Prende il valore ' ' (spazio) dal dato
-                item_bg_color: swatch_bg_color, // CRITICO: Usa la chiave dinamica del dato
-                color: 0x00000000, // Testo trasparente
-                text_size: 1, // Dimensione minima
-                item_bg_radius: px(4) // Bordo arrotondato
-            },
-
-            // RIGA 2: Nome della luce (Spostato a destra)
-            { x: px(45), y: px(15), w: px(330), h: px(30), key: 'name', color: 0xFFFFFF, text_size: px(28), align_h: align.LEFT, action: true },
-
-            // RIGA 3: Status (es. Bri: 80% / Spenta) (Spostato a destra)
-            { x: px(45), y: px(45), w: px(330), h: px(25), key: 'status_text', color: COLORS.inactive, text_size: px(20), align_h: align.LEFT },
-          ],
-          text_view_count: 3, // Deve essere 3
-
-          // Icona/Bottone Toggle
-          image_view: [
-            { x: px(380), y: px(10), w: px(70), h: px(70), key: 'icon', auto_scale: true, action: true }
-          ],
-          image_view_count: 1
-        },
-      ]
-// ... (il resto della funzione renderGroupContentScroll continua qui)
-
-      this.listWidget = this.createTrackedWidget(widget.SCROLL_LIST, {
-        x: 0,
-        y: px(140), // Inizia sotto il Toggle Globale
-        w: px(480),
-        h: px(340), // Prende il resto della pagina
-        item_space: px(10),
-
-        item_config: itemConfig,
-        item_config_count: itemConfig.length,
-
-        // Dati e Configurazione
-        data_type_config: dataConfig,
-        data_type_config_count: dataConfig.length,
-        data_array: data,
-        data_count: data.length,
-
-        item_click_func: (list, index, data_key) => {
-            const item = data[index]
-
-            if (item.type === 'scene') {
-                this.applyScene(item)
-            } else if (item.type === 'light') {
-                if (data_key === 'icon') {
-                    // Click sul Toggle della luce
-                    this.toggleLight(item)
-                } else {
-                     // Click sul Nome/generico (Naviga al dettaglio)
-                    this.navigateToLightDetail(item)
-                }
-            }
-        }
-      })
-/*
-      if (!this.listWidget) {
-         logger.error("FATAL: SCROLL_LIST creation failed in detail page. The configuration failed.");
-      }*/
+      // 2. Chiama la funzione di layout
+      renderGroupDetailPage(this, this.state, viewData, {
+        toggleGroup: () => this.toggleGroup(),
+        retry: () => this.build(),
+        // Passiamo l'oggetto light/scene originale alle funzioni di azione
+        applyScene: (item) => this.applyScene(item.raw),
+        toggleLight: (item) => this.toggleLight(item),
+        navigateToLightDetail: (item) => this.navigateToLightDetail(item)
+      }, COLORS)
     },
 
     onDestroy() {

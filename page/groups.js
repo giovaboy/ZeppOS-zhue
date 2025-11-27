@@ -1,24 +1,13 @@
 import { BasePage } from '@zeppos/zml/base-page'
-import { px } from '@zos/utils'
+import { createWidget, deleteWidget } from '@zos/ui'
+import { exit, push } from '@zos/router'
+import { getText } from '@zos/i18n'
 import { onGesture, onKey, GESTURE_RIGHT, KEY_BACK, KEY_EVENT_CLICK } from '@zos/interaction'
 import { setPageBrightTime } from '@zos/display'
+import { renderGroupsPage } from 'zosLoader:./groups.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
-import { getText } from '@zos/i18n'
-import { createWidget, deleteWidget, widget, align, prop } from '@zos/ui'
-import { exit, home, push } from '@zos/router'
 
 const logger = getLogger('hue-groups-page')
-
-const COLORS = {
-  background: 0x000000,
-  text: 0xffffff,
-  highlight: 0x0055ff,
-  cardBg: 0x222222,
-  activeTab: 0x0055ff,
-  activeTabText: 0xffffff,
-  inactiveTab: 0x1a1a1a,
-  inactiveTabText: 0xAAAAAA
-}
 
 Page(
   BasePage({
@@ -26,11 +15,11 @@ Page(
       rooms: [],
       zones: [],
       currentTab: 'ROOMS',
-      isLoading: false
+      isLoading: false,
+      error: null
     },
 
     widgets: [],
-    listWidget: null,
 
     onInit() {
       logger.debug('Groups page onInit')
@@ -38,27 +27,30 @@ Page(
 
     build() {
       setPageBrightTime({ brightTime: 60000 })
+
+      // Setup interazioni fisiche
       onGesture({
         callback: (event) => {
           if (event === GESTURE_RIGHT) {
-            logger.debug('GESTURE_RIGHT')
             exit()
           }
           return true
         },
       })
       onKey({
-      callback: (key, keyEvent) => {
-        if (key === KEY_BACK && keyEvent === KEY_EVENT_CLICK) {
-          logger.debug('KEY_BACK click')
-          exit()
-        }
-        return true
-      },
-    })
+        callback: (key, keyEvent) => {
+          if (key === KEY_BACK && keyEvent === KEY_EVENT_CLICK) {
+            exit()
+          }
+          return true
+        },
+      })
+
+      // Avvia caricamento
       this.loadGroupsData()
     },
 
+    // --- HELPER WIDGET ---
     createTrackedWidget(type, props) {
       const w = createWidget(type, props)
       if (!this.widgets) this.widgets = []
@@ -67,221 +59,124 @@ Page(
     },
 
     clearAllWidgets() {
-      if (this.widgets) {
-        this.widgets.forEach(w => {
-          try { deleteWidget(w) } catch (e) {}
-        })
-      }
+      this.widgets.forEach(w => {
+        try { deleteWidget(w) } catch (e) {}
+      })
       this.widgets = []
-      this.listWidget = null
     },
 
-    clearListWidget() {
-      if (this.listWidget) {
-        try { deleteWidget(this.listWidget) } catch (e) {}
-        this.listWidget = null
-      }
-    },
+    // --- DATA LOGIC ---
 
     loadGroupsData() {
       this.state.isLoading = true
-      if (this.widgets.length === 0) this.renderBaseLayout()
+      this.state.error = null
+      this.renderPage() // Mostra stato loading/scheletro
 
       this.request({ method: 'GET_GROUPS' })
         .then(result => {
+          this.state.isLoading = false
           if (result.success && result.data) {
             this.state.rooms = result.data.rooms || []
             this.state.zones = result.data.zones || []
-            this.renderCurrentTabList()
+            this.renderPage()
           } else {
-             this.renderErrorState('Failed to load groups')
+             this.state.error = 'Failed to load groups'
+             this.renderPage()
           }
         })
         .catch(err => {
           logger.error('Load groups error:', err)
-          this.renderErrorState(err.message || "Network Error")
+          this.state.isLoading = false
+          this.state.error = err.message || "Network Error"
+          this.renderPage()
         })
     },
 
-    toggleGroup(group) {
-      logger.log('Toggle group:', group.name)
+    toggleGroup(groupRaw) {
+      logger.log('Toggle group:', groupRaw.name)
 
-      const currentOnState = group.on_off;
+      const currentOnState = groupRaw.on_off; // Assicurati che questo campo esista nel raw
       const newState = !currentOnState;
+
+      // Aggiornamento ottimistico UI (opzionale, per reattività)
+      // groupRaw.on_off = newState;
+      // this.renderPage();
 
       this.request({
         method: 'TOGGLE_GROUP',
         params: {
-          groupId: group.id,
+          groupId: groupRaw.id,
           state: newState
         }
       })
         .then(result => {
           if (result.success) {
-                group.on_off = newState // Aggiorna lo stato annidato
+            // Aggiorna lo stato reale
+            groupRaw.on_off = newState // Nota: questo modifica l'oggetto dentro state.rooms/zones
+
+            // Aggiorna anche anyOn se presente
+            if (groupRaw.hasOwnProperty('anyOn')) {
+                 groupRaw.anyOn = newState;
+            }
+
             this.renderPage()
           }
         })
         .catch(err => logger.error('Toggle group error:', err))
     },
 
-    renderErrorState(msg) {
-      this.clearAllWidgets()
-      this.createTrackedWidget(widget.TEXT, {
-        x: px(20), y: px(200), w: px(440), h: px(100),
-        text: `ERROR: ${msg}`, text_size: px(24), color: 0xFF0000,
-        align_h: align.CENTER_H, align_v: align.CENTER_V
-      })
-      this.createTrackedWidget(widget.BUTTON, {
-        x: px(140), y: px(350), w: px(200), h: px(60),
-        text: 'RETRY', normal_color: COLORS.highlight, press_color: 0x333333,
-        click_func: () => this.loadGroupsData()
-      })
-    },
-
-    renderBaseLayout() {
-      this.clearAllWidgets()
-
-      this.createTrackedWidget(widget.FILL_RECT, {
-        x: 0, y: 0, w: px(480), h: px(480), color: COLORS.background
-      })
-
-      this.createTrackedWidget(widget.TEXT, {
-        x: 0, y: 0, w: px(480), h: px(50),
-        text: getText('GROUPS'), text_size: px(36),
-        color: COLORS.text, align_h: align.CENTER_H, align_v: align.TOP
-      })
-
-      this.renderTabs()
-
-      this.createTrackedWidget(widget.BUTTON, {
-        x: px(140), y: px(420), w: px(200), h: px(50),
-        text: 'REFRESH', radius: px(25),
-        normal_color: 0x333333, press_color: COLORS.highlight,
-        click_func: () => this.loadGroupsData()
-      })
-    },
-
-    renderTabs() {
-      const tabY = px(60)
-      const tabH = px(50)
-      const tabW = px(200)
-
-      const isRooms = this.state.currentTab === 'ROOMS'
-      this.createTrackedWidget(widget.BUTTON, {
-        x: px(30), y: tabY, w: tabW, h: tabH,
-        text: getText('ROOMS'),
-        color: isRooms ? COLORS.activeTabText : COLORS.inactiveTabText,
-        normal_color: isRooms ? COLORS.activeTab : COLORS.inactiveTab,
-        press_color: COLORS.highlight,
-        radius: px(10),
-        click_func: () => this.switchTab('ROOMS')
-      })
-
-      const isZones = this.state.currentTab === 'ZONES'
-      this.createTrackedWidget(widget.BUTTON, {
-        x: px(250), y: tabY, w: tabW, h: tabH,
-        text: getText('ZONES'),
-        color: isZones ? COLORS.activeTabText : COLORS.inactiveTabText,
-        normal_color: isZones ? COLORS.activeTab : COLORS.inactiveTab,
-        press_color: COLORS.highlight,
-        radius: px(10),
-        click_func: () => this.switchTab('ZONES')
-      })
-    },
-
     switchTab(tabName) {
       if (this.state.currentTab === tabName) return
       this.state.currentTab = tabName
-
-      this.renderTabs()
-      this.renderCurrentTabList()
+      this.renderPage()
     },
 
-    renderCurrentTabList() {
-      this.clearListWidget()
+    // --- RENDERING ---
 
-      const data = this.state.currentTab === 'ROOMS' ? this.state.rooms : this.state.zones
+    renderPage() {
+      this.clearAllWidgets()
 
-      const listData = data.map(item => ({
+      // 1. Prepara i dati per la lista (ViewModel)
+      //    Trasformiamo i dati grezzi in ciò che la SCROLL_LIST deve visualizzare
+      const rawList = this.state.currentTab === 'ROOMS' ? this.state.rooms : this.state.zones
+
+      const viewData = rawList.map(item => ({
         name: item.name,
         status: `${item.lights?.length || 0} luci`,
-        on_off: (item.anyOn === true) ? getText('ON') : getText('OFF'),
-        raw: item
+        // Logica visuale: se anyOn è true scrivi ON, altrimenti OFF
+        on_off: (item.anyOn === true || item.on_off === true) ? getText('ON') : getText('OFF'),
+        raw: item // Manteniamo il riferimento all'oggetto originale per le azioni
       }))
 
-      if (listData.length === 0) {
-        this.listWidget = this.createTrackedWidget(widget.TEXT, {
-          x: 0, y: px(200), w: px(480), h: px(50),
-          text: `Nessuna ${this.state.currentTab === 'ROOMS' ? 'stanza' : 'zona'} trovata`,
-          text_size: px(24), color: 0x666666,
-          align_h: align.CENTER_H
-        })
-        return
-      }
+      // 2. Chiama il layout
+      renderGroupsPage(this, this.state, viewData, {
+          switchTab: (tab) => this.switchTab(tab),
+          refresh: () => this.loadGroupsData(),
 
-      logger.log(`RENDER: ${this.state.currentTab} list items:`, listData.map(d => d.name).join(', '))
+          // Gestore Click Lista Complesso
+          handleListItemClick: (index, data_key) => {
+              const item = viewData[index]
+              if (!item) return;
 
-      const dataConfig = [{ start: 0, end: listData.length - 1, type_id: 1 }]
+              logger.debug('List click:', item.raw.name, 'key:', data_key)
 
-      // 1. LA LISTA (Creazione del widget CON dati e con px() ovunque sia possibile)
-      this.listWidget = this.createTrackedWidget(widget.SCROLL_LIST, {
-        x: 0,
-        y: px(120),
-        w: px(480),
-        h: px(290),
-        item_space: px(10),
-
-        item_config: [{
-          type_id: 1,
-          item_bg_color: COLORS.cardBg,
-          item_bg_radius: 10,
-          text_view: [
-            // TUTTI i valori di posizione/dimensione usano px()
-            { x: px(45), y: px(20), w: px(280), h: px(30), key: 'name', color: 0xFFFFFF, text_size: px(28), align_h: align.LEFT, action: true },
-            { x: px(45), y: px(55), w: px(200), h: px(25), key: 'status', color: 0xAAAAAA, text_size: px(20), align_h: align.LEFT },
-            { x: px(340), y: px(30), w: px(100), h: px(40), key: 'on_off', color: 0xFFFFFF, text_size: px(28), action: true}
-          ],
-          text_view_count: 3,
-          image_view: [],
-          image_view_count: 0,
-          item_height: px(100)
-        }],
-        item_config_count: 1,
-
-        // 2. DATI BINDING IMMEDIATO (come nell'esempio ufficiale)
-        data_type_config: dataConfig,
-        data_type_config_count: dataConfig.length,
-        data_array: listData,
-        data_count: listData.length,
-
-        // 3. FUNZIONE CLICK IMMEDIATA (come nell'esempio ufficiale)
-        item_click_func: (list, index) => {
-            const item = listData[index]
-            logger.debug('item >',{
-                    groupId: item.raw.id,
-                    groupType: item.raw.type,
-                    groupName: item.raw.name
-                })
-            const paramsString = JSON.stringify({
-                    groupId: item.raw.id,
-                    groupType: item.raw.type,
-                    groupName: item.raw.name
-            })
-            if (data_key === 'on_off') {
-                    this.toggleGroup(item)
-                } else {
-              push({
-                  url: 'page/group-detail',
-                  params: paramsString
-              })
-            }
-        }
+              if (data_key === 'on_off') {
+                  // Click sul testo ON/OFF -> Toggle
+                  this.toggleGroup(item.raw)
+              } else {
+                  // Click sulla riga -> Dettaglio
+                  const paramsString = JSON.stringify({
+                      groupId: item.raw.id,
+                      groupType: item.raw.type,
+                      groupName: item.raw.name
+                  })
+                  push({
+                      url: 'page/group-detail',
+                      params: paramsString
+                  })
+              }
+          }
       })
-
-      /*if (!this.listWidget) {
-         logger.error("FATAL: SCROLL_LIST creation failed (this.listWidget is null) even after final fix.");
-      }*/
     },
 
     onDestroy() {

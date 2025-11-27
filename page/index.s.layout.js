@@ -1,305 +1,186 @@
 import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
-import { createWidget, deleteWidget, widget, align, prop, text_style, event, getTextLayout, anim_status, setStatusBarVisible } from '@zos/ui'
+import { widget, align, text_style, anim_status, setStatusBarVisible } from '@zos/ui'
 import { getText } from '@zos/i18n'
-import { getLogger } from '../utils/logger.js'
 import { COLORS } from '../utils/constants.js'
 
-const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo();
-const TEXT_SIZE = DEVICE_WIDTH / 16;
+// Costanti Globali del Dispositivo (Round)
+export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
+export const TEXT_SIZE = px(30); // DEVICE_WIDTH / 16;
 
-const logger = getLogger('hue-on-off-layout')
+const STATES = {
+    LOADING: 'LOADING',
+    SEARCHING_BRIDGE: 'SEARCHING_BRIDGE',
+    WAITING_FOR_PRESS: 'WAITING_FOR_PRESS',
+    FETCHING_DATA: 'FETCHING_DATA',
+    ERROR: 'ERROR',
+    SUCCESS: 'SUCCESS'
+}
 
 setStatusBarVisible(false)
 
-export const LOADING_TEXT_WIDGET = {
-  x: 0,
-  y: (DEVICE_HEIGHT/2)+155,
-  w: DEVICE_WIDTH, h: TEXT_SIZE*1.5,
-  text_size: TEXT_SIZE,
-  color: COLORS.text,
-  align_h: align.CENTER_H,
-  align_v: align.CENTER_V,
-  text_style: text_style.WRAP,
-  text: getText('loading')
-};
+export function renderMainWidgets(pageContext, state, callbacks = {}) {
+    const { animateSpinner, animateProgressBar, retryFunc } = callbacks
+    const { currentState, error, progress } = state
 
-export const LOADING_IMG_ANIM_WIDGET = {//155*155
-    anim_path: 'anim',
-    anim_prefix: 'loading',
-    anim_ext: 'png',
-    anim_fps: 24,
-    anim_size: 54,
-    repeat_count: 0,
-    anim_status: anim_status.START,
-    x: (DEVICE_WIDTH/2)-(155/2), y: DEVICE_HEIGHT/2
-  };
-
-export function createLayout(lights = [], isPairing = false) {
-  if (isPairing) {
-    return createPairingLayout()
-  }
-  
-  if (lights.length === 0) {
-    return createInitialLayout()
-  }
-  
-  return createLightsLayout(lights)
-}
-
-function createInitialLayout() {
-  return {
-    type: 'page',
-    children: [
-      {
-        type: 'fill-rect',
-        x: 0,
-        y: 0,
-        w: DEVICE_WIDTH,
-        h: DEVICE_HEIGHT,
+    // Sfondo universale
+    pageContext.createTrackedWidget(widget.FILL_RECT, {
+        x: 0, y: 0, w: DEVICE_WIDTH, h: DEVICE_HEIGHT,
         color: COLORS.background
-      },
-      {
-        type: 'text',
-        id: 'title',
-        x: 0,
-        y: px(30),
-        w: DEVICE_WIDTH,
-        h: px(60),
-        text: 'Hue Lights',
-        text_size: px(42),
-        color: COLORS.text,
-        align_h: 'center',
-        align_v: 'center'
-      },
-      {
-        type: 'text',
-        id: 'status',
-        x: 0,
-        y: px(100),
-        w: DEVICE_WIDTH,
-        h: px(40),
-        text: 'Bridge not connected',
-        text_size: px(26),
-        color: COLORS.error,
-        align_h: 'center',
-        align_v: 'center'
-      },
-      {
-        type: 'button',
-        id: 'pairButton',
-        x: px(90),
-        y: px(200),
-        w: px(300),
-        h: px(60),
-        text: 'PAIR BRIDGE',
-        text_size: px(26),
-        normal_color: COLORS.warning,
-        press_color: COLORS.highlight,
-        radius: px(10)
-      }
-    ]
-  }
-}
+    })
 
-function createPairingLayout() {
-  return {
-    type: 'page',
-    children: [
-      {
-        type: 'fill-rect',
-        x: 0,
-        y: 0,
-        w: DEVICE_WIDTH,
-        h: DEVICE_HEIGHT,
-        color: COLORS.warning
-      },
-      {
-        type: 'text',
-        x: 0,
-        y: px(80),
-        w: DEVICE_WIDTH,
-        h: px(60),
-        text: 'Hue Bridge',
-        text_size: px(36),
-        color: COLORS.warningText,
-        align_h: 'center',
-        align_v: 'center'
-      },
-      {
-        type: 'circle',
-        id: 'bridgeIcon',
-        center_x: DEVICE_WIDTH / 2,
-        center_y: px(200),
-        radius: px(50),
-        color: COLORS.warningText
-      },
-      {
-        type: 'text',
-        id: 'pairingText',
-        x: px(40),
-        y: px(280),
-        w: DEVICE_WIDTH - px(80),
-        h: px(120),
-        text: 'Pairing! Push the button on your Hue bridge.',
-        text_size: px(28),
-        color: COLORS.warningText,
-        align_h: 'center',
-        align_v: 'center',
-        text_style: 'wrap'
-      },
-      {
-        type: 'fill-rect',
-        id: 'progress',
-        x: px(190),
-        y: px(420),
-        w: px(10),
-        h: px(6),
-        color: COLORS.warningText,
-        radius: px(3)
-      }
-    ]
-  }
-}
+    switch (currentState) {
+        case STATES.LOADING:
+            // --- GESTIONE STATO LOADING ---
+            // 1. Testo
+            pageContext.createTrackedWidget(widget.TEXT, {
+                x: 0,
+                y: (DEVICE_HEIGHT / 2) + 60,
+                w: DEVICE_WIDTH, h: 40,
+                text_size: 28,
+                color: COLORS.text,
+                align_h: align.CENTER_H,
+                align_v: align.CENTER_V,
+                text_style: text_style.WRAP,
+                text: getText('loading')
+            });
 
-function createLightsLayout(lights) {
-  const lightItems = lights.map((light, index) => ({
-    type: 'group',
-    y: px(160 + index * 85),
-    children: [
-      {
-        type: 'fill-rect',
-        x: px(20),
-        y: 0,
-        w: DEVICE_WIDTH - px(40),
-        h: px(75),
-        color: getLightBgColor(light),
-        radius: px(10)
-      },
-      {
-        type: 'text',
-        x: px(30),
-        y: px(10),
-        w: DEVICE_WIDTH - px(60),
-        h: px(40),
-        text: light.name,
-        text_size: px(32),
-        color: light.ison ? COLORS.text : COLORS.inactive
-      },
-      {
-        type: 'text',
-        x: px(30),
-        y: px(45),
-        w: DEVICE_WIDTH - px(60),
-        h: px(30),
-        text: light.reachable ? `Brightness: ${light.bri}` : 'Unreachable',
-        text_size: px(24),
-        color: light.ison ? COLORS.text : COLORS.inactive
-      },
-      {
-        type: 'button',
-        id: `light_${index}`,
-        x: px(20),
-        y: 0,
-        w: DEVICE_WIDTH - px(40),
-        h: px(75),
-        text: '',
-        normal_color: 0x00000000,
-        press_color: 0x33ffffff,
-        radius: px(10)
-      }
-    ]
-  }))
+            // 2. Animazione (IMG_ANIM è nativa, parte da sola con anim_status.START)
+            pageContext.createTrackedWidget(widget.IMG_ANIM, {
+                anim_path: 'anim',
+                anim_prefix: 'loading',
+                anim_ext: 'png',
+                anim_fps: 24,
+                anim_size: 54,
+                repeat_count: 0, // Infinito
+                anim_status: anim_status.START, // Parte subito
+                x: (DEVICE_WIDTH / 2) - 54,
+                y: (DEVICE_HEIGHT / 2) - 100
+            });
+            break;
 
-  return {
-    type: 'page',
-    children: [
-      {
-        type: 'fill-rect',
-        x: 0,
-        y: 0,
-        w: DEVICE_WIDTH,
-        h: DEVICE_HEIGHT,
-        color: COLORS.background
-      },
-      {
-        type: 'text',
-        x: 0,
-        y: px(20),
-        w: DEVICE_WIDTH,
-        h: px(50),
-        text: 'Hue Lights',
-        text_size: px(38),
-        color: COLORS.text,
-        align_h: 'center',
-        align_v: 'center'
-      },
-      {
-        type: 'text',
-        id: 'status',
-        x: 0,
-        y: px(75),
-        w: DEVICE_WIDTH,
-        h: px(35),
-        text: `${lights.length} lights`,
-        text_size: px(24),
-        color: COLORS.text,
-        align_h: 'center',
-        align_v: 'center'
-      },
-      ...lightItems.slice(0, 3), // Show up to 3 lights (scrolling would need scroll_list)
-      {
-        type: 'button',
-        id: 'allOnButton',
-        x: px(30),
-        y: DEVICE_HEIGHT - px(110),
-        w: px(190),
-        h: px(50),
-        text: 'ALL ON',
-        text_size: px(22),
-        normal_color: COLORS.highlight,
-        press_color: COLORS.success,
-        radius: px(8)
-      },
-      {
-        type: 'button',
-        id: 'allOffButton',
-        x: DEVICE_WIDTH - px(220),
-        y: DEVICE_HEIGHT - px(110),
-        w: px(190),
-        h: px(50),
-        text: 'ALL OFF',
-        text_size: px(22),
-        normal_color: COLORS.highlight,
-        press_color: COLORS.error,
-        radius: px(8)
-      },
-      {
-        type: 'button',
-        id: 'refreshButton',
-        x: px(190),
-        y: DEVICE_HEIGHT - px(170),
-        w: px(100),
-        h: px(45),
-        text: 'REFRESH',
-        text_size: px(18),
-        normal_color: 0x333333,
-        press_color: COLORS.highlight,
-        radius: px(8)
-      }
-    ]
-  }
-}
+        case STATES.SEARCHING_BRIDGE: {
+            // Titolo
+            pageContext.createTrackedWidget(widget.TEXT, {
+                x: 0, y: px(40), w: DEVICE_WIDTH, h: px(60),
+                text: 'Hue Bridge', text_size: px(40),
+                color: COLORS.text, align_h: align.CENTER_H, align_v: align.CENTER_V
+            })
+            // Animazione/Icona placeholder
+            const spinner = pageContext.createTrackedWidget(widget.CIRCLE, {
+                center_x: DEVICE_WIDTH / 2, center_y: px(180), radius: 40,
+                color: COLORS.highlight, alpha: 150
+            })
+            if (animateSpinner) animateSpinner(spinner) // Chiamata al metodo di index.js
 
-function getLightBgColor(light) {
-  if (!light.ison || !light.hex) {
-    return 0x1a1a1a
-  }
-  
-  const hex = light.hex.replace('#', '')
-  if (hex === '000000') return 0x1a1a1a
-  
-  const color = parseInt(hex, 16)
-  // Darken for better text visibility
-  return ((color >> 2) & 0x3f3f3f) + 0x202020
+            // Testo principale
+            pageContext.createTrackedWidget(widget.TEXT, {
+                x: px(40), y: px(260), w: DEVICE_WIDTH - px(80), h: px(80),
+                text: getText('SEARCHING_BRIDGE'), text_size: px(26),
+                color: COLORS.text, align_h: align.CENTER_H, align_v: align.CENTER_V, text_style: text_style.WRAP
+            })
+            // Testo informativo
+            pageContext.createTrackedWidget(widget.TEXT, {
+                x: 0, y: px(360), w: DEVICE_WIDTH, h: px(40),
+                text: 'Make sure your bridge is powered on', text_size: px(20),
+                color: COLORS.inactive, align_h: align.CENTER_H, align_v: align.CENTER_V
+            })
+            // Barra di progresso
+            const progressBar = pageContext.createTrackedWidget(widget.FILL_RECT, {
+                x: px(140), y: px(420), w: px(10), h: px(6), color: COLORS.highlight, radius: px(3)
+            })
+            if (animateProgressBar) animateProgressBar(progressBar)
+            break
+        }
+
+        case STATES.WAITING_FOR_PRESS:{
+            // Sfondo diventa warning
+            pageContext.createTrackedWidget(widget.FILL_RECT, {
+                x: 0, y: 0, w: DEVICE_WIDTH, h: DEVICE_HEIGHT, color: COLORS.warning
+            })
+            pageContext.createTrackedWidget(widget.TEXT, {
+                x: 0, y: px(50), w: DEVICE_WIDTH, h: px(50),
+                text: 'Bridge Found!', text_size: px(38),
+                color: COLORS.warningText, align_h: align.CENTER_H, align_v: align.CENTER_V
+            })
+            // Icona bridge
+            pageContext.createTrackedWidget(widget.IMG, {
+                x: DEVICE_WIDTH/2 - px(50), y: DEVICE_HEIGHT/2 - px(100),
+                //center_x: DEVICE_WIDTH / 2, center_y: px(180),
+                src: 'icons/push-linkv2.png'//100*96
+            })
+
+            pageContext.createTrackedWidget(widget.TEXT, {
+                x: px(40), y: px(270), w: DEVICE_WIDTH - px(80), h: px(100),
+                text: getText('PRESS_BUTTON_TO_PAIR'),
+                text_size: px(28), color: COLORS.warningText, align_h: align.CENTER_H,
+                align_v: align.CENTER_V, text_style: text_style.WRAP
+            })
+
+            pageContext.createTrackedWidget(widget.TEXT, {
+                x: 0, y: px(390), w: DEVICE_WIDTH, h: px(30),
+                text: 'Waiting for button press...', text_size: px(20),
+                color: COLORS.warningText, align_h: align.CENTER_H, align_v: align.CENTER_V
+            })
+
+            const waitProgressBar = pageContext.createTrackedWidget(widget.FILL_RECT, {
+                x: px(140), y: px(440), w: px(10), h: px(6),
+                color: COLORS.warningText, radius: px(3)
+            })
+            if (animateProgressBar) animateProgressBar(waitProgressBar)
+            break
+        }
+
+        case STATES.FETCHING_DATA:
+            // Sfondo successo
+            pageContext.createTrackedWidget(widget.FILL_RECT, {
+                x: 0, y: 0, w: DEVICE_WIDTH, h: DEVICE_HEIGHT, color: COLORS.background
+            })
+            pageContext.createTrackedWidget(widget.TEXT, {
+                x: 0, y: px(60), w: DEVICE_WIDTH, h: px(50),
+                text: 'Paired Successfully!', text_size: px(36),
+                color: COLORS.text, align_h: align.CENTER_H, align_v: align.CENTER_V
+            })
+
+            pageContext.createTrackedWidget(widget.TEXT, {
+                x: 0, y: px(210), w: DEVICE_WIDTH, h: px(40),
+                text: 'Loading your Hue setup...', text_size: px(26),
+                color: COLORS.text, align_h: align.CENTER_H, align_v: align.CENTER_V
+            })
+
+            // Indicatori di progresso
+            pageContext.createTrackedWidget(widget.TEXT, {
+                x: px(60), y: px(280), w: px(360), h: px(40),
+                text: `Lights Fetched: ${progress.lights}`, text_size: px(28),
+                color: COLORS.text, align_h: align.CENTER_H, align_v: align.CENTER_V
+            })
+            break
+
+        case STATES.ERROR:
+            // Titolo errore
+            pageContext.createTrackedWidget(widget.TEXT, {
+                x: 0, y: px(60), w: px(480), h: px(50),
+                text: 'Connection Error', text_size: px(36),
+                color: COLORS.error, align_h: align.CENTER_H, align_v: align.CENTER_V
+            })
+            // Icona errore
+            pageContext.createTrackedWidget(widget.CIRCLE, {
+                center_x: px(240), center_y: px(160), radius: px(45),
+                color: COLORS.error
+            })
+            // Messaggio di errore
+            pageContext.createTrackedWidget(widget.TEXT, {
+                x: px(40), y: px(240), w: px(400), h: px(100),
+                text: error || 'Could not connect to Hue Bridge', text_size: px(24),
+                color: COLORS.text, align_h: align.CENTER_H, align_v: align.CENTER_V, text_style: text_style.WRAP
+            })
+            // Bottone RETRY
+            pageContext.createTrackedWidget(widget.BUTTON, {
+                x: px(90), y: px(360), w: px(300), h: px(60),
+                text: 'RETRY', text_size: px(28),
+                normal_color: COLORS.highlight, press_color: COLORS.success, radius: px(10),
+                click_func: retryFunc // Usa la funzione passata da index.js
+            })
+            break
+    }
 }
