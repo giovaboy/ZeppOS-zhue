@@ -382,6 +382,7 @@ class HueBridgeManager {
       name: l.name,
       ison: l.state.on,
       bri: l.state.bri,
+      ct: l.state.ct,
       colormode: l.state.colormode,
       reachable: l.state.reachable,
       hex: this.stateToHex(l.state)
@@ -394,6 +395,7 @@ class HueBridgeManager {
       name: l.metadata?.name || 'Unknown',
       ison: l.on?.on || false,
       bri: Math.round((l.dimming?.brightness || 0) * 2.54),
+      ct: l.state.ct,
       colormode: l.state.colormode,
       reachable: l.status !== 'connectivity_issue',
       hex: this.stateToHex({ on: l.on?.on, bri: l.dimming?.brightness })
@@ -574,6 +576,8 @@ class HueBridgeManager {
       ...light,
       hue: fullLight.state?.hue || 0,
       sat: fullLight.state?.sat || 0,
+      ct: fullLight.state?.ct || 0,
+      colormode: fullLight.state?.colormode || '',
       capabilities: this.getLightCapabilities(fullLight)
     }
   }
@@ -680,6 +684,10 @@ AppSideService(
 
         case 'SET_COLOR':
           this.handleSetColor(req, res)
+          break
+
+        case 'SET_HS': // Nuovo caso richiesto per Hue e Saturation
+          this.handleSetHS(req, res)
           break
 
         case 'ALL_LIGHTS':
@@ -812,9 +820,6 @@ AppSideService(
       }
     },
 
-
-
-
     async handleSetColor(req, res) {
       try {
         const { lightId, hex, rgb, hue, sat, bri } = req.params
@@ -840,6 +845,29 @@ AppSideService(
           res({ error: error.message })
         }
       },
+
+    async handleSetHS(req, res) {
+      try {
+        const { lightId, hue, sat, bri } = req.params
+        console.log(`Set HSB for light ${lightId} - H:${hue}, S:${sat}, B:${bri}`)
+
+        if (lightId === undefined || hue === undefined || sat === undefined) {
+          throw new Error('Missing lightId, hue, or sat parameter')
+        }
+        
+        // Passa direttamente hue, sat, e brightness (se presente)
+        const colorParams = { hue: hue, sat: sat }
+        if (bri !== undefined) {
+          colorParams.bri = bri
+        }
+
+        await hueBridge.setLightColor(lightId, colorParams)
+        res(null, { success: true })
+      } catch (error) {
+        console.error('Set HSB error:', error)
+        res({ error: error.message })
+      }
+    },
 
     async handleAllLights(req, res) {
       try {

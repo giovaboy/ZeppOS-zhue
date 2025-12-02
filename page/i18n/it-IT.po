@@ -80,4 +80,7 @@ msgid "GROUP_OFF"
 msgstr "Spegni"
 
 msgid "BRIGHTNESS"
-msgstr "Luminosità: %d"
+msgstr "Luminosità: "
+
+msgid "ERROR_MSG"
+msgstr "Errore: "

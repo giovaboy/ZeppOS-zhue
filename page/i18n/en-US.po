@@ -80,4 +80,7 @@ msgid "GROUP_OFF"
 msgstr "Turn Off"
 
 msgid "BRIGHTNESS"
-msgstr "Brightness: %d"
+msgstr "Brightness: "
+
+msgid "ERROR_MSG"
+msgstr "Error: "
