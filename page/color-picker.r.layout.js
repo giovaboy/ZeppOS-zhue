@@ -53,7 +53,7 @@ function hsb2hex(h, s, v) {
 function ct2hex(mireds) {
     // 153 (6500K - Freddo) -> 500 (2000K - Caldo)
     // Semplificazione visiva: interpoliamo tra Bluino e Giallino
-    const pct = (mireds - 153) / (500 - 153); 
+    const pct = (mireds - 153) / (500 - 153);
     // Cold: 0xCCDDFF, Warm: 0xFFB044
     // R: CC->FF, G: DD->B0, B: FF->44
     const r = 0xCC + (0xFF - 0xCC) * pct;
@@ -122,7 +122,7 @@ function renderHueSatPicker(pageContext, state, callbacks) {
     const { onDragColor } = callbacks;
 
     // A. Sfondo Gradiente (Simulato a strisce)
-    const stripCount = 25;
+   /* const stripCount = 60;//25;
     const stripW = pickerSize / stripCount;
     for(let i=0; i<stripCount; i++) {
         const hVal = (i / stripCount) * 360;
@@ -130,12 +130,47 @@ function renderHueSatPicker(pageContext, state, callbacks) {
             x: pickerX + (i * stripW), y: pickerY,
             w: stripW + 1, h: pickerSize,
             color: hsb2hex(hVal, 100, 100), // Pura saturazione/luminosità per sfondo
-            radius: (i===0 || i===stripCount-1) ? 12 : 0
+            radius: 0//(i===0 || i===stripCount-1) ? 12 : 0
         });
+    }*/
+    // Nel tuo file di layout (es. color-picker.r.layout.js)
+    // ...
+    // --- Selettore Colore (Matrice Hue/Saturation) ---
+    const H_RESOLUTION = 20; // Numero di colonne (Hue)
+    const S_RESOLUTION = 20; // Numero di righe (Saturation)
+
+    const cellW = pickerSize / H_RESOLUTION; // Larghezza di ogni quadratino
+    const cellH = pickerSize / S_RESOLUTION; // Altezza di ogni quadratino
+
+    // Ciclo esterno: Tonalità (Hue) sull'asse X
+    for(let i = 0; i < H_RESOLUTION; i++) {
+        // Calcolo della Tonalità per questa colonna
+        const hueVal = (i / H_RESOLUTION) * 360;
+
+        // Ciclo interno: Saturazione (Saturation) sull'asse Y
+        for(let j = 0; j < S_RESOLUTION; j++) {
+
+            // Calcolo della Saturazione per questa riga
+            // La Saturazione è massima (100) in fondo (j=S_RESOLUTION-1) e minima (0) in cima (j=0).
+            const satVal = (j / S_RESOLUTION) * 100;
+
+            // Colore da disegnare: Hue della colonna, Saturation della riga, Luminosità massima (100)
+            const hexColor = hsb2hex(hueVal, satVal, 100);
+
+            // Disegna il quadratino
+            pageContext.createTrackedWidget(widget.FILL_RECT, {
+                x: pickerX + (i * cellW),
+                y: pickerY + (pickerSize - cellH) - (j * cellH), // <--- ATTENZIONE: Disegno dal basso
+                w: cellW + 1,
+                h: cellH + 1,
+                color: hexColor,
+                radius: 0
+            });
+        }
     }
 
     // B. Cursore
-    const cursorSize = px(36);
+    const cursorSize = px(20);//36
     // Hue mappa su X, Sat mappa su Y (Sat 254 = Alto, 0 = Basso? No, solitamente Y basso è bianco)
     // Hue API: 0-65535. Sat API: 0-254.
     const posX = pickerX + (hue / 65535) * pickerSize;
@@ -154,7 +189,7 @@ function renderHueSatPicker(pageContext, state, callbacks) {
         x: pickerX, y: pickerY, w: pickerSize, h: pickerSize,
         color: 0, alpha: 0
     });
-    
+
     hitbox.addEventListener(event.CLICK_DOWN, (info) => onDragColor('DOWN', info));
     hitbox.addEventListener(event.MOVE, (info) => onDragColor('MOVE', info));
     hitbox.addEventListener(event.CLICK_UP, (info) => onDragColor('UP', info));
@@ -165,14 +200,14 @@ function renderCTPicker(pageContext, state, callbacks) {
     // CT range: 153 (Freddo) - 500 (Caldo)
     const { ct } = state;
     const { onDragCT } = callbacks;
-    
+
     // Per CT usiamo un gradiente verticale o orizzontale?
-    // Usiamo verticale per coerenza con il layout quadrato, 
+    // Usiamo verticale per coerenza con il layout quadrato,
     // In alto FREDDO (bianco), in basso CALDO (giallo).
-    
+
     const stripCount = 20;
     const stripH = pickerSize / stripCount;
-    
+
     for(let i=0; i<stripCount; i++) {
         // i=0 -> Freddo (153), i=max -> Caldo (500)
         const mired = 153 + (i / stripCount) * (500 - 153);

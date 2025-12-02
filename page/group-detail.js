@@ -102,8 +102,8 @@ Page(
     loadGroupDetail() {
       this.state.isLoading = true
       this.state.error = null
-      this.renderPage() 
-      
+      this.renderPage()
+
       logger.log('Inizio richiesta GET_GROUP_DETAIL per Gruppo ID:', this.state.groupId)
 
       this.request({
@@ -113,24 +113,24 @@ Page(
         .then(result => {
           logger.log('Risposta App Side ricevuta:', result)
           this.state.isLoading = false
-          
+
           if (result.success && result.data) {
-            
+
             const rawLights = result.data.lights || [];
-            
+
             // Logghiamo le luci RAW appena ricevute
             logger.log('Luci RAW ricevute (totale):', rawLights.length)
-            
+
             // Pulizia e Filtraggio (il filtro che abbiamo aggiunto prima)
-            this.state.lights = rawLights.filter(light => 
-                light && 
-                light.id && 
+            this.state.lights = rawLights.filter(light =>
+                light &&
+                light.id &&
                 typeof light.ison !== 'undefined'
             );
-            
+
             // Logghiamo le luci filtrate
             logger.log('Luci filtrate e valide (totale):', this.state.lights.length)
-            
+
             this.state.scenes = result.data.scenes || []
             this.renderPage()
           } else {
@@ -143,10 +143,7 @@ Page(
         })
         .catch(err => {
           // ... (la gestione degli errori rimane la stessa)
-          const errorMessage = (err && err.message) 
-            ? err.message 
-            : getText('NETWORK_ERROR') || 'Unknown Network Error (Check App Side)' 
-            
+          const errorMessage = (err && err.message) ? err.message : getText('NETWORK_ERROR')
           logger.error('Load group detail error (CATCH):', errorMessage, err)
 
           this.state.isLoading = false
@@ -275,7 +272,7 @@ Page(
 
       // Aggiungi le LUCI
       if (this.state.lights.length > 0) {
-          data.push({ type: 'header', name: getText('LIGHTS') || 'LIGHTS', name_color: COLORS.text })
+          data.push({ type: 'header', name: getText('LIGHTS'), name_color: COLORS.text })
           dataConfig.push({ start: currentStart, end: currentStart, type_id: 1 })
           currentStart++
 
@@ -291,8 +288,8 @@ Page(
               const finalIconPath = `icons/${modelInfo.icon}${stateSuffix}.png`
 
               const statusText = isOn
-                  ? `${getText('BRIGHTNESS') || 'Bri'}: ${Math.round(light.bri / 254 * 100)}%`
-                  : getText('OFF') || 'Spenta';
+                  ? `${getText('BRIGHTNESS')} ${Math.round(light.bri / 254 * 100)}%`
+                  : getText('OFF');
 
               data.push({
                   raw: light,

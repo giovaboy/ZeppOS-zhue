@@ -128,12 +128,11 @@ Page(
     },
 
     // --- NAVIGATION ---
-    
+
     openColorPicker() {
-        console.log('open Color Picker')
         const light = this.state.light;
         const caps = this.getLightCapabilities(light);
-        
+
         // Determina modalità iniziale
         // Se la luce è in modalità 'ct' (temperatura), apriamo il tab 'White'
         let initialMode = 'color';
@@ -156,7 +155,7 @@ Page(
     },
 
     // --- LOGIC ---
-    
+
     handleBrightnessDrag(evtType, info) {
         const { sliderX, sliderW } = LAYOUT_CONFIG
         const getBrightnessFromX = (x) => {
@@ -177,8 +176,8 @@ Page(
             this.state.tempBrightness = newBri
             const newBriPosition = Math.max(0, Math.round(sliderW * newBri / 254))
             const newPercent = Math.round(newBri / 254 * 100)
-            
-            if (this.state.brightnessSliderFillWidget) 
+
+            if (this.state.brightnessSliderFillWidget)
                 this.state.brightnessSliderFillWidget.setProperty(prop.W, newBriPosition)
             if (this.state.brightnessLabel)
                 this.state.brightnessLabel.setProperty(prop.TEXT, getText('BRIGHTNESS', newPercent))
@@ -219,7 +218,7 @@ Page(
       // Non settiamo isLoading = true qui su refresh per evitare flickering totale
       // Solo se light è null (prima volta)
       if (!this.state.light) this.state.isLoading = true;
-      
+
       this.request({ method: 'GET_LIGHT_DETAIL', params: { lightId: this.state.lightId } })
         .then(result => {
           if (result.success) {
@@ -230,7 +229,7 @@ Page(
           }
         })
         .catch(err => {
-            this.state.isLoading = false; logger.error(err) 
+            this.state.isLoading = false; logger.error(err)
         })
     },
 
@@ -250,7 +249,7 @@ Page(
 
         if (this.state.brightnessSliderFillWidget) this.state.brightnessSliderFillWidget.setProperty(prop.W, fillWidth)
         if (this.state.brightnessLabel) this.state.brightnessLabel.setProperty(prop.TEXT, getText('BRIGHTNESS', percent))
-        
+
         if (skipApiCall) return
         this.request({ method: 'SET_BRIGHTNESS', params: { lightId: this.state.lightId, brightness } })
     },
@@ -261,9 +260,9 @@ Page(
         this.state.light.hue = favorite.hue
         this.state.light.sat = favorite.sat
         this.state.light.ct = favorite.ct
-        
-        this.request({ method: 'SET_COLOR', params: { 
-            lightId: this.state.lightId, hex: favorite.hex, hue: favorite.hue, sat: favorite.sat, bri: favorite.bri, ct: favorite.ct 
+
+        this.request({ method: 'SET_COLOR', params: {
+            lightId: this.state.lightId, hex: favorite.hex, hue: favorite.hue, sat: favorite.sat, bri: favorite.bri, ct: favorite.ct
         }})
         .then(res => { if(res.success) this.loadLightDetail() }) // Reload per sicurezza
     },
