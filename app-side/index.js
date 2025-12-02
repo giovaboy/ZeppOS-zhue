@@ -3,7 +3,7 @@ import { BaseSideService, settingsLib } from '@zeppos/zml/base-side'
 // ============================================
 // 1. CONFIGURAZIONE DEMO
 // Imposta a 'true' per ignorare le chiamate di rete e usare i dati fittizi.
-const DEMO = true
+const DEMO = false
 // ============================================
 
 const BRIDGE_IP_KEY = 'hue_bridge_ip'
