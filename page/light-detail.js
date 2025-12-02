@@ -49,7 +49,7 @@ Page(
     widgets: [],
     sliderX: px(40), // Posizione X di partenza della traccia
     sliderW: px(400), // Larghezza totale della traccia
-    sliderH: px(40), // Altezza del contenitore (per il posizionamento)
+    sliderH: px(60), // Altezza del contenitore (per il posizionamento)
     handleSize: px(30), // Dimensione della maniglia
 
     onInit(p) {
@@ -291,20 +291,20 @@ Page(
     },
 
     renderBrightnessSlider(yPos) {
-     const light = this.state.light
+      const light = this.state.light
       // Usa la luminosità temporanea se stiamo trascinando, altrimenti l'attuale
       const brightness = this.state.isDraggingBrightness ? this.state.tempBrightness : light.bri
       const brightnessPercent = Math.round(brightness / 254 * 100)
-      
+
       const sliderY = yPos + px(40)
-      const trackHeight = px(8) // Altezza della linea di riempimento
-      
+      const trackHeight = px(20) // Altezza della linea di riempimento
+
       // Costanti geometriche locali (assicurati che siano inizializzate in onInit!)
       const localSliderX = this.sliderX
       const localSliderW = this.sliderW
-      const localSliderH = this.sliderH 
+      const localSliderH = this.sliderH
       const localHandleSize = this.handleSize
-      
+
       // Calcola la posizione iniziale del riempimento e della maniglia
       const initialBriPosition = Math.round(localSliderW * brightness / 254)
       const initialHandleX = localSliderX + initialBriPosition - (localHandleSize / 2)
@@ -320,155 +320,115 @@ Page(
       })
 
       this.state.brightnessLabel = brightnessLabel;
+      const trackCenterY = sliderY + (localSliderH / 2)
 
       // 2. Slider background (Traccia statica)
-      const trackedWidget = this.createTrackedWidget(widget.FILL_RECT, {
-        x: localSliderX, y: sliderY + (localSliderH / 2) - (trackHeight / 2), 
+    this.createTrackedWidget(widget.FILL_RECT, {
+        x: localSliderX, y: trackCenterY - (trackHeight / 2),
         w: localSliderW, h: trackHeight,
         color: COLORS.sliderBg,
         radius: trackHeight / 2
-      })
+    })
 
-      this.brightnessTrackedWidget = trackedWidget;
-
-      // 3. Slider fill (Riempimento che si muove)
-      const sliderFillWidget = this.createTrackedWidget(widget.FILL_RECT, {
-        x: localSliderX, y: sliderY + (localSliderH / 2) - (trackHeight / 2), 
+    // 3. Slider fill (Riempimento che si muove)
+    const sliderFillWidget = this.createTrackedWidget(widget.FILL_RECT, {
+        x: localSliderX, y: trackCenterY - (trackHeight / 2),
         w: initialBriPosition, h: trackHeight,
         color: COLORS.sliderFill,
         radius: trackHeight / 2
-      })
+    })
+    this.state.brightnessSliderFillWidget = sliderFillWidget;
 
-      this.state.brightnessSliderFillWidget = sliderFillWidget;
-      
-      // 4. Slider Handle (Maniglia Interattiva)
-      // USA VARIABILE LOCALE per garantire che non sia null durante addEventListener
-      const handleWidget = this.createTrackedWidget(widget.FILL_RECT, {
-        x: initialHandleX, 
-        y: sliderY + (localSliderH / 2) - (localHandleSize / 2), 
-        w: localHandleSize, 
-        h: localHandleSize, 
-        color: COLORS.text, 
-        radius: localHandleSize / 2, 
+      // 4. Hitbox per il Tap-to-Set
+      const trackHitbox = this.createTrackedWidget(widget.FILL_RECT, {
+          x: localSliderX,
+          y: sliderY,
+          w: localSliderW,
+          h: localSliderH, // Area di tocco allargata
+          color: 0x000000,
+          alpha: 0 // Completamente trasparente
       })
-
-      // Assegna alla proprietà della pagina DOPO la creazione del widget locale
-      this.state.brightnessSliderWidget = handleWidget;
-      
-      // Se handleWidget è nullo (fallimento della creazione), usciamo subito.
-      if (!handleWidget) {
-          logger.error('CRITICAL: Widget Handle is NULL. Aborting event attachment.');
-          return sliderY + localSliderH + px(70);
-      }
-      
-      logger.log('Slider Handle created and ready. Attaching listeners to local variable.')
 
       // --- GESTIONE EVENTI DRAG (USIAMO handleWidget) ---
 
-      // CLICK_DOWN: Inizializza il trascinamento
-      handleWidget.addEventListener(event.CLICK_DOWN, (info) => { // <-- USA handleWidget
-          logger.log('*** CLICK_DOWN CATTURATO. Inizio drag. ***') 
-          setScrollLock({lock: true})
-          onGesture({
-            callback: (event) => {
-              if (event === GESTURE_RIGHT) {
-                console.log('right gesture detected');
-              }
-              return true
-            },
-          })
-          
-          const currentBri = light.bri > 0 ? light.bri : 1 
-          
-         this.state.isDraggingBrightness = true
-          this.state.dragStartPoint = { x: info.x, y: info.y }
-          logger.log('Info Point set:', info.x, info.y) // <--- NUOVO LOG
-          logger.log('Drag Start Point set:', this.state.dragStartPoint.x, this.state.dragStartPoint.y) // <--- NUOVO LOG
-          this.state.dragStartBri = currentBri
-          this.state.tempBrightness = currentBri
-      })
+      // CLICK_DOWN: Inizializza il trascinamento (anche per un semplice tap)
+      trackHitbox.addEventListener(event.CLICK_DOWN, (info) => {
+        logger.log('*** TRACK CLICK_DOWN CATTURATO. Inizio drag o tap. ***')
+        setScrollLock({lock: true}) // Blocca lo scroll della pagina
 
-      // MOVE: Aggiorna l'UI in tempo reale
-      handleWidget.addEventListener(event.MOVE, (info) => { // <-- USA handleWidget
-          logger.log('MOVE event. isDragging:', this.state.isDraggingBrightness)
+        const currentBri = light.bri > 0 ? light.bri : 1
 
-          // !!! CONTROLLO CRITICO: usciamo se la bandiera è falsa O se il punto di partenza è stato azzerato
-          if (!this.state.isDraggingBrightness || !this.state.dragStartPoint) return 
+        // Calcolo della nuova posizione (gestisce il "tap to set")
+        let positionInTrack = info.x - localSliderX;
+        positionInTrack = Math.max(0, Math.min(positionInTrack, localSliderW));
 
-          // Questa riga non crasherà più se this.state.dragStartPoint non è null
-          const deltaX = info.x - this.state.dragStartPoint.x;
-          
-          const initialBriPos = (this.state.dragStartBri / 254) * localSliderW
-          let newBriPosition = initialBriPos + deltaX;
+        let newBrightness = Math.round((positionInTrack / localSliderW) * 254);
+        newBrightness = Math.max(light.ison ? 1 : 0, newBrightness);
 
-          newBriPosition = Math.max(0, Math.min(newBriPosition, localSliderW));
-          
-          let newBrightness = Math.round((newBriPosition / localSliderW) * 254);
-          newBrightness = Math.max(light.ison ? 1 : 0, newBrightness); 
+        // Aggiorna lo stato per il drag
+        this.state.isDraggingBrightness = true
+        this.state.dragStartPoint = { x: info.x, y: info.y }
+        this.state.dragStartBri = newBrightness // Usiamo il nuovo valore come punto di partenza
+        this.state.tempBrightness = newBrightness
 
-          this.state.tempBrightness = newBrightness
-          
-          const newHandleX = localSliderX + newBriPosition - (localHandleSize / 2)
-          const newPercent = Math.round(newBrightness / 254 * 100)
-          
-          // Aggiorna l'UI (Handle, Fill, Label)
-          this.state.brightnessSliderWidget.setProperty(prop.X, newHandleX) // <-- Qui usiamo this.state.brightnessSliderWidget
-          this.state.brightnessSliderFillWidget.setProperty(prop.W, newBriPosition)
-          this.state.brightnessLabel.setProperty(prop.TEXT, getText('BRIGHTNESS', newPercent))
-      })
+        // Aggiorna immediatamente l'UI al tap (per simulare il "tap-to-set")
+        this.setBrightness(newBrightness, true)
+    })
 
-      // CLICK_UP: Fine del trascinamento, invia il comando API
-      handleWidget.addEventListener(event.CLICK_UP, () => { // <-- USA handleWidget
-          if (!this.state.isDraggingBrightness) return
-          
-          logger.log('Slider UP. End drag. Setting final brightness:', this.state.tempBrightness)
-          setScrollLock({lock: false}) // Sblocca lo scroll
+    // MOVE: Aggiorna l'UI in tempo reale (Dragging)
+    trackHitbox.addEventListener(event.MOVE, (info) => {
+        if (!this.state.isDraggingBrightness || !this.state.dragStartPoint) return
 
-          onGesture({
-            callback: (event) => {
-              if (event === GESTURE_RIGHT) {
-                console.log('right gesture detected');
-              }
-              return false
-            },
-          })
+        const deltaX = info.x - this.state.dragStartPoint.x;
 
-          // Resetta lo stato di dragging
-          this.state.isDraggingBrightness = false
-          this.state.dragStartPoint = null
-          this.state.dragStartBri = 0
-          
-          // Invia il comando API solo se il valore è cambiato
-          if (this.state.tempBrightness !== light.bri) {
-              this.setBrightness(this.state.tempBrightness, true) 
-          }
-      })
-      // Brightness adjustment buttons (+/-) - Mantenuti
-      const btnY = sliderY + localSliderH + px(15) // Adjust position
+        // Calcoliamo il delta rispetto al dragStartBri (che è già stato settato al CLICK_DOWN)
+        const initialBriPos = (this.state.dragStartBri / 254) * localSliderW
+        let newBriPosition = initialBriPos + deltaX;
 
-      this.createTrackedWidget(widget.BUTTON, {
-        x: px(40), y: btnY, w: px(80), h: px(50),
-        text: '−',
-        text_size: px(40),
-        normal_color: COLORS.inactive,
-        press_color: COLORS.highlight,
-        radius: 8,
-        click_func: () => {
-          this.adjustBrightness(-25)}
-      })
+        newBriPosition = Math.max(0, Math.min(newBriPosition, localSliderW));
 
-      this.createTrackedWidget(widget.BUTTON, {
-        x: px(360), y: btnY, w: px(80), h: px(50),
-        text: '+',
-        text_size: px(40),
-        normal_color: COLORS.inactive,
-        press_color: COLORS.highlight,
-        radius: 8,
-        click_func: () => this.adjustBrightness(25)
-      })
+        let newBrightness = Math.round((newBriPosition / localSliderW) * 254);
+        newBrightness = Math.max(light.ison ? 1 : 0, newBrightness);
 
-      return btnY + px(70)
-    },
+        this.state.tempBrightness = newBrightness
+
+        const newPercent = Math.round(newBrightness / 254 * 100)
+
+        // >>> SAFETY CHECK: Aggiorna solo se i riferimenti esistono (anti-crash)
+        if (this.state.brightnessSliderFillWidget && this.state.brightnessLabel) {
+            // Nota: aggiorniamo solo il riempimento e la label, non c'è più l'handle
+            this.state.brightnessSliderFillWidget.setProperty(prop.W, newBriPosition)
+            this.state.brightnessLabel.setProperty(prop.TEXT, getText('BRIGHTNESS', newPercent))
+        } else {
+            logger.warn('MOVE aborted: Widget references are NULL.')
+        }
+    })
+
+    // CLICK_UP: Fine del trascinamento, invia il comando API
+    trackHitbox.addEventListener(event.CLICK_UP, () => {
+        const light = this.state.light // Rileggiamo la luce per il confronto
+        if (!this.state.isDraggingBrightness) return
+
+        logger.log('Slider UP. End drag. Setting final brightness:', this.state.tempBrightness)
+        setScrollLock({lock: false}) // Sblocca lo scroll della pagina
+
+        // Invia il comando API e chiede l'aggiornamento UI (false per skipUiUpdate)
+        if (this.state.tempBrightness !== light.bri) {
+            this.setBrightness(this.state.tempBrightness, false)
+        } else if (this.state.tempBrightness > 0) {
+            // Caso Bordo: Se la luminosità non è cambiata ma vogliamo sincronizzare la UI in caso di errore
+            this.setBrightness(this.state.tempBrightness, false, true) // Aggiungiamo un flag per sincronizzare solo UI
+        }
+
+        // Resetta lo stato di dragging
+        this.state.isDraggingBrightness = false
+        this.state.dragStartPoint = null
+        this.state.dragStartBri = 0
+    })
+
+    // Ritorna la posizione Y finale
+    return sliderY + localSliderH + px(20)
+},
 
     renderColorPicker(yPos) {
       // Section header
@@ -625,46 +585,46 @@ Page(
       this.setBrightness(newBrightness)
     },
 
-    // SOSTITUISCI QUESTA FUNZIONE in light-detail.js
-
     setBrightness(brightness, skipUiUpdate = false) {
-      this.state.light.bri = brightness
+    this.state.light.bri = brightness
 
-      // Calcola i valori necessari
-      const fillWidth = Math.max(px(10), Math.round(this.sliderW * brightness / 254))
-      const brightnessPercent = Math.round(brightness / 254 * 100)
-      const handleX = this.sliderX + fillWidth - (this.handleSize / 2) // NEW: Posizione maniglia centrata
+    // Calcola i valori necessari
+    const fillWidth = Math.max(0, Math.round(this.sliderW * brightness / 254))
+    const brightnessPercent = Math.round(brightness / 254 * 100)
 
-      // Aggiorna l'UI solo se non è un aggiornamento proveniente dalla fine del drag
-      if (!skipUiUpdate) {
+    // Aggiorna l'UI (Fill, Label)
+    if (!skipUiUpdate) {
+        // Aggiorna la linea blu
         if (this.state.brightnessSliderFillWidget) {
-          try {
-            this.state.brightnessSliderFillWidget.setProperty(prop.W, fillWidth)
-            // NEW: Aggiorna la posizione della maniglia
-            if (this.state.brightnessSliderWidget) {
-              this.state.brightnessSliderWidget.setProperty(prop.X, handleX)
+            try {
+                this.state.brightnessSliderFillWidget.setProperty(prop.W, fillWidth)
+            } catch {
+                logger.warn('Failed to update fill widget property.')
             }
-          } catch { }
         }
 
+        // Aggiorna la label
         if (this.state.brightnessLabel) {
-          try {
-            this.state.brightnessLabel.setProperty(prop.TEXT, getText('BRIGHTNESS', brightnessPercent))
-          } catch { }
+            try {
+                this.state.brightnessLabel.setProperty(prop.TEXT, getText('BRIGHTNESS', brightnessPercent))
+            } catch {
+                logger.warn('Failed to update brightness label property.')
+            }
         }
-      }
+    }
 
-      // Send to bridge
-      this.request({
+    // Send to bridge
+    this.request({
         method: 'SET_BRIGHTNESS',
         params: {
-          lightId: this.state.lightId,
-          brightness
+            lightId: this.state.lightId,
+            brightness
         }
-      })
-        .then(() => logger.log('Brightness updated'))
-        .catch(err => logger.error('Set brightness error:', err))
-    },
+    })
+    .then(() => logger.log('Brightness updated'))
+    .catch(err => logger.error('Set brightness error:', err))
+},
+
     setLightColor(hex) {
       logger.log('Set light color:', hex)
 
