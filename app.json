@@ -28,7 +28,8 @@
             "page/index",
             "page/groups",
             "page/group-detail",
-            "page/light-detail"
+            "page/light-detail",
+            "page/color-picker"
 
           ]
         },
