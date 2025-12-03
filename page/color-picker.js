@@ -6,12 +6,13 @@ import { back } from '@zos/router'
 import { getLogger } from '../utils/logger.js'
 
 // Import Layout
-import { renderColorPickerPage, LAYOUT_CONFIG } from 'zosLoader:./color-picker.[pf].layout.js'
+import { renderColorPickerPage, hsb2hex, LAYOUT_CONFIG } from 'zosLoader:./color-picker.[pf].layout.js'
 
 const logger = getLogger('color-picker-page')
 
 const HUE_RANGE = 65535;
 const SAT_RANGE = 254;
+const BRI_RANGE = 254;
 const CT_MIN = 153; // Freddo
 const CT_MAX = 500; // Caldo
 
@@ -35,7 +36,7 @@ Page(
       ctCursorWidget: null,
       briFillWidget: null
     },
-    
+
     widgets: [],
 
     onInit(p) {
@@ -56,7 +57,7 @@ Page(
         // Se è "Color light" (vecchie) potrebbe non avere buon CT, ma "Extended color" sì.
         // Assumiamo che se ha "color" ha anche "ct" a meno che non sia specificato diversamente.
         // O controlliamo il parametro 'supportsCT' esplicito se lo passiamo.
-        this.state.supportsCT = caps.includes('ct') || caps.includes('color_temperature') || true; 
+        this.state.supportsCT = caps.includes('ct') || caps.includes('color_temperature') || true;
 
         // Decide initial mode
         if (params.initialMode) {
@@ -102,14 +103,14 @@ Page(
     // --- LOGICA DRAG COLOR (Hue/Sat) ---
     handleColorDrag(evt, info) {
         const { pickerX, pickerY, pickerSize } = LAYOUT_CONFIG;
-        
+
         // Calcolo valori da coordinate
         const calcValues = (x, y) => {
             let nX = (x - pickerX) / pickerSize;
             let nY = (y - pickerY) / pickerSize;
             nX = Math.max(0, Math.min(1, nX));
             nY = Math.max(0, Math.min(1, nY));
-            
+
             return {
                 hue: Math.round(nX * HUE_RANGE),
                 sat: Math.round((1 - nY) * SAT_RANGE) // Y invertita (in alto sat max)
@@ -142,14 +143,19 @@ Page(
             const y = pickerY + ((SAT_RANGE - s) / SAT_RANGE) * pickerSize - curSz/2;
             this.state.cursorWidget.setProperty(prop.X, x);
             this.state.cursorWidget.setProperty(prop.Y, y);
-            // TODO: Aggiornare colore cursore? Richiederebbe calcolo hex qui.
+            const currentHex = hsb2hex(
+                  (h / HUE_RANGE) * 360,
+                  (s / SAT_RANGE) * 100,
+                  (this.state.bri / BRI_RANGE) * 100
+                );
+            this.state.cursorWidget.setProperty(prop.COLOR, currentHex);
         }
     },
 
     sendColor(h, s, force) {
         // Se non è force (MOVE), magari saltiamo per non floodare, oppure usiamo throttle
-        if (!force) return; 
-        
+        if (!force) return;
+
         this.request({
             method: 'SET_HS',
             params: { lightId: this.state.lightId, hue: h, sat: s, bri: this.state.bri }
@@ -194,9 +200,9 @@ Page(
     sendCT(ctVal) {
         this.request({
             method: 'SET_COLOR', // General method usually handles ct too
-            params: { 
-                lightId: this.state.lightId, 
-                ct: ctVal, 
+            params: {
+                lightId: this.state.lightId,
+                ct: ctVal,
                 bri: this.state.bri,
                 hue: null, sat: null // Reset color mode logic in API handler if needed
             }
@@ -206,7 +212,7 @@ Page(
     // --- LOGICA DRAG BRI (Luminosità) ---
     handleBriDrag(evt, info) {
         const { sliderX, sliderW } = LAYOUT_CONFIG;
-        
+
         const calcBri = (x) => {
             let nX = (x - sliderX) / sliderW;
             nX = Math.max(0, Math.min(1, nX));
@@ -243,7 +249,7 @@ Page(
     },
 
     onDestroy() {
-        // Scroll lock si rimuove in automatico uscendo dalla pagina? 
+        // Scroll lock si rimuove in automatico uscendo dalla pagina?
         // Meglio esplicitarlo a false per sicurezza, anche se ZeppOS resetta.
         setScrollLock({ lock: false });
     }

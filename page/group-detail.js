@@ -1,4 +1,5 @@
 import { BasePage } from '@zeppos/zml/base-page'
+import { LocalStorage } from '@zos/storage'
 import { setPageBrightTime } from '@zos/display'
 import { getLogger } from '../utils/logger.js'
 import { getText } from '@zos/i18n'
@@ -8,6 +9,10 @@ import { LIGHT_MODELS } from '../utils/constants.js'
 import { renderGroupDetailPage } from 'zosLoader:./group-detail.[pf].layout.js' // <--- NUOVO IMPORT
 
 const logger = getLogger('hue-group-detail-page')
+
+const SHOW_GLOBAL_TOGGLE = 'hue_show_global_toggle'
+const SHOW_SCENES = 'hue_show_scenes'
+const DISPLAY_ORDER = 'hue_display_order'
 
 const COLORS = { // Manteniamo i colori qui, li passiamo al layout
   background: 0x000000,
@@ -23,11 +28,12 @@ const COLORS = { // Manteniamo i colori qui, li passiamo al layout
   sectionHeader: 0x0088ff
 }
 
+const localStorage = new LocalStorage()
 // Parametrizzazioni utente (da salvare in settings)
 const USER_SETTINGS = {
-  show_global_toggle: true,
-  show_scenes: false,
-  display_order: 'LIGHTS_FIRST'
+  show_global_toggle: localStorage.getItem(SHOW_GLOBAL_TOGGLE, false) === 'true',
+  show_scenes: localStorage.getItem(SHOW_SCENES, false) === 'true',
+  display_order: localStorage.getItem(DISPLAY_ORDER, 'LIGHTS_FIRST')
 }
 
 Page(

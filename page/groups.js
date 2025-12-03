@@ -60,7 +60,9 @@ Page(
 
     clearAllWidgets() {
       this.widgets.forEach(w => {
-        try { deleteWidget(w) } catch (e) {}
+        try { deleteWidget(w) } catch (e) {
+          logger.error('clearAllWidgets error:', e)
+        }
       })
       this.widgets = []
     },

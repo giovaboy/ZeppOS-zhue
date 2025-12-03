@@ -1,8 +1,55 @@
-msgid "WELCOME_TEXT"
-msgstr "Hue-On-Off welcome text..."
+# English translations for Hue Settings
+msgid ""
+msgstr ""
+"Language: en-US\n"
 
-msgid "CLEAR_DATA"
-msgstr "Clear data"
+msgid "SETTINGS_SUBTITLE"
+msgstr "Configure your Philips Hue Bridge connection"
 
 msgid "BRIDGE_IP"
-msgstr "Bridge IP:"
+msgstr "Bridge IP Address"
+
+msgid "BRIDGE_IP_PLACEHOLDER"
+msgstr "e.g. 192.168.1.132"
+
+msgid "API_VERSION"
+msgstr "API Version"
+
+msgid "USERNAME_LABEL"
+msgstr "Username (Auto-generated)"
+
+msgid "NOT_CONFIGURED"
+msgstr "Not configured yet"
+
+msgid "BRIDGE_CONFIGURED"
+msgstr "Bridge is configured and paired"
+
+msgid "BRIDGE_NOT_CONFIGURED"
+msgstr "Bridge not configured. Use the app to pair."
+
+msgid "TEST_CONNECTION"
+msgstr "Test Connection"
+
+msgid "CLEAR_CONFIG"
+msgstr "Clear All Configuration"
+
+msgid "ADVANCED_SETTINGS"
+msgstr "Advanced Settings"
+
+msgid "DEBUG_MODE"
+msgstr "Debug Mode"
+
+msgid "HELP_TITLE"
+msgstr "How to Pair Your Bridge"
+
+msgid "HELP_TEXT"
+msgstr "1. Open the Hue app on your watch\n2. The app will automatically search for your bridge\n3. Press the physical button on your Hue Bridge\n4. Wait for the pairing to complete\n5. Your configuration will be saved automatically"
+
+msgid "CONFIRM_CLEAR"
+msgstr "Are you sure you want to clear all Hue Bridge configuration?\n\nYou will need to pair again."
+
+msgid "CONFIG_CLEARED"
+msgstr "Configuration cleared successfully!"
+
+msgid "BRIDGE_NOT_SETUP"
+msgstr "Bridge not configured. Please pair using the watch app first."

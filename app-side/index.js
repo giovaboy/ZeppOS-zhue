@@ -3,12 +3,13 @@ import { BaseSideService, settingsLib } from '@zeppos/zml/base-side'
 // ============================================
 // 1. CONFIGURAZIONE DEMO
 // Imposta a 'true' per ignorare le chiamate di rete e usare i dati fittizi.
-const DEMO = true
+// const DEMO = true
 // ============================================
 
 const BRIDGE_IP_KEY = 'hue_bridge_ip'
 const USERNAME_KEY = 'hue_username'
 const API_VERSION_KEY = 'hue_api_version'
+const DEMO_MODE = 'hue_demo_mode'
 
 // --- Nuova funzione: HSB (0-65535, 0-254, 0-254) a RGB (0-255) ---
 function hsbToRgb(h, s, v) {
@@ -70,8 +71,8 @@ function rgbToHsb(r, g, b) {
 
   return {
     hue: Math.round(h / 360 * 65535), // Hue API usa 0-65535
-    sat: Math.round(s * 254),          // Hue API usa 0-254
-    bri: Math.round(bri * 254)         // Hue API usa 0-254
+    sat: Math.round(s * 254),          // Hue API usa 0-254
+    bri: Math.round(bri * 254)         // Hue API usa 0-254
   }
 }
 
@@ -89,13 +90,14 @@ async function safeJson(resp) {
 
 class HueBridgeManager {
   constructor() {
-      console.log('HueBridgeManager initializing')
+    console.log('HueBridgeManager initializing')
     this.bridgeIp = settingsLib.getItem(BRIDGE_IP_KEY) || null
     this.username = settingsLib.getItem(USERNAME_KEY) || null
     this.apiVersion = settingsLib.getItem(API_VERSION_KEY) || 'v1'
+    this.demo = settingsLib.getItem(DEMO_MODE) === 'true'
 
     // --- LOGICA DEMO ---
-    if (DEMO) {
+    if (this.demo) {
         this._initDemoState()
         this.bridgeIp = '192.168.1.100' // Dummy IP
         this.username = 'DEMO_USER_HUE' // Dummy Username
@@ -180,7 +182,7 @@ class HueBridgeManager {
   // --------------------
 
   saveConfig() {
-    if (DEMO) return // Non salvare configurazioni dummy
+     if (this.demo) return // Non salvare configurazioni dummy
     settingsLib.setItem(BRIDGE_IP_KEY, this.bridgeIp)
     settingsLib.setItem(USERNAME_KEY, this.username)
     settingsLib.setItem(API_VERSION_KEY, this.apiVersion)
@@ -192,7 +194,7 @@ class HueBridgeManager {
   }
 
   clearConfig() {
-    if (DEMO) {
+     if (this.demo) {
         this._initDemoState()
         console.log('DEMO MODE: Config cleared (reset to initial demo state)')
         return
@@ -206,7 +208,7 @@ class HueBridgeManager {
   }
 
   async discoverBridges() {
-    if (DEMO) {
+     if (this.demo) {
         console.log('DEMO MODE: Discovering bridges mock')
         const bridges = [{ id: 'demo-1', internalipaddress: this.bridgeIp, name: 'Demo Hue Bridge' }]
         this.saveConfig()
@@ -231,7 +233,7 @@ class HueBridgeManager {
   }
 
   async pair() {
-    if (DEMO) {
+     if (this.demo) {
         console.log('DEMO MODE: Pairing success')
         return { success: true, username: this.username, bridgeIp: this.bridgeIp }
     }
@@ -241,7 +243,7 @@ class HueBridgeManager {
   }
 
   async pairWithRetry(maxRetries = 5, delayMs = 3000) {
-    if (DEMO) {
+     if (this.demo) {
         return this.pair()
     }
     if (!this.bridgeIp) throw new Error('No bridge IP configured')
@@ -269,7 +271,7 @@ class HueBridgeManager {
   }
 
   async pairV1() {
-    if (DEMO) {
+     if (this.demo) {
         return this.pair()
     }
     const url = `http://${this.bridgeIp}/api`
@@ -296,7 +298,7 @@ class HueBridgeManager {
   }
 
   async checkConnection() {
-    if (DEMO) {
+     if (this.demo) {
         console.log('DEMO MODE: Connection check success')
         return { connected: true }
     }
@@ -315,7 +317,7 @@ class HueBridgeManager {
   }
 
   async getGroups() {
-    if (DEMO) {
+     if (this.demo) {
         console.log('DEMO MODE: Get groups mock')
         return { 
             rooms: Object.values(this.DEMO_STATE.groups).filter(g => g.type === 'Room'),
@@ -406,7 +408,7 @@ class HueBridgeManager {
   }
 
   async toggleGroup(groupId, state) {
-    if (DEMO) {
+     if (this.demo) {
         console.log(`DEMO MODE: Toggle group ${groupId} to ${state}`)
         return this._handleDemoGroupAction(groupId, state)
     }
@@ -453,7 +455,7 @@ class HueBridgeManager {
 
 
   async getGroupDetail(groupId, groupType) {
-    if (DEMO) {
+     if (this.demo) {
         console.log(`DEMO MODE: Get group detail for ${groupId}`)
         const group = this.DEMO_STATE.groups[groupId]
         if (!group) throw new Error('Demo Group not found')
@@ -491,7 +493,7 @@ class HueBridgeManager {
   }
 
   async getScenesForGroup(groupId) {
-    if (DEMO) {
+     if (this.demo) {
         console.log(`DEMO MODE: Get scenes for group ${groupId}`)
         return Object.values(this.DEMO_STATE.scenes)
             .filter(s => s.group === groupId)
@@ -516,7 +518,7 @@ class HueBridgeManager {
 
 
   async getLights() {
-    if (DEMO) {
+     if (this.demo) {
         console.log('DEMO MODE: Get lights mock')
         // Mappa lo stato interno demo al formato atteso dal client (come farebbe _mapLightsV1)
         return Object.values(this.DEMO_STATE.lights)
@@ -608,7 +610,7 @@ class HueBridgeManager {
   }
 
   async toggleLight(id, state) {
-    if (DEMO) {
+     if (this.demo) {
         console.log(`DEMO MODE: Toggle light ${id} to ${state}`)
         return this._handleDemoAction(id, { ison: state })
     }
@@ -653,7 +655,7 @@ class HueBridgeManager {
   }
 
   async setLightBrightness(id, brightness) {
-    if (DEMO) {
+     if (this.demo) {
         console.log(`DEMO MODE: Set brightness for light ${id} to ${brightness}`)
         return this._handleDemoAction(id, { bri: brightness, colormode: 'bri' })
     }
@@ -703,7 +705,7 @@ class HueBridgeManager {
   }
 
   async setLightColor(lightId, colorParams) {
-    if (DEMO) {
+     if (this.demo) {
         console.log(`DEMO MODE: Set color for light ${lightId} with params:`, colorParams)
         // Mappa i parametri Hue API (hue, sat, bri) allo stato interno demo
         const newState = { colormode: 'hs', ison: true } // Presume che l'impostazione del colore accenda la luce
@@ -784,7 +786,7 @@ class HueBridgeManager {
 
 
   async toggleAllLights(on) {
-    if (DEMO) {
+     if (this.demo) {
         console.log(`DEMO MODE: Toggle ALL lights to ${on}`)
         return this._handleDemoAction('all', on)
     }
@@ -800,7 +802,7 @@ class HueBridgeManager {
 
 
   async getLightDetail(lightId) {
-    if (DEMO) {
+     if (this.demo) {
         console.log(`DEMO MODE: Get light detail for ${lightId}`)
         const light = this.DEMO_STATE.lights[lightId]
         if (!light) throw new Error('Demo Light not found')
@@ -851,7 +853,7 @@ class HueBridgeManager {
 
   // In HueBridgeManager
   async fetchAllData() {
-    if (DEMO) {
+     if (this.demo) {
         console.log('DEMO MODE: Fetching all data mock')
         const lights = Object.values(this.DEMO_STATE.lights).map(l => this._mapLightToSimple(l))
         const groups = await this.getGroups()
@@ -870,7 +872,7 @@ class HueBridgeManager {
       lights: lights,
       rooms: groups.rooms,
       zones: groups.zones,
-      scenes: []   // TODO
+      scenes: []   // TODO
     }
   }
 

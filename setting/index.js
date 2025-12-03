@@ -1,127 +1,452 @@
 import { gettext } from 'i18n'
 
-// Definiamo le opzioni per il selettore di ordine di visualizzazione
-const DISPLAY_ORDER_OPTIONS = [
-  { value: 'LIGHTS_FIRST', name: gettext('ORDER_LIGHTS_FIRST') },
-  { value: 'GROUPS_FIRST', name: gettext('ORDER_GROUPS_FIRST') },
-  { value: 'ALPHABETICAL', name: gettext('ORDER_ALPHABETICAL') },
-]
-
-// Funzione di utilità per leggere un toggle (da 'true'/'false' stringa a booleano)
-const getToggleValue = (storage, key, defaultValue) => {
-  const value = storage.getItem(key);
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  return defaultValue;
-}
-
-// Funzione di utilità per leggere un Select
-const getSelectValue = (storage, key, defaultValue) => {
-    return storage.getItem(key) || defaultValue;
-}
-
 AppSettingsPage({
   build(props) {
-    const settingsStorage = props.settingsStorage;
-    
-    // --- 1. Configurazione del bridge ---
-    const bridgeConfigSection = Section({ title: gettext('BRIDGE_CONFIG_TITLE') }, [
-      
-      // Input IP
-      TextInput({
-        label: gettext('BRIDGE_IP'),
-        value: settingsStorage.getItem('hue_bridge_ip') || '',
-        onChange: (value) => settingsStorage.setItem('hue_bridge_ip', value),
-        placeholder: '192.168.x.x',
-      }),
-      
-      // Input API Version
-      TextInput({
-        label: gettext('API_VERSION'),
-        value: settingsStorage.getItem('hue_api_version') || 'v2',
-        onChange: (value) => settingsStorage.setItem('hue_api_version', value),
-        placeholder: 'v2',
-      }),
-
-      // Mostra Username (API Key)
-      Text({
-        label: gettext('USERNAME_LABEL'),
-        subStyle: { color: '#666666', wordBreak: 'break-all', marginTop: '10px' }
-      }, [settingsStorage.getItem('hue_username') || gettext('USERNAME_NOT_SET')]),
-
-      // Bottone per l'accoppiamento (ipotetico)
-      /*Button({
-        label: gettext('PAIR_BRIDGE'),
-        color: 'primary',
-        subStyle: { marginTop: '10px' },
-        onClick: () => {
-          // L'accoppiamento è un processo complesso, qui mostriamo solo il concetto
-          alert(gettext('PAIRING_INSTRUCTIONS'));
-        }
-      })*/
-    ]);
-
-    // --- 2. Preferenze Utente (I settings che volevi) ---
-    const userPreferencesSection = Section({ title: gettext('USER_PREFERENCES_TITLE') }, [
-      
-      // show_global_toggle (Default: true)
-      Toggle({
-        label: gettext('SHOW_GLOBAL_TOGGLE_LABEL'),
-        value: getToggleValue(settingsStorage, 'show_global_toggle', true),
-        onChange: (value) => settingsStorage.setItem('show_global_toggle', value ? 'true' : 'false')
-      }),
-
-      // show_scenes (Default: false)
-      Toggle({
-        label: gettext('SHOW_SCENES_LABEL'),
-        value: getToggleValue(settingsStorage, 'show_scenes', false),
-        onChange: (value) => settingsStorage.setItem('show_scenes', value ? 'true' : 'false')
-      }),
-
-      // display_order (Default: 'LIGHTS_FIRST')
-      Select({
-        label: gettext('DISPLAY_ORDER_LABEL'),
-        options: DISPLAY_ORDER_OPTIONS,
-        value: getSelectValue(settingsStorage, 'display_order', 'LIGHTS_FIRST'),
-        onChange: (value) => settingsStorage.setItem('display_order', value)
-      })
-    ]);
-    
-    // --- 3. Colori Preferiti (Sezione Placeholder) ---
-    const favoriteColorsSection = Section({ title: gettext('FAVORITE_COLORS_TITLE') }, [
-      Text({ subStyle: { textAlign: 'center' } }, [gettext('FAVORITE_COLORS_INSTRUCTIONS')]),
-      // Qui in un'app completa si implementerebbe un modo per aggiungere/modificare colori
-    ]);
-
-    // --- 4. Manutenzione ---
-    const maintenanceSection = Section({ title: gettext('MAINTENANCE_TITLE') }, [
-      // Clear Data Button
-      Button({
-        label: gettext('CLEAR_DATA'),
-        color: 'danger',
-        subStyle: { marginTop: '5px' },
-        onClick: () => {
-          // Si dovrebbe usare un Dialog di conferma in produzione
-          if (confirm(gettext('CONFIRM_CLEAR_DATA'))) {
-            settingsStorage.clear();
-            alert(gettext('DATA_CLEARED'));
-          }
-        },
-      }),
-
-      // Welcome Text (come nota a piè di pagina)
-      Text({
-        subStyle: { marginTop: '15px', textAlign: 'center' }
-      }, [gettext('WELCOME_TEXT')])
-    ]);
-
-
-    // Ritorna tutte le sezioni avvolte in un'unica Section radice (implicita)
     return Section({}, [
-        bridgeConfigSection,
-        userPreferencesSection,
-        favoriteColorsSection,
-        maintenanceSection
+      // ===== HEADER =====
+      View(
+        {
+          style: {
+            marginTop: '20px',
+            marginBottom: '30px',
+            textAlign: 'center',
+            padding: '20px',
+            backgroundColor: '#f8f9fa',
+            borderRadius: '8px'
+          },
+        },
+        [
+          Text(
+            {
+              style: {
+                fontSize: '24px',
+                fontWeight: 'bold',
+                color: '#333',
+                marginBottom: '10px'
+              }
+            },
+            ['🏠 Hue Bridge Settings']
+          ),
+          Text(
+            {
+              style: {
+                fontSize: '14px',
+                color: '#666'
+              }
+            },
+            [gettext('SETTINGS_SUBTITLE') || 'Configure your Philips Hue Bridge connection']
+          )
+        ]
+      ),
+
+      // ===== BRIDGE CONFIGURATION SECTION =====
+      View(
+        {
+          style: {
+            marginTop: '20px',
+            padding: '20px',
+            backgroundColor: '#fff',
+            borderRadius: '8px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          },
+        },
+        [
+          Text(
+            {
+              style: {
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#333',
+                marginBottom: '15px'
+              }
+            },
+            ['Bridge Configuration']
+          ),
+
+          // Bridge IP Input
+          TextInput({
+            label: gettext('BRIDGE_IP') || 'Bridge IP Address',
+            placeholder: 'e.g. 192.168.1.132',
+            value: props.settingsStorage.getItem('hue_bridge_ip') || '',
+            onChange: (value) => {
+              props.settingsStorage.setItem('hue_bridge_ip', value)
+            },
+            style: {
+              marginBottom: '15px'
+            }
+          }),
+
+          // Username (Read-only display)
+          View(
+            {
+              style: {
+                marginTop: '15px',
+                padding: '12px',
+                backgroundColor: '#f8f9fa',
+                borderRadius: '6px',
+                border: '1px solid #dee2e6'
+              }
+            },
+            [
+              Text(
+                {
+                  style: {
+                    fontSize: '12px',
+                    color: '#6c757d',
+                    marginBottom: '5px'
+                  }
+                },
+                ['Username (Auto-generated):']
+              ),
+              Text(
+                {
+                  style: {
+                    fontSize: '14px',
+                    color: '#495057',
+                    fontFamily: 'monospace',
+                    wordBreak: 'break-all'
+                  }
+                },
+                [props.settingsStorage.getItem('hue_username') || 'Not configured yet']
+              )
+            ]
+          ),
+
+          // API Version Display
+          View(
+            {
+              style: {
+                marginTop: '15px',
+                padding: '12px',
+                backgroundColor: '#e7f3ff',
+                borderRadius: '6px',
+                border: '1px solid #bee5eb'
+              }
+            },
+            [
+              Text(
+                {
+                  style: {
+                    fontSize: '12px',
+                    color: '#0c5460',
+                    marginBottom: '5px'
+                  }
+                },
+                ['API Version: ']
+              ),
+              Text(
+                {
+                  style: {
+                    fontSize: '14px',
+                    color: '#004085',
+                    fontWeight: '600'
+                  }
+                },
+                [props.settingsStorage.getItem('hue_api_version') || 'v1']
+              )
+            ]
+          )
+        ]
+      ),
+
+      // ===== CONNECTION STATUS SECTION =====
+      View(
+        {
+          style: {
+            marginTop: '20px',
+            padding: '20px',
+            backgroundColor: '#fff',
+            borderRadius: '8px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          },
+        },
+        [
+          Text(
+            {
+              style: {
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#333',
+                marginBottom: '15px'
+              }
+            },
+            ['Connection Status']
+          ),
+
+          View(
+            {
+              style: {
+                display: 'flex',
+                alignItems: 'center',
+                padding: '12px',
+                backgroundColor: props.settingsStorage.getItem('hue_username') ? '#d4edda' : '#f8d7da',
+                borderRadius: '6px',
+                border: props.settingsStorage.getItem('hue_username') ? '1px solid #c3e6cb' : '1px solid #f5c6cb'
+              }
+            },
+            [
+              Text(
+                {
+                  style: {
+                    fontSize: '20px',
+                    marginRight: '10px'
+                  }
+                },
+                [props.settingsStorage.getItem('hue_username') ? '✅' : '❌']
+              ),
+              Text(
+                {
+                  style: {
+                    fontSize: '14px',
+                    color: props.settingsStorage.getItem('hue_username') ? '#155724' : '#721c24',
+                    fontWeight: '500'
+                  }
+                },
+                [
+                  props.settingsStorage.getItem('hue_username')
+                    ? 'Bridge is configured and paired'
+                    : 'Bridge not configured. Use the app to pair.'
+                ]
+              )
+            ]
+          )
+        ]
+      ),
+
+      // ===== ADVANCED SETTINGS SECTION =====
+      View(
+        {
+          style: {
+            marginTop: '20px',
+            padding: '20px',
+            backgroundColor: '#fff',
+            borderRadius: '8px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          },
+        },
+        [
+          Text(
+            {
+              style: {
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#333',
+                marginBottom: '15px'
+              }
+            },
+            ['Advanced Settings']
+          ),
+
+          // Manual API Version Override
+          /*View(
+            {
+              style: {
+                marginBottom: '15px'
+              }
+            },
+            [
+              Text(
+                {
+                  style: {
+                    fontSize: '14px',
+                    color: '#6c757d',
+                    marginBottom: '8px'
+                  }
+                },
+                ['Force API Version (leave empty for auto):']
+              ),
+              TextInput({
+                label: 'API Version',
+                placeholder: 'v1 or v2',
+                value: props.settingsStorage.getItem('hue_api_version_override') || '',
+                onChange: (value) => {
+                  props.settingsStorage.setItem('hue_api_version_override', value)
+                }
+              })
+            ]
+          ),*/
+          // Show global toggle
+          Toggle({
+            label: 'Show global toggle',
+            value: props.settingsStorage.getItem('hue_show_global_toggle') === 'true',
+            onChange: (value) => {
+              props.settingsStorage.setItem('hue_show_global_toggle', value ? 'true' : 'false')
+            }
+          }),
+          // Show scenes
+          Toggle({
+            label: 'Show Scenes',
+            value: props.settingsStorage.getItem('hue_show_scenes') === 'true',
+            onChange: (value) => {
+              props.settingsStorage.setItem('hue_show_scenes', value ? 'true' : 'false')
+            }
+          }),
+
+          // Display Order
+          Select({
+            title: 'Display Order',
+            options: [{ name: 'Light first', value: 'LIGHTS_FIRST' },
+                      { name: 'Scenes first', value: 'SCENES_FIRST' }],
+            value: props.settingsStorage.getItem('hue_display_order'),
+            onChange: (value) => {
+              props.settingsStorage.setItem('hue_display_order', value )
+            }
+          }),
+
+          // Debug Mode Toggle
+          Toggle({
+            label: '🐛 DEMO Mode',
+            //settingsKey: 'hue_demo_mode',
+            value: props.settingsStorage.getItem('hue_demo_mode') === 'true',
+            onChange: (value) => {
+              props.settingsStorage.setItem('hue_demo_mode', value ? 'true' : 'false')
+            }
+          })
+        ]
+      ),
+
+      // ===== ACTIONS SECTION =====
+      View(
+        {
+          style: {
+            marginTop: '20px',
+            padding: '20px',
+            backgroundColor: '#fff',
+            borderRadius: '8px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          },
+        },
+        [
+          Text(
+            {
+              style: {
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#333',
+                marginBottom: '15px'
+              }
+            },
+            ['Actions']
+          ),
+
+          // Test Connection Button
+          /*Button({
+            label: '🔄 Test Connection',
+            color: 'primary',
+            style: {
+              marginBottom: '10px',
+              width: '100%'
+            },
+            onClick: () => {
+              const bridgeIp = props.settingsStorage.getItem('hue_bridge_ip')
+              const username = props.settingsStorage.getItem('hue_username')
+
+              if (!bridgeIp || !username) {
+                alert('⚠️ Bridge not configured. Please pair using the watch app first.')
+                return
+              }
+
+              alert('Testing connection to ' + bridgeIp + '...\n\n(Feature coming soon)')
+            },
+          }),*/
+
+          // Clear Configuration Button
+          Button({
+            label: '🗑️ Clear All Configuration',
+            color: 'secondary',
+            style: {
+              width: '100%'
+            },
+            onClick: () => {
+              if (confirm('Are you sure you want to clear all Hue Bridge configuration?\n\nYou will need to pair again.')) {
+                props.settingsStorage.removeItem('hue_bridge_ip')
+                props.settingsStorage.removeItem('hue_username')
+                props.settingsStorage.removeItem('hue_api_version')
+                alert('✅ Configuration cleared successfully!')
+                window.location.reload()
+              }
+            },
+          })
+        ]
+      ),
+
+
+      // ===== HELP SECTION =====
+      View(
+        {
+          style: {
+            marginTop: '20px',
+            marginBottom: '40px',
+            padding: '20px',
+            backgroundColor: '#fff3cd',
+            borderRadius: '8px',
+            border: '1px solid #ffeaa7'
+          },
+        },
+        [
+          Text(
+            {
+              style: {
+                fontSize: '16px',
+                fontWeight: '600',
+                color: '#856404',
+                marginBottom: '10px'
+              }
+            },
+            ['💡 How to Pair Your Bridge']
+          ),
+          Text(
+            {
+              style: {
+                fontSize: '14px',
+                color: '#856404',
+                lineHeight: '1.6'
+              }
+            },
+            [
+              '1. Open the Hue app on your watch\n' +
+              '2. The app will automatically search for your bridge\n' +
+              '3. Press the physical button on your Hue Bridge\n' +
+              '4. Wait for the pairing to complete\n' +
+              '5. Your configuration will be saved automatically'
+            ]
+          )
+        ]
+      ),
+
+      // ===== FOOTER =====
+      View(
+        {
+          style: {
+            marginTop: '30px',
+            marginBottom: '20px',
+            textAlign: 'center',
+            padding: '15px',
+            borderTop: '1px solid #dee2e6'
+          },
+        },
+        [
+          Text(
+            {
+              style: {
+                fontSize: '12px',
+                color: '#6c757d'
+              }
+            },
+            ['Hue On-Off App v1.0']
+          ),
+          Text(
+            {
+              style: {
+                fontSize: '11px',
+                color: '#adb5bd',
+                marginTop: '5px'
+              }
+            },
+            ['Made with ❤️ for Zepp OS']
+          )
+        ]
+      )
     ])
   },
 })

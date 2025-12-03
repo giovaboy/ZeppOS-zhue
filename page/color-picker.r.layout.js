@@ -5,6 +5,11 @@ import { getText } from '@zos/i18n'
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
+// Range API Hue/Sat/Bri
+const HUE_RANGE = 65535;
+const SAT_RANGE = 254;
+const BRI_RANGE = 254;
+
 // Configurazione Layout
 export const LAYOUT_CONFIG = {
   pickerSize: px(300), // Area grande centrale
@@ -25,7 +30,7 @@ const COLORS = {
 }
 
 // Utility HSB to Hex (Visuale)
-function hsb2hex(h, s, v) {
+export function hsb2hex(h, s, v) {
     if (s === 0) {
         const val = Math.round(v * 2.55)
         return val << 16 | val << 8 | val;
@@ -118,26 +123,12 @@ function renderTabs(pageContext, currentMode, onTabSwitch) {
 
 function renderHueSatPicker(pageContext, state, callbacks) {
     const { pickerX, pickerY, pickerSize } = LAYOUT_CONFIG;
-    const { hue, sat } = state;
+    const { hue, sat, bri } = state;
     const { onDragColor } = callbacks;
 
-    // A. Sfondo Gradiente (Simulato a strisce)
-   /* const stripCount = 60;//25;
-    const stripW = pickerSize / stripCount;
-    for(let i=0; i<stripCount; i++) {
-        const hVal = (i / stripCount) * 360;
-        pageContext.createTrackedWidget(widget.FILL_RECT, {
-            x: pickerX + (i * stripW), y: pickerY,
-            w: stripW + 1, h: pickerSize,
-            color: hsb2hex(hVal, 100, 100), // Pura saturazione/luminosità per sfondo
-            radius: 0//(i===0 || i===stripCount-1) ? 12 : 0
-        });
-    }*/
-    // Nel tuo file di layout (es. color-picker.r.layout.js)
-    // ...
     // --- Selettore Colore (Matrice Hue/Saturation) ---
-    const H_RESOLUTION = 20; // Numero di colonne (Hue)
-    const S_RESOLUTION = 20; // Numero di righe (Saturation)
+    const H_RESOLUTION = 18; // Numero di colonne (Hue)
+    const S_RESOLUTION = 18; // Numero di righe (Saturation)
 
     const cellW = pickerSize / H_RESOLUTION; // Larghezza di ogni quadratino
     const cellH = pickerSize / S_RESOLUTION; // Altezza di ogni quadratino
@@ -152,7 +143,7 @@ function renderHueSatPicker(pageContext, state, callbacks) {
 
             // Calcolo della Saturazione per questa riga
             // La Saturazione è massima (100) in fondo (j=S_RESOLUTION-1) e minima (0) in cima (j=0).
-            const satVal = (j / S_RESOLUTION) * 100;
+            const satVal = (1 - (j / S_RESOLUTION)) * 100; // 100% in cima, 0% in fondo
 
             // Colore da disegnare: Hue della colonna, Saturation della riga, Luminosità massima (100)
             const hexColor = hsb2hex(hueVal, satVal, 100);
@@ -160,7 +151,9 @@ function renderHueSatPicker(pageContext, state, callbacks) {
             // Disegna il quadratino
             pageContext.createTrackedWidget(widget.FILL_RECT, {
                 x: pickerX + (i * cellW),
-                y: pickerY + (pickerSize - cellH) - (j * cellH), // <--- ATTENZIONE: Disegno dal basso
+                //y: pickerY + (pickerSize - cellH) - (j * cellH), // <--- ATTENZIONE: Disegno dal basso
+                // Disegno dall'alto (j=0) verso il basso (j=max)
+                y: pickerY + (j * cellH),
                 w: cellW + 1,
                 h: cellH + 1,
                 color: hexColor,
@@ -170,16 +163,32 @@ function renderHueSatPicker(pageContext, state, callbacks) {
     }
 
     // B. Cursore
-    const cursorSize = px(20);//36
+    //const cursorSize = px(20);//36
     // Hue mappa su X, Sat mappa su Y (Sat 254 = Alto, 0 = Basso? No, solitamente Y basso è bianco)
     // Hue API: 0-65535. Sat API: 0-254.
-    const posX = pickerX + (hue / 65535) * pickerSize;
-    const posY = pickerY + ((254 - sat) / 254) * pickerSize; // 254 (Vivido) in alto
+    //const posX = pickerX + (hue / 65535) * pickerSize;
+    //const posY = pickerY + ((254 - sat) / 254) * pickerSize; // 254 (Vivido) in alto
+    const cursorSize = px(28); 
+    // Mappa Hue API (0-65535) su X (0-pickerSize)
+    const posX = pickerX + Math.max(0, Math.min(pickerSize, (hue / HUE_RANGE) * pickerSize));
+
+    // Mappa Sat API (0-254) su Y (0-pickerSize)
+    // 0 SAT (bianco) -> Basso (pickerY + pickerSize)
+    // 254 SAT (vivido) -> Alto (pickerY)
+    const posY = pickerY + Math.max(0, Math.min(pickerSize, (SAT_RANGE - sat) / SAT_RANGE * pickerSize));
+
+    // Il cursore mostra il colore ATTUALE della luce (H, S, B)
+    const currentHex = hsb2hex(
+      (hue / HUE_RANGE) * 360,
+      (sat / SAT_RANGE) * 100,
+      (bri / BRI_RANGE) * 100
+    );
 
     const cursor = pageContext.createTrackedWidget(widget.FILL_RECT, {
         x: posX - cursorSize/2, y: posY - cursorSize/2,
         w: cursorSize, h: cursorSize,
-        color: 0xffffff, radius: cursorSize/2,
+        color:  currentHex,//0xffffff,
+        radius: cursorSize/2,
         line_width: 4, line_color: 0x000000
     });
     pageContext.state.cursorWidget = cursor;
@@ -213,9 +222,10 @@ function renderCTPicker(pageContext, state, callbacks) {
         const mired = 153 + (i / stripCount) * (500 - 153);
         pageContext.createTrackedWidget(widget.FILL_RECT, {
             x: pickerX, y: pickerY + (i * stripH),
-            w: pickerSize, h: stripH + 1,
+            w: pickerSize,
+            h: stripH + 1,
             color: ct2hex(mired),
-            radius: (i===0 || i===stripCount-1) ? 12 : 0
+            radius: 0//(i===0 || i===stripCount-1) ? 12 : 0
         });
     }
 
