@@ -6,7 +6,7 @@ import { getText } from '@zos/i18n'
 import { createWidget, deleteWidget } from '@zos/ui'
 import { push } from '@zos/router'
 import { LIGHT_MODELS } from '../utils/constants.js'
-import { renderGroupDetailPage } from 'zosLoader:./group-detail.[pf].layout.js' // <--- NUOVO IMPORT
+import { renderGroupDetailPage } from 'zosLoader:./group-detail.[pf].layout.js'
 
 const logger = getLogger('hue-group-detail-page')
 
@@ -29,10 +29,9 @@ const COLORS = { // Manteniamo i colori qui, li passiamo al layout
 }
 
 const localStorage = new LocalStorage()
-// Parametrizzazioni utente (da salvare in settings)
 const USER_SETTINGS = {
   show_global_toggle: localStorage.getItem(SHOW_GLOBAL_TOGGLE, false) === 'true',
-  show_scenes: localStorage.getItem(SHOW_SCENES, false) === 'true',
+  show_scenes: localStorage.getItem(SHOW_SCENES, true) === 'true',
   display_order: localStorage.getItem(DISPLAY_ORDER, 'LIGHTS_FIRST')
 }
 
@@ -96,7 +95,9 @@ Page(
     clearAllWidgets() {
       if (this.widgets) {
         this.widgets.forEach(w => {
-          try { deleteWidget(w) } catch (e) {}
+          try { deleteWidget(w) } catch (e) {
+            logger.error('clearAllWidgets:', e)
+          }
         })
       }
       this.widgets = []
@@ -265,6 +266,7 @@ Page(
 
       // Aggiungi le SCENE
       if (USER_SETTINGS.show_scenes && this.state.scenes.length > 0) {
+          logger.log(`Aggiungo ${this.state.scenes.length} scene alla lista.`)
           data.push({ type: 'header', name: getText('SCENES') })
           dataConfig.push({ start: currentStart, end: currentStart, type_id: 1 })
           currentStart++
