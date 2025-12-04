@@ -260,15 +260,15 @@ Page(
       const addScenes = () => {
         if (this.state.userSettings.show_scenes && this.state.scenes.length > 0) {
           logger.log(`Adding ${this.state.scenes.length} scenes to list`)
-          
+
           // Header scene
           data.push({ type: 'header', name: getText('SCENES') })
 
           // Scene items
           this.state.scenes.forEach(scene => {
-            data.push({ 
-              ...scene, 
-              type: 'scene' 
+            data.push({
+              ...scene,
+              type: 'scene'
             })
           })
         }
@@ -291,6 +291,8 @@ Page(
               stateSuffix = isColorModeActive ? '_color' : '_on'
             }
             const finalIconPath = `icons/${modelInfo.icon}${stateSuffix}.png`
+
+            logger.debug(`Prepared light item: ${modelInfo} (Name: ${light.name}, On: ${isOn}, Icon: ${finalIconPath})`)
 
             const statusText = isOn
               ? `${getText('BRIGHTNESS')} ${Math.round(light.bri / 254 * 100)}%`
@@ -319,7 +321,7 @@ Page(
         addLights()
         addScenes()
       }
-      
+
       logger.log(`Data prepared: ${data.length} total items`)
 
       // ✅ SEMPLIFICATO: Passa solo data array

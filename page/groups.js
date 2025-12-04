@@ -97,7 +97,7 @@ Page(
     toggleGroup(groupRaw) {
       logger.log('Toggle group:', groupRaw.name)
 
-      const currentOnState = groupRaw.on_off; // Assicurati che questo campo esista nel raw
+      const currentOnState = !!(groupRaw.on_off || groupRaw.anyOn)
       const newState = !currentOnState;
 
       // Aggiornamento ottimistico UI (opzionale, per reattività)

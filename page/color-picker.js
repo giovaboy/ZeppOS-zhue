@@ -3,6 +3,7 @@ import { px } from '@zos/utils'
 import { setScrollLock } from '@zos/page'
 import { createWidget, deleteWidget, prop } from '@zos/ui'
 import { back } from '@zos/router'
+import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import { getLogger } from '../utils/logger.js'
 
 // Import Layout
@@ -38,6 +39,7 @@ Page(
     },
 
     widgets: [],
+    exitGestureListener: null, // Riferimento al listener per lo swipe di uscita
 
     onInit(p) {
         logger.log('Color Picker Init', p);
@@ -70,7 +72,41 @@ Page(
     build() {
         // BLOCCA SCROLLING
         setScrollLock({ lock: true });
+        // Imposta la gesture di uscita standard
+        this.unlockExitGesture();
         this.render();
+    },
+
+     // --- GESTURE LOCK LOGIC ---
+
+    // La funzione di uscita che viene allegata al listener di ZeppOS
+    exitOnSwipe(event) {
+        if (event === GESTURE_RIGHT) {
+            back();
+            return true;
+        }
+        return false;
+    },
+
+    /** Blocca lo swipe laterale per l'uscita rimuovendo il listener. */
+    lockExitGesture() {
+        if (this.exitGestureListener) {
+            this.exitGestureListener(); // Rimuove il listener
+            this.exitGestureListener = null;
+            logger.debug('Exit gesture LOCKED');
+        }
+    },
+
+    /** Ripristina lo swipe laterale per l'uscita. */
+    unlockExitGesture() {
+        if (this.exitGestureListener) {
+            this.exitGestureListener(); // Rimuove il precedente se esiste
+        }
+        // Crea un nuovo listener e salva il suo distruttore (unlistener)
+        this.exitGestureListener = onGesture({
+            callback: (event) => this.exitOnSwipe(event)
+        });
+        logger.debug('Exit gesture UNLOCKED');
     },
 
     createTrackedWidget(type, props) {
@@ -80,7 +116,9 @@ Page(
     },
 
     clearWidgets() {
-        this.widgets.forEach(w => { try { deleteWidget(w) } catch(e){} });
+        this.widgets.forEach(w => { try { deleteWidget(w) } catch(e){
+            logger.error('clearWidgets error:', e);
+        } });
         this.widgets = [];
         this.state.cursorWidget = null;
         this.state.ctCursorWidget = null;
@@ -118,6 +156,7 @@ Page(
         };
 
         if (evt === 'DOWN') {
+            this.lockExitGesture(); // BLOCCA GESTURE
             this.state.isDragging = true;
             const vals = calcValues(info.x, info.y);
             this.updateColorUI(vals.hue, vals.sat);
@@ -127,6 +166,7 @@ Page(
             this.updateColorUI(vals.hue, vals.sat);
             // Throttle API calls here usually, or send only on UP
         } else if (evt === 'UP') {
+            this.unlockExitGesture(); // SBLOCCA GESTURE
             this.state.isDragging = false;
             const vals = calcValues(info.x, info.y);
             this.sendColor(vals.hue, vals.sat, true); // Final send
@@ -174,6 +214,7 @@ Page(
         };
 
         if (evt === 'DOWN') {
+            this.lockExitGesture(); // BLOCCA GESTURE
             this.state.isDragging = true;
             const val = calcCT(info.y);
             this.updateCTUI(val);
@@ -181,6 +222,7 @@ Page(
             const val = calcCT(info.y);
             this.updateCTUI(val);
         } else if (evt === 'UP') {
+            this.unlockExitGesture(); // SBLOCCA GESTURE
             this.state.isDragging = false;
             const val = calcCT(info.y);
             this.sendCT(val);
@@ -220,6 +262,7 @@ Page(
         };
 
         if (evt === 'DOWN') {
+            this.lockExitGesture(); // BLOCCA GESTURE
             this.state.isDragging = true;
             const val = calcBri(info.x);
             this.updateBriUI(val);
@@ -227,6 +270,7 @@ Page(
             const val = calcBri(info.x);
             this.updateBriUI(val);
         } else if (evt === 'UP') {
+            this.unlockExitGesture(); // SBLOCCA GESTURE
             this.state.isDragging = false;
             const val = calcBri(info.x);
             this.sendBri(val);

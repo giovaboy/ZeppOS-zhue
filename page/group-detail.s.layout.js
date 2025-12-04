@@ -1,6 +1,6 @@
 import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
-import { widget, align } from '@zos/ui'
+import { widget, align, text_style } from '@zos/ui'
 import { getText } from '@zos/i18n'
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
@@ -8,7 +8,7 @@ export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 // Funzione principale di rendering chiamata da group_detail.js
 export function renderGroupDetailPage(pageContext, state, viewData, callbacks, COLORS) {
     const { toggleGroup, retry } = callbacks
-    const { groupName, isLoading, error } = state
+    const { groupName, isLoading, error, userSettings } = state
 
     // Background
     pageContext.createTrackedWidget(widget.FILL_RECT, {
@@ -17,24 +17,30 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
 
     // Header: Nome del Gruppo
     pageContext.createTrackedWidget(widget.TEXT, {
-        x: 0, y: 0, w: DEVICE_WIDTH, h: 50,
+        x: 0, y: px(10), w: DEVICE_WIDTH, h: px(40),
         text: groupName || getText('GROUP_DETAIL'),
-        text_size: 34,
+        text_size: px(34),
         color: COLORS.text,
         align_h: align.CENTER_H,
-        align_v: align.TOP
+        align_v: align.CENTER_V
     })
 
     // 1. Gestione Errore
     if (error) {
         pageContext.createTrackedWidget(widget.TEXT, {
             x: px(20), y: px(200), w: px(440), h: px(100),
-            text: `ERROR: ${error}`, text_size: px(24), color: COLORS.error,
-            align_h: align.CENTER_H, align_v: align.CENTER_V
+            text: `ERROR: ${error}`,
+            text_size: px(24),
+            color: COLORS.error,
+            align_h: align.CENTER_H,
+            align_v: align.CENTER_V,
+            text_style: text_style.WRAP
         })
         pageContext.createTrackedWidget(widget.BUTTON, {
             x: px(140), y: px(350), w: px(200), h: px(60),
-            text: 'RETRY', normal_color: COLORS.highlight, press_color: 0x333333,
+            text: getText('RETRY'),
+            normal_color: COLORS.highlight,
+            press_color: 0x333333,
             radius: px(10),
             click_func: retry
         })
@@ -44,136 +50,272 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
     // 2. Loading State
     if (isLoading) {
         pageContext.createTrackedWidget(widget.TEXT, {
-            x: 0, y: px(200), w: px(480), h: px(50),
-            text: 'Loading...', text_size: px(28), color: COLORS.inactive,
-            align_h: align.CENTER_H
+            x: 0, y: px(200), w: DEVICE_WIDTH, h: px(50),
+            text: getText('LOADING'),
+            text_size: px(28),
+            color: COLORS.inactive,
+            align_h: align.CENTER_H,
+            align_v: align.CENTER_V
         })
         return
     }
 
-    // 3. Pulsante Toggle Globale
-    const anyOn = state.lights.some(light => !!light.ison) 
-    const buttonColor = anyOn ? COLORS.toggleOn : COLORS.toggleOff
+    // 3. Pulsante Toggle Globale (condizionale su userSettings)
+    let currentY = px(60)
 
-    pageContext.createTrackedWidget(widget.BUTTON, {
-        x: px(80), y: px(60), w: px(320), h: px(60),
-        text: anyOn ? getText('GROUP_OFF') : getText('GROUP_ON'),
-        text_size: px(28),
-        normal_color: buttonColor,
-        press_color: 0x333333,
-        radius: px(30),
-        click_func: toggleGroup
-    })
+    if (userSettings.show_global_toggle && state.lights.length > 1) {
+        const anyOn = state.lights.some(light => !!light.ison)
+        const buttonColor = anyOn ? COLORS.toggleOn : COLORS.toggleOff
 
-    // 4. Contenuto Scrollabile (Scene e Luci)
-    renderGroupContentScroll(pageContext, viewData, callbacks, COLORS)
+        pageContext.createTrackedWidget(widget.BUTTON, {
+            x: px(80), y: currentY, w: px(320), h: px(60),
+            text: anyOn ? getText('GROUP_OFF') : getText('GROUP_ON'),
+            text_size: px(28),
+            normal_color: buttonColor,
+            press_color: 0x333333,
+            radius: px(30),
+            click_func: toggleGroup
+        })
+
+        currentY += px(75) // Spazio dopo toggle
+    }
+
+    // 4. Contenuto Scrollabile con VIEW_CONTAINER
+    renderGroupContentWithViewContainer(pageContext, viewData, callbacks, COLORS, currentY)
 }
 
-// Funzione interna che disegna la scroll list
-function renderGroupContentScroll(pageContext, viewData, callbacks, COLORS) {
+// ✅ NUOVO: Rendering con VIEW_CONTAINER
+function renderGroupContentWithViewContainer(pageContext, viewData, callbacks, COLORS, startY) {
     const { applyScene, toggleLight, navigateToLightDetail } = callbacks
-    
-    const { data, dataConfig } = viewData
+    const { data } = viewData
 
     if (data.length === 0) {
         pageContext.createTrackedWidget(widget.TEXT, {
-            x: 0, y: px(200), w: px(480), h: px(50),
-            text: 'Nessuna luce o scena trovata.', text_size: px(24), color: COLORS.inactive,
-            align_h: align.CENTER_H
+            x: 0, y: px(200), w: DEVICE_WIDTH, h: px(50),
+            text: getText('NO_LIGHTS_OR_SCENES'),
+            text_size: px(24),
+            color: COLORS.inactive,
+            align_h: align.CENTER_H,
+            align_v: align.CENTER_V
         })
         return
     }
 
-    const itemConfig = [
-        // Type 1: Header (Titolo Sezione)
-        {
-            type_id: 1,
-            item_bg_color: COLORS.background,
-            item_bg_radius: px(0),
-            item_height: px(50),
-            text_view: [
-                { x: px(20), y: px(10), w: px(440), h: px(40), key: 'name', color: COLORS.sectionHeader, text_size: px(26) },
-            ],
-            text_view_count: 1,
-            image_view: [],
-            image_view_count: 0
-        },
-        // Type 2: Scene (Pulsante di Scena)
-        {
-            type_id: 2,
-            item_bg_color: COLORS.sceneBg,
-            item_bg_radius: px(10),
-            item_height: px(80),
-            text_view: [
-                { x: px(20), y: px(25), w: px(440), h: px(50), key: 'name', color: 0xFFFFFF, text_size: px(30) },
-            ],
-            text_view_count: 1,
-            image_view: [],
-            image_view_count: 0
-        },
-        // Type 3: Light item layout (CON CAMPIONE DI COLORE E ICONA)
-        {
-            type_id: 3,
-            item_bg_color: COLORS.lightBg,
-            item_bg_radius: px(10),
-            item_height: px(90),
-            text_view: [
-                // RIGA 1: Campione di Colore (Swatch) - CHIAVE CRITICA: usa la stringa 'swatch_bg_color'
-                {
-                    x: px(20), y: px(20), w: px(16), h: px(16),
-                    key: 'swatch_text', // Chiave per il valore fittizio (spazio) nel dato
-                    item_bg_color: 'swatch_bg_color', // CRITICO: Usa la chiave del dato che contiene il colore
-                    color: 0x00000000, 
-                    text_size: 1, 
-                    item_bg_radius: px(4)
-                },
-                // RIGA 2: Nome della luce
-                { x: px(45), y: px(15), w: px(330), h: px(30), key: 'name', color: 0xFFFFFF, text_size: px(28), align_h: align.LEFT, action: true },
-                // RIGA 3: Status
-                { x: px(45), y: px(45), w: px(330), h: px(25), key: 'status_text', color: COLORS.inactive, text_size: px(20), align_h: align.LEFT },
-            ],
-            text_view_count: 3,
-
-            // Icona/Bottone Toggle
-            image_view: [
-                { x: px(380), y: px(10), w: px(70), h: px(70), key: 'icon', auto_scale: true, action: true }
-            ],
-            image_view_count: 1
-        },
-    ]
-
-    pageContext.createTrackedWidget(widget.SCROLL_LIST, {
-        x: 0,
-        y: px(140), 
-        w: px(480),
-        h: px(340), 
-        item_space: px(10),
-
-        item_config: itemConfig,
-        item_config_count: itemConfig.length,
-
-        // Dati e Configurazione
-        data_type_config: dataConfig,
-        data_type_config_count: dataConfig.length,
-        data_array: data,
-        data_count: data.length,
-
-        item_click_func: (list, index, data_key) => {
-            const item = data[index]
-            if (!item) return;
-            
-            // Le azioni sono già state incapsulate in callbacks in group_detail.js
-            if (item.type === 'scene') {
-                applyScene(item)
-            } else if (item.type === 'light') {
-                if (data_key === 'icon') {
-                    // Click sull'icona (toggle)
-                    toggleLight(item.raw)
-                } else {
-                    // Click sul Nome/generico (Naviga al dettaglio)
-                    navigateToLightDetail(item.raw)
-                }
-            }
+    // Calcola l'altezza totale del contenuto
+    let totalContentHeight = 0
+    data.forEach(item => {
+        if (item.type === 'header') {
+            totalContentHeight += px(50)
+        } else if (item.type === 'scene') {
+            totalContentHeight += px(80) + px(10) // item + spacing
+        } else if (item.type === 'light') {
+            totalContentHeight += px(90) + px(10) // item + spacing
         }
     })
+
+    // ✅ VIEW_CONTAINER per scrolling
+    const containerHeight = DEVICE_HEIGHT - startY
+    const viewContainer = pageContext.createTrackedWidget(widget.VIEW_CONTAINER, {
+        x: 0,
+        y: startY,
+        w: DEVICE_WIDTH,
+        h: containerHeight,
+        scroll_enable: true,
+        scroll_max_height: totalContentHeight + px(20) // Padding bottom
+    })
+
+    let currentY = 0
+
+    // Renderizza ogni item nel VIEW_CONTAINER
+    data.forEach((item, index) => {
+        if (item.type === 'header') {
+            currentY = renderHeader(viewContainer, item, currentY, COLORS)
+        } else if (item.type === 'scene') {
+            currentY = renderSceneItem(viewContainer, item, currentY, COLORS, () => applyScene(item))
+        } else if (item.type === 'light') {
+            currentY = renderLightItem(
+                viewContainer,
+                item,
+                currentY,
+                COLORS,
+                () => toggleLight(item.raw),
+                () => navigateToLightDetail(item.raw)
+            )
+        }
+    })
+}
+
+// ✅ Render Header Section
+function renderHeader(container, item, yPos, COLORS) {
+    container.createWidget(widget.TEXT, {
+        x: px(20),
+        y: yPos,
+        w: px(440),
+        h: px(50),
+        text: item.name,
+        text_size: px(26),
+        color: COLORS.sectionHeader,
+        align_h: align.CENTER_H,
+        align_v: align.CENTER_V
+    })
+
+    return yPos + px(50)
+}
+
+// ✅ Render Scene Item
+function renderSceneItem(container, scene, yPos, COLORS, onTap) {
+    const itemHeight = px(80)
+
+    // Background
+    container.createWidget(widget.FILL_RECT, {
+        x: px(20),
+        y: yPos,
+        w: px(440),
+        h: itemHeight,
+        color: COLORS.sceneBg,
+        radius: px(10)
+    })
+
+    // Scene icon (optional colored circle)
+    if (scene.color) {
+        try {
+            const colorHex = scene.color.replace('#', '')
+            const colorInt = parseInt(colorHex, 16)
+
+            container.createWidget(widget.CIRCLE, {
+                center_x: px(50),
+                center_y: yPos + itemHeight / 2,
+                radius: px(15),
+                color: colorInt
+            })
+        } catch (e) {
+            // Fallback to default icon
+        }
+    }
+
+    // Scene name
+    container.createWidget(widget.TEXT, {
+        x: px(80),
+        y: yPos,
+        w: px(360),
+        h: itemHeight,
+        text: scene.name,
+        text_size: px(30),
+        color: 0xFFFFFF,
+        align_h: align.LEFT,
+        align_v: align.CENTER_V
+    })
+
+    // Clickable overlay
+    const overlay = container.createWidget(widget.BUTTON, {
+        x: px(20),
+        y: yPos,
+        w: px(440),
+        h: itemHeight,
+        text: '',
+        normal_color: 0x00000000,
+        press_color: 0x44ffffff,
+        radius: px(10),
+        click_func: onTap
+    })
+
+    overlay.setAlpha(0)
+
+    return yPos + itemHeight + px(10) // item + spacing
+}
+
+// ✅ Render Light Item
+function renderLightItem(container, light, yPos, COLORS, onToggle, onNavigate) {
+    const itemHeight = px(90)
+    const isOn = !!light.raw?.ison
+
+    // Background
+    container.createWidget(widget.FILL_RECT, {
+        x: px(20),
+        y: yPos,
+        w: px(440),
+        h: itemHeight,
+        color: COLORS.lightBg,
+        radius: px(10)
+    })
+
+    // Color swatch (left indicator)
+    container.createWidget(widget.FILL_RECT, {
+        x: px(30),
+        y: yPos + px(20),
+        w: px(16),
+        h: px(16),
+        color: light.swatch_bg_color || COLORS.inactive,
+        radius: px(4)
+    })
+
+    // Light name
+    container.createWidget(widget.TEXT, {
+        x: px(55),
+        y: yPos + px(15),
+        w: px(300),
+        h: px(30),
+        text: light.name,
+        text_size: px(28),
+        color: isOn ? 0xFFFFFF : COLORS.inactive,
+        align_h: align.LEFT,
+        align_v: align.CENTER_V
+    })
+
+    // Status text
+    container.createWidget(widget.TEXT, {
+        x: px(55),
+        y: yPos + px(45),
+        w: px(300),
+        h: px(25),
+        text: light.status_text,
+        text_size: px(20),
+        color: COLORS.inactive,
+        align_h: align.LEFT,
+        align_v: align.CENTER_V
+    })
+
+    // Light icon/toggle button (right side)
+    if (light.icon) {
+        container.createWidget(widget.IMG, {
+            x: px(380),
+            y: yPos + px(10),
+            w: px(70),
+            h: px(70),
+            src: light.icon,
+            auto_scale: true
+        })
+
+        // Clickable overlay for toggle
+        const overlay = container.createWidget(widget.BUTTON, {
+            x: px(380),
+            y: yPos + px(10),
+            w: px(70),
+            h: px(70),
+            text: '',
+            normal_color: 0x00000000,
+            press_color: 0x33ffffff,
+            radius: px(10),
+            click_func: onToggle
+        })
+
+        overlay.setAlpha(0)
+    }
+
+    // Clickable overlay for navigation (left area)
+    const overlay = container.createWidget(widget.BUTTON, {
+        x: px(20),
+        y: yPos,
+        w: px(350),
+        h: itemHeight,
+        text: '',
+        normal_color: 0x00000000,
+        press_color: 0x22ffffff,
+        radius: px(10),
+        click_func: onNavigate
+    })
+
+    overlay.setAlpha(0)
+
+    return yPos + itemHeight + px(10) // item + spacing
 }

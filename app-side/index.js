@@ -16,9 +16,9 @@ const DISPLAY_ORDER = 'hue_display_order'
 
 // Valori predefiniti per le impostazioni utente
 const DEFAULT_USER_SETTINGS = {
-    show_global_toggle: false,
-    show_scenes: true,
-    display_order: 'LIGHTS_FIRST'
+  show_global_toggle: false,
+  show_scenes: true,
+  display_order: 'LIGHTS_FIRST'
 }
 
 // --- Nuova funzione: HSB (0-65535, 0-254, 0-254) a RGB (0-255) ---
@@ -105,15 +105,14 @@ class HueBridgeManager {
     this.username = settingsLib.getItem(USERNAME_KEY) || null
     this.apiVersion = settingsLib.getItem(API_VERSION_KEY) || 'v1'
     this.demo = settingsLib.getItem(DEMO_MODE) === 'true'
-    // Inizializza le impostazioni utente leggendole da settingsLib
     this.user_settings = this._loadUserSettings()
 
     // --- LOGICA DEMO ---
     if (this.demo) {
-        this._initDemoState()
-        this.bridgeIp = '192.168.1.100' // Dummy IP
-        this.username = 'DEMO_USER_HUE' // Dummy Username
-        this.apiVersion = 'v1'
+      this._initDemoState()
+      this.bridgeIp = '192.168.1.100' // Dummy IP
+      this.username = 'DEMO_USER_HUE' // Dummy Username
+      this.apiVersion = 'v1'
     }
     // --------------------
 
@@ -126,104 +125,104 @@ class HueBridgeManager {
 
   // Nuovo metodo per caricare e mappare le impostazioni utente
   _loadUserSettings() {
-      // Legge i valori da settingsLib, usando i default se non presenti
-      const show_global_toggle_str = settingsLib.getItem(SHOW_GLOBAL_TOGGLE)
-      const show_scenes_str = settingsLib.getItem(SHOW_SCENES)
-      const display_order_str = settingsLib.getItem(DISPLAY_ORDER)
+    // Legge i valori da settingsLib, usando i default se non presenti
+    const show_global_toggle_str = settingsLib.getItem(SHOW_GLOBAL_TOGGLE)
+    const show_scenes_str = settingsLib.getItem(SHOW_SCENES)
+    const display_order_str = settingsLib.getItem(DISPLAY_ORDER)
 
-      return {
-          show_global_toggle: show_global_toggle_str !== null
-            ? show_global_toggle_str === 'true'
-            : DEFAULT_USER_SETTINGS.show_global_toggle,
+    return {
+      show_global_toggle: show_global_toggle_str !== null
+        ? show_global_toggle_str === 'true'
+        : DEFAULT_USER_SETTINGS.show_global_toggle,
 
-          show_scenes: show_scenes_str !== null
-            ? show_scenes_str === 'true'
-            : DEFAULT_USER_SETTINGS.show_scenes,
+      show_scenes: show_scenes_str !== null
+        ? show_scenes_str === 'true'
+        : DEFAULT_USER_SETTINGS.show_scenes,
 
-          display_order: display_order_str !== null
-            ? display_order_str
-            : DEFAULT_USER_SETTINGS.display_order
-      }
+      display_order: display_order_str !== null
+        ? display_order_str
+        : DEFAULT_USER_SETTINGS.display_order
+    }
   }
 
   // Nuovo metodo per esporre le impostazioni utente
   getUserSettings() {
-      // Ricarica per assicurarsi di avere lo stato più recente (utile se le settings sono cambiate)
-      this.user_settings = this._loadUserSettings()
-      return this.user_settings
+    // Ricarica per assicurarsi di avere lo stato più recente (utile se le settings sono cambiate)
+    this.user_settings = this._loadUserSettings()
+    return this.user_settings
   }
 
   // --- Funzioni per lo stato DEMO ---
   _initDemoState() {
-      this.DEMO_STATE = {
-          lights: {
-              '1': { id: '1', name: 'Lampada Soggiorno', ison: true, bri: 200, hue: 46920, sat: 254, ct: 0, colormode: 'hs', reachable: true, capabilities: ['brightness', 'color'] }, // Blu
-              '2': { id: '2', name: 'Striscia Cucina', ison: false, bri: 100, hue: 0, sat: 0, ct: 350, colormode: 'ct', reachable: true, capabilities: ['brightness', 'ct'] }, // Spenta, bianca calda
-              '3': { id: '3', name: 'Scrivania', ison: true, bri: 150, hue: 13000, sat: 254, ct: 0, colormode: 'hs', reachable: true, capabilities: ['brightness', 'color'] }, // Verde/Giallo
-              '4': { id: '4', name: 'Giardino (No Segnale)', ison: true, bri: 254, hue: 0, sat: 0, ct: 0, colormode: 'bri', reachable: false, capabilities: ['brightness'] }, // Non raggiungibile
-          },
-          groups: {
-              '1': { id: '1', name: 'Soggiorno', type: 'Room', lights: ['1', '3'], state: { all_on: false, any_on: true } },
-              '2': { id: '2', name: 'Casa Intera', type: 'Zone', lights: ['1', '2', '3', '4'], state: { all_on: false, any_on: true } },
-              '3': { id: '3', name: 'Esterno', type: 'Zone', lights: ['4'], state: { all_on: false, any_on: true } }
-          },
-          scenes: {
-              's1': { id: 's1', name: 'Lettura', group: '1', color: '#6A5ACD' },
-              's2': { id: 's2', name: 'Relax', group: '1', color: '#ADD8E6' }
-          }
+    this.DEMO_STATE = {
+      lights: {
+        '1': { id: '1', name: 'Lampada Soggiorno', ison: true, bri: 200, hue: 46920, sat: 254, ct: 0, colormode: 'hs', reachable: true, capabilities: ['brightness', 'color'] }, // Blu
+        '2': { id: '2', name: 'Striscia Cucina', ison: false, bri: 100, hue: 0, sat: 0, ct: 350, colormode: 'ct', reachable: true, capabilities: ['brightness', 'ct'] }, // Spenta, bianca calda
+        '3': { id: '3', name: 'Scrivania', ison: true, bri: 150, hue: 13000, sat: 254, ct: 0, colormode: 'hs', reachable: true, capabilities: ['brightness', 'color'] }, // Verde/Giallo
+        '4': { id: '4', name: 'Giardino (No Segnale)', ison: true, bri: 254, hue: 0, sat: 0, ct: 0, colormode: 'bri', reachable: false, capabilities: ['brightness'] }, // Non raggiungibile
+      },
+      groups: {
+        '1': { id: '1', name: 'Soggiorno', type: 'Room', lights: ['1', '3'], state: { all_on: false, any_on: true } },
+        '2': { id: '2', name: 'Casa Intera', type: 'Zone', lights: ['1', '2', '3', '4'], state: { all_on: false, any_on: true } },
+        '3': { id: '3', name: 'Esterno', type: 'Zone', lights: ['4'], state: { all_on: false, any_on: true } }
+      },
+      scenes: {
+        's1': { id: 's1', name: 'Lettura', group: '1', color: '#6A5ACD' },
+        's2': { id: 's2', name: 'Relax', group: '1', color: '#ADD8E6' }
       }
-      this._updateGroupState()
+    }
+    this._updateGroupState()
   }
 
   // Aggiorna lo stato dei gruppi in base allo stato delle luci
   _updateGroupState() {
     Object.keys(this.DEMO_STATE.groups).forEach(groupId => {
-        const group = this.DEMO_STATE.groups[groupId]
-        const lightsInGroup = group.lights.map(lightId => this.DEMO_STATE.lights[lightId]).filter(Boolean)
+      const group = this.DEMO_STATE.groups[groupId]
+      const lightsInGroup = group.lights.map(lightId => this.DEMO_STATE.lights[lightId]).filter(Boolean)
 
-        let anyOn = lightsInGroup.some(l => l.ison)
-        let allOn = lightsInGroup.every(l => l.ison)
+      let anyOn = lightsInGroup.some(l => l.ison)
+      let allOn = lightsInGroup.every(l => l.ison)
 
-        group.state = { any_on: anyOn, all_on: allOn }
-        group.anyOn = anyOn // Aggiunto per coerenza con il mapping
+      group.state = { any_on: anyOn, all_on: allOn }
+      group.anyOn = anyOn // Aggiunto per coerenza con il mapping
     })
   }
 
   // Esegue un'azione (toggle, set bri, set color) e aggiorna lo stato demo
   _handleDemoAction(lightId, state) {
-      if (lightId === 'all') {
-          Object.keys(this.DEMO_STATE.lights).forEach(id => {
-              this.DEMO_STATE.lights[id].ison = state
-          })
-      } else {
-          const light = this.DEMO_STATE.lights[lightId]
-          if (light) {
-              Object.assign(light, state)
-          }
+    if (lightId === 'all') {
+      Object.keys(this.DEMO_STATE.lights).forEach(id => {
+        this.DEMO_STATE.lights[id].ison = state
+      })
+    } else {
+      const light = this.DEMO_STATE.lights[lightId]
+      if (light) {
+        Object.assign(light, state)
       }
-      this._updateGroupState()
-      return { success: true }
+    }
+    this._updateGroupState()
+    return { success: true }
   }
 
   // Esegue un'azione (toggle, set bri, set color) su un gruppo
   _handleDemoGroupAction(groupId, state) {
-      const group = this.DEMO_STATE.groups[groupId]
-      if (group) {
-          group.lights.forEach(lightId => {
-              const light = this.DEMO_STATE.lights[lightId]
-              if (light) {
-                  light.ison = state
-              }
-          })
-          this._updateGroupState()
-          return { success: true }
-      }
-      throw new Error(`Demo group ${groupId} not found`)
+    const group = this.DEMO_STATE.groups[groupId]
+    if (group) {
+      group.lights.forEach(lightId => {
+        const light = this.DEMO_STATE.lights[lightId]
+        if (light) {
+          light.ison = state
+        }
+      })
+      this._updateGroupState()
+      return { success: true }
+    }
+    throw new Error(`Demo group ${groupId} not found`)
   }
   // --------------------
 
   saveConfig() {
-     if (this.demo) return // Non salvare configurazioni dummy
+    if (this.demo) return // Non salvare configurazioni dummy
     settingsLib.setItem(BRIDGE_IP_KEY, this.bridgeIp)
     settingsLib.setItem(USERNAME_KEY, this.username)
     settingsLib.setItem(API_VERSION_KEY, this.apiVersion)
@@ -235,10 +234,10 @@ class HueBridgeManager {
   }
 
   clearConfig() {
-     if (this.demo) {
-        this._initDemoState()
-        console.log('DEMO MODE: Config cleared (reset to initial demo state)')
-        return
+    if (this.demo) {
+      this._initDemoState()
+      console.log('DEMO MODE: Config cleared (reset to initial demo state)')
+      return
     }
     settingsLib.removeItem(BRIDGE_IP_KEY)
     settingsLib.removeItem(USERNAME_KEY)
@@ -249,11 +248,11 @@ class HueBridgeManager {
   }
 
   async discoverBridges() {
-     if (this.demo) {
-        console.log('DEMO MODE: Discovering bridges mock')
-        const bridges = [{ id: 'demo-1', internalipaddress: this.bridgeIp, name: 'Demo Hue Bridge' }]
-        this.saveConfig()
-        return bridges
+    if (this.demo) {
+      console.log('DEMO MODE: Discovering bridges mock')
+      const bridges = [{ id: 'demo-1', internalipaddress: this.bridgeIp, name: 'Demo Hue Bridge' }]
+      this.saveConfig()
+      return bridges
     }
 
     console.log('Discovering bridges...')
@@ -274,9 +273,9 @@ class HueBridgeManager {
   }
 
   async pair() {
-     if (this.demo) {
-        console.log('DEMO MODE: Pairing success')
-        return { success: true, username: this.username, bridgeIp: this.bridgeIp }
+    if (this.demo) {
+      console.log('DEMO MODE: Pairing success')
+      return { success: true, username: this.username, bridgeIp: this.bridgeIp }
     }
     if (!this.bridgeIp) throw new Error('No bridge IP configured')
     console.log('Pairing bridge (v1 API)...')
@@ -284,8 +283,8 @@ class HueBridgeManager {
   }
 
   async pairWithRetry(maxRetries = 5, delayMs = 3000) {
-     if (this.demo) {
-        return this.pair()
+    if (this.demo) {
+      return this.pair()
     }
     if (!this.bridgeIp) throw new Error('No bridge IP configured')
 
@@ -312,8 +311,8 @@ class HueBridgeManager {
   }
 
   async pairV1() {
-     if (this.demo) {
-        return this.pair()
+    if (this.demo) {
+      return this.pair()
     }
     const url = `http://${this.bridgeIp}/api`
     const res = await fetch({
@@ -339,9 +338,9 @@ class HueBridgeManager {
   }
 
   async checkConnection() {
-     if (this.demo) {
-        console.log('DEMO MODE: Connection check success')
-        return { connected: true }
+    if (this.demo) {
+      console.log('DEMO MODE: Connection check success')
+      return { connected: true }
     }
     if (!this.bridgeIp || !this.username) {
       console.log('Not configured')
@@ -358,12 +357,12 @@ class HueBridgeManager {
   }
 
   async getGroups() {
-     if (this.demo) {
-        console.log('DEMO MODE: Get groups mock')
-        return {
-            rooms: Object.values(this.DEMO_STATE.groups).filter(g => g.type === 'Room'),
-            zones: Object.values(this.DEMO_STATE.groups).filter(g => g.type === 'Zone')
-        }
+    if (this.demo) {
+      console.log('DEMO MODE: Get groups mock')
+      return {
+        rooms: Object.values(this.DEMO_STATE.groups).filter(g => g.type === 'Room'),
+        zones: Object.values(this.DEMO_STATE.groups).filter(g => g.type === 'Zone')
+      }
     }
     if (!this.bridgeIp || !this.username)
       throw new Error('Bridge not configured')
@@ -449,9 +448,9 @@ class HueBridgeManager {
   }
 
   async toggleGroup(groupId, state) {
-     if (this.demo) {
-        console.log(`DEMO MODE: Toggle group ${groupId} to ${state}`)
-        return this._handleDemoGroupAction(groupId, state)
+    if (this.demo) {
+      console.log(`DEMO MODE: Toggle group ${groupId} to ${state}`)
+      return this._handleDemoGroupAction(groupId, state)
     }
     if (!this.bridgeIp || !this.username)
       throw new Error('Bridge not configured')
@@ -496,21 +495,21 @@ class HueBridgeManager {
 
 
   async getGroupDetail(groupId, groupType) {
-     if (this.demo) {
-        console.log(`DEMO MODE: Get group detail for ${groupId}`)
-        const group = this.DEMO_STATE.groups[groupId]
-        if (!group) throw new Error('Demo Group not found')
+    if (this.demo) {
+      console.log(`DEMO MODE: Get group detail for ${groupId}`)
+      const group = this.DEMO_STATE.groups[groupId]
+      if (!group) throw new Error('Demo Group not found')
 
-        const lights = group.lights.map(lightId => {
-            const light = this.DEMO_STATE.lights[lightId]
-            return this._mapLightToSimple(light)
-        }).filter(Boolean)
+      const lights = group.lights.map(lightId => {
+        const light = this.DEMO_STATE.lights[lightId]
+        return this._mapLightToSimple(light)
+      }).filter(Boolean)
 
-        const scenes = Object.values(this.DEMO_STATE.scenes)
-            .filter(s => s.group === groupId)
-            .map(s => ({ id: s.id, name: s.name, color: s.color }))
+      const scenes = Object.values(this.DEMO_STATE.scenes)
+        .filter(s => s.group === groupId)
+        .map(s => ({ id: s.id, name: s.name, color: s.color }))
 
-        return { lights, scenes }
+      return { lights, scenes }
     }
     // Get lights in group
     const allLights = await this.getLights()
@@ -534,11 +533,11 @@ class HueBridgeManager {
   }
 
   async getScenesForGroup(groupId) {
-     if (this.demo) {
-        console.log(`DEMO MODE: Get scenes for group ${groupId}`)
-        return Object.values(this.DEMO_STATE.scenes)
-            .filter(s => s.group === groupId)
-            .map(s => ({ id: s.id, name: s.name, color: s.color }))
+    if (this.demo) {
+      console.log(`DEMO MODE: Get scenes for group ${groupId}`)
+      return Object.values(this.DEMO_STATE.scenes)
+        .filter(s => s.group === groupId)
+        .map(s => ({ id: s.id, name: s.name, color: s.color }))
     }
     const url = `http://${this.bridgeIp}/api/${this.username}/scenes`
     const res = await fetch({ url, method: 'GET' })
@@ -557,11 +556,11 @@ class HueBridgeManager {
   }
 
   async getLights() {
-     if (this.demo) {
-        console.log('DEMO MODE: Get lights mock')
-        // Mappa lo stato interno demo al formato atteso dal client (come farebbe _mapLightsV1)
-        return Object.values(this.DEMO_STATE.lights)
-            .map(l => this._mapLightToSimple(l))
+    if (this.demo) {
+      console.log('DEMO MODE: Get lights mock')
+      // Mappa lo stato interno demo al formato atteso dal client (come farebbe _mapLightsV1)
+      return Object.values(this.DEMO_STATE.lights)
+        .map(l => this._mapLightToSimple(l))
     }
     if (!this.bridgeIp || !this.username)
       throw new Error('Bridge not configured')
@@ -603,22 +602,22 @@ class HueBridgeManager {
   // Mappa il formato dati esteso (DEMO o full V1) al formato semplificato del client
   _mapLightToSimple(l) {
     const state = {
-        on: l.ison,
-        bri: l.bri,
-        hue: l.hue,
-        sat: l.sat,
-        ct: l.ct,
-        colormode: l.colormode
+      on: l.ison,
+      bri: l.bri,
+      hue: l.hue,
+      sat: l.sat,
+      ct: l.ct,
+      colormode: l.colormode
     }
     return {
-        id: l.id,
-        name: l.name,
-        ison: l.ison,
-        bri: l.bri,
-        ct: l.ct,
-        colormode: l.colormode,
-        reachable: l.reachable,
-        hex: this.stateToHex(state)
+      id: l.id,
+      name: l.name,
+      ison: l.ison,
+      bri: l.bri,
+      ct: l.ct,
+      colormode: l.colormode,
+      reachable: l.reachable,
+      hex: this.stateToHex(state)
     }
   }
 
@@ -649,9 +648,9 @@ class HueBridgeManager {
   }
 
   async toggleLight(id, state) {
-     if (this.demo) {
-        console.log(`DEMO MODE: Toggle light ${id} to ${state}`)
-        return this._handleDemoAction(id, { ison: state })
+    if (this.demo) {
+      console.log(`DEMO MODE: Toggle light ${id} to ${state}`)
+      return this._handleDemoAction(id, { ison: state })
     }
     if (!this.bridgeIp || !this.username)
       throw new Error('Bridge not configured')
@@ -694,9 +693,9 @@ class HueBridgeManager {
   }
 
   async setLightBrightness(id, brightness) {
-     if (this.demo) {
-        console.log(`DEMO MODE: Set brightness for light ${id} to ${brightness}`)
-        return this._handleDemoAction(id, { bri: brightness, colormode: 'bri' })
+    if (this.demo) {
+      console.log(`DEMO MODE: Set brightness for light ${id} to ${brightness}`)
+      return this._handleDemoAction(id, { bri: brightness, colormode: 'bri' })
     }
     if (!this.bridgeIp || !this.username)
       throw new Error('Bridge not configured')
@@ -744,18 +743,18 @@ class HueBridgeManager {
   }
 
   async setLightColor(lightId, colorParams) {
-     if (this.demo) {
-        console.log(`DEMO MODE: Set color for light ${lightId} with params:`, colorParams)
-        // Mappa i parametri Hue API (hue, sat, bri) allo stato interno demo
-        const newState = { colormode: 'hs', ison: true } // Presume che l'impostazione del colore accenda la luce
-        if (colorParams.hue !== undefined) newState.hue = colorParams.hue
-        if (colorParams.sat !== undefined) newState.sat = colorParams.sat
-        if (colorParams.bri !== undefined) newState.bri = colorParams.bri
-        if (colorParams.ct !== undefined) {
-             newState.ct = colorParams.ct
-             newState.colormode = 'ct'
-        }
-        return this._handleDemoAction(lightId, newState)
+    if (this.demo) {
+      console.log(`DEMO MODE: Set color for light ${lightId} with params:`, colorParams)
+      // Mappa i parametri Hue API (hue, sat, bri) allo stato interno demo
+      const newState = { colormode: 'hs', ison: true } // Presume che l'impostazione del colore accenda la luce
+      if (colorParams.hue !== undefined) newState.hue = colorParams.hue
+      if (colorParams.sat !== undefined) newState.sat = colorParams.sat
+      if (colorParams.bri !== undefined) newState.bri = colorParams.bri
+      if (colorParams.ct !== undefined) {
+        newState.ct = colorParams.ct
+        newState.colormode = 'ct'
+      }
+      return this._handleDemoAction(lightId, newState)
     }
     if (!this.bridgeIp || !this.username)
       throw new Error('Bridge not configured')
@@ -825,9 +824,9 @@ class HueBridgeManager {
 
 
   async toggleAllLights(on) {
-     if (this.demo) {
-        console.log(`DEMO MODE: Toggle ALL lights to ${on}`)
-        return this._handleDemoAction('all', on)
+    if (this.demo) {
+      console.log(`DEMO MODE: Toggle ALL lights to ${on}`)
+      return this._handleDemoAction('all', on)
     }
     const url = `http://${this.bridgeIp}/api/${this.username}/groups/0/action`
     await fetch({
@@ -840,63 +839,63 @@ class HueBridgeManager {
   }
 
   async applyScene(sceneId, groupId) {
-  if (this.demo) {
-    console.log(`DEMO MODE: Apply scene ${sceneId} to group ${groupId}`)
-    // In demo, applica i colori della scena alle luci del gruppo
-    const scene = this.DEMO_STATE.scenes[sceneId]
-    const group = this.DEMO_STATE.groups[groupId]
+    if (this.demo) {
+      console.log(`DEMO MODE: Apply scene ${sceneId} to group ${groupId}`)
+      // In demo, applica i colori della scena alle luci del gruppo
+      const scene = this.DEMO_STATE.scenes[sceneId]
+      const group = this.DEMO_STATE.groups[groupId]
 
-    if (scene && group) {
-      group.lights.forEach(lightId => {
-        const light = this.DEMO_STATE.lights[lightId]
-        if (light) {
-          light.ison = true
-          // Puoi impostare colori/bri specifici della scena qui
-        }
-      })
-      this._updateGroupState()
-      return { success: true }
+      if (scene && group) {
+        group.lights.forEach(lightId => {
+          const light = this.DEMO_STATE.lights[lightId]
+          if (light) {
+            light.ison = true
+            // Puoi impostare colori/bri specifici della scena qui
+          }
+        })
+        this._updateGroupState()
+        return { success: true }
+      }
+      throw new Error('Demo scene or group not found')
     }
-    throw new Error('Demo scene or group not found')
+
+    if (!this.bridgeIp || !this.username)
+      throw new Error('Bridge not configured')
+
+    return await this.applySceneV1(sceneId, groupId)
   }
 
-  if (!this.bridgeIp || !this.username)
-    throw new Error('Bridge not configured')
-
-  return await this.applySceneV1(sceneId, groupId)
-}
-
-async applySceneV1(sceneId, groupId) {
-  const url = `http://${this.bridgeIp}/api/${this.username}/groups/${groupId}/action`
-  const res = await fetch({
-    url,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ scene: sceneId })
-  })
-  const result = await safeJson(res)
-  if (result[0]?.error) throw new Error(result[0].error.description)
-  return { success: true }
-}
+  async applySceneV1(sceneId, groupId) {
+    const url = `http://${this.bridgeIp}/api/${this.username}/groups/${groupId}/action`
+    const res = await fetch({
+      url,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scene: sceneId })
+    })
+    const result = await safeJson(res)
+    if (result[0]?.error) throw new Error(result[0].error.description)
+    return { success: true }
+  }
 
 
   async getLightDetail(lightId) {
-     if (this.demo) {
-        console.log(`DEMO MODE: Get light detail for ${lightId}`)
-        const light = this.DEMO_STATE.lights[lightId]
-        if (!light) throw new Error('Demo Light not found')
+    if (this.demo) {
+      console.log(`DEMO MODE: Get light detail for ${lightId}`)
+      const light = this.DEMO_STATE.lights[lightId]
+      if (!light) throw new Error('Demo Light not found')
 
-        // I dati nello stato demo sono già dettagliati, basta aggiungere l'hex
-        return {
-            ...light,
-            hex: this.stateToHex({
-                on: light.ison,
-                bri: light.bri,
-                hue: light.hue,
-                sat: light.sat
-            }),
-            capabilities: light.capabilities
-        }
+      // I dati nello stato demo sono già dettagliati, basta aggiungere l'hex
+      return {
+        ...light,
+        hex: this.stateToHex({
+          on: light.ison,
+          bri: light.bri,
+          hue: light.hue,
+          sat: light.sat
+        }),
+        capabilities: light.capabilities
+      }
     }
     const allLights = await this.getLights()
     const light = allLights.find(l => l.id === lightId)
@@ -930,16 +929,16 @@ async applySceneV1(sceneId, groupId) {
 
 
   async fetchAllData() {
-     if (this.demo) {
-        console.log('DEMO MODE: Fetching all data mock')
-        const lights = Object.values(this.DEMO_STATE.lights).map(l => this._mapLightToSimple(l))
-        const groups = await this.getGroups()
-        return {
-            lights: lights,
-            rooms: groups.rooms,
-            zones: groups.zones,
-            scenes: Object.values(this.DEMO_STATE.scenes)
-        }
+    if (this.demo) {
+      console.log('DEMO MODE: Fetching all data mock')
+      const lights = Object.values(this.DEMO_STATE.lights).map(l => this._mapLightToSimple(l))
+      const groups = await this.getGroups()
+      return {
+        lights: lights,
+        rooms: groups.rooms,
+        zones: groups.zones,
+        scenes: Object.values(this.DEMO_STATE.scenes)
+      }
     }
 
     const groups = await this.getGroups()
@@ -964,8 +963,8 @@ async applySceneV1(sceneId, groupId) {
     // Se è un colore (colormode 'hs' o 'xy' o semplicemente se hue/sat sono presenti)
     // Usiamo il convertitore HSB -> RGB per una rappresentazione più accurata
     if (hue > 0 || sat > 0 || s.colormode === 'hs') {
-        const { r, g, b } = hsbToRgb(hue, sat, bri)
-        return [r, g, b].map(c => c.toString(16).padStart(2, '0')).join('')
+      const { r, g, b } = hsbToRgb(hue, sat, bri)
+      return [r, g, b].map(c => c.toString(16).padStart(2, '0')).join('')
     }
 
     // Altrimenti, è bianco/grigio (solo luminosità)
@@ -1003,11 +1002,14 @@ AppSideService(
 
     onSettingsChange({ key, newValue, oldValue }) {
       console.log('settings changed:', key, ':', oldValue, '>', newValue)
-        switch (key) {
+      switch (key) {
         case 'data:clear': {
           this.settings.clear()
           break
         }
+        case DEMO_MODE:
+          this.demo = settingsLib.getItem(DEMO_MODE) === 'true'
+          break
         // AGGIUNTO: Forziamo il ricaricamento delle impostazioni utente in caso di un cambio rilevante
         case SHOW_GLOBAL_TOGGLE:
         case SHOW_SCENES:
@@ -1086,11 +1088,11 @@ AppSideService(
           break
 
         case 'TOGGLE_GROUP':
-          this.HandleToggleGroup(req, res)
+          this.handleToggleGroup(req, res)
           break
 
         case 'GET_GROUP_DETAIL':
-          this.HandleGetGroupDetail(req, res)
+          this.handleGetGroupDetail(req, res)
           break
 
         case 'APPLY_SCENE':
@@ -1104,14 +1106,14 @@ AppSideService(
     },
 
     async handleGetUserSettings(res) {
-        try {
-            console.log('Retrieving user settings...')
-            const settings = hueBridge.getUserSettings()
-            res(null, { success: true, settings })
-        } catch (error) {
-            console.error('Get user settings error:', error)
-            res({ error: error.message })
-        }
+      try {
+        console.log('Retrieving user settings...')
+        const settings = hueBridge.getUserSettings()
+        res(null, { success: true, settings })
+      } catch (error) {
+        console.error('Get user settings error:', error)
+        res({ error: error.message })
+      }
     },
 
     async handleCheckConnection(res) {
@@ -1206,7 +1208,7 @@ AppSideService(
       }
     },
 
-   async handleSetColor(req, res) {
+    async handleSetColor(req, res) {
       try {
         // AGGIUNTO: 'ct' nella destrutturazione dei parametri
         const { lightId, hex, rgb, hue, sat, bri, ct } = req.params
@@ -1352,7 +1354,7 @@ AppSideService(
       }
     },
 
-    async HandleToggleGroup(req, res) {
+    async handleToggleGroup(req, res) {
       try {
         const { groupId, state } = req.params
         console.log(`Toggle group ${groupId} to ${state}`)
@@ -1365,50 +1367,50 @@ AppSideService(
       }
     },
 
-    async HandleGetGroupDetail(req, res) {
-  try {
-    const groupId = req?.params?.groupId;
+    async handleGetGroupDetail(req, res) {
+      try {
+        const groupId = req?.params?.groupId;
 
-    if (!groupId) {
-      console.error('Missing group ID in request.')
-      res({ error: 'Missing group ID in request.' })
-      return;
-    }
+        if (!groupId) {
+          console.error('Missing group ID in request.')
+          res({ error: 'Missing group ID in request.' })
+          return;
+        }
 
-    console.log('Getting group detail for:', groupId);
+        console.log('Getting group detail for:', groupId);
 
-    // ✅ Recupera dati gruppo
-    const groupDetails = await hueBridge.getGroupDetail(groupId);
+        // ✅ Recupera dati gruppo
+        const groupDetails = await hueBridge.getGroupDetail(groupId);
 
-    // ✅ Recupera user settings
-    const userSettings = hueBridge.getUserSettings();
+        // ✅ Recupera user settings
+        const userSettings = hueBridge.getUserSettings();
 
-    // ✅ Ritorna tutto insieme
-    res(null, {
-      success: true,
-      data: {
-        ...groupDetails,  // lights, scenes
-        userSettings      // ← AGGIUNTO
+        // ✅ Ritorna tutto insieme
+        res(null, {
+          success: true,
+          data: {
+            ...groupDetails,  // lights, scenes
+            userSettings      // ← AGGIUNTO
+          }
+        });
+      } catch (error) {
+        console.error('Get group detail error:', error);
+        res({ error: error.message });
       }
-    });
-  } catch (error) {
-    console.error('Get group detail error:', error);
-    res({ error: error.message });
-  }
-},
+    },
 
-async handleApplyScene(req, res) {
-  try {
-    const { sceneId, groupId } = req.params
-    console.log(`Apply scene ${sceneId} to group ${groupId}`)
+    async handleApplyScene(req, res) {
+      try {
+        const { sceneId, groupId } = req.params
+        console.log(`Apply scene ${sceneId} to group ${groupId}`)
 
-    await hueBridge.applyScene(sceneId, groupId)
-    res(null, { success: true })
-  } catch (error) {
-    console.error('Apply scene error:', error)
-    res({ error: error.message })
-  }
-},
+        await hueBridge.applyScene(sceneId, groupId)
+        res(null, { success: true })
+      } catch (error) {
+        console.error('Apply scene error:', error)
+        res({ error: error.message })
+      }
+    },
 
     async handleGetLightDetail(req, res) {
       try {
