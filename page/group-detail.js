@@ -253,33 +253,34 @@ Page(
     renderPage() {
       this.clearAllWidgets()
 
+      // ✅ SEMPLIFICATO: Prepara solo array di items, niente data_config
       const data = []
-      const dataConfig = []
-      let currentStart = 0
 
-      // ✅ Helper function per aggiungere le scene
+      // Helper function per aggiungere le scene
       const addScenes = () => {
         if (this.state.userSettings.show_scenes && this.state.scenes.length > 0) {
           logger.log(`Adding ${this.state.scenes.length} scenes to list`)
+          
+          // Header scene
           data.push({ type: 'header', name: getText('SCENES') })
-          dataConfig.push({ start: currentStart, end: currentStart, type_id: 1 })
-          currentStart++
 
+          // Scene items
           this.state.scenes.forEach(scene => {
-            data.push({ ...scene, type: 'scene' })
+            data.push({ 
+              ...scene, 
+              type: 'scene' 
+            })
           })
-          dataConfig.push({ start: currentStart, end: currentStart + this.state.scenes.length - 1, type_id: 2 })
-          currentStart += this.state.scenes.length
         }
       }
 
-      // ✅ Helper function per aggiungere le luci
+      // Helper function per aggiungere le luci
       const addLights = () => {
         if (this.state.lights.length > 0) {
-          data.push({ type: 'header', name: getText('LIGHTS'), name_color: COLORS.text })
-          dataConfig.push({ start: currentStart, end: currentStart, type_id: 1 })
-          currentStart++
+          // Header luci
+          data.push({ type: 'header', name: getText('LIGHTS') })
 
+          // Light items
           this.state.lights.forEach(light => {
             const isOn = !!light.ison
             const modelInfo = LIGHT_MODELS[light.modelid] || LIGHT_MODELS.default
@@ -296,42 +297,40 @@ Page(
               : getText('OFF')
 
             data.push({
-              raw: light,
+              raw: light,      // Oggetto light originale per callbacks
               type: 'light',
+              name: light.name,
               icon: finalIconPath,
               status_text: statusText,
-              color: isOn ? 0xFFFFFF : COLORS.inactive,
-              swatch_bg_color: this.getLightSwatchColor(light),
-              swatch_text: ' ',
-              name: light.name
+              swatch_bg_color: this.getLightSwatchColor(light)
             })
           })
-          dataConfig.push({ start: currentStart, end: currentStart + this.state.lights.length - 1, type_id: 3 })
         }
       }
 
-      // ✅ LOGICA DISPLAY_ORDER: Rispetta impostazione utente
+      // ✅ LOGICA DISPLAY_ORDER
       const displayOrder = this.state.userSettings.display_order || 'LIGHTS_FIRST'
       logger.log(`Display order: ${displayOrder}`)
 
       if (displayOrder === 'SCENES_FIRST') {
-        addScenes()  // Scene prima
-        addLights()  // Luci dopo
+        addScenes()
+        addLights()
       } else {
-        addLights()  // Luci prima (default)
-        addScenes()  // Scene dopo
+        addLights()
+        addScenes()
       }
       
-      logger.log(`ScrollList Data Prepared: total items = ${data.length}`)
+      logger.log(`Data prepared: ${data.length} total items`)
 
-      const viewData = { data, dataConfig, lights: this.state.lights }
+      // ✅ SEMPLIFICATO: Passa solo data array
+      const viewData = { data }
 
       renderGroupDetailPage(this, this.state, viewData, {
         toggleGroup: () => this.toggleGroup(),
         retry: () => this.build(),
-        applyScene: (item) => this.applyScene(item.raw),
-        toggleLight: (item) => this.toggleLight(item),
-        navigateToLightDetail: (item) => this.navigateToLightDetail(item)
+        applyScene: (item) => this.applyScene(item),
+        toggleLight: (light) => this.toggleLight(light),
+        navigateToLightDetail: (light) => this.navigateToLightDetail(light)
       }, COLORS)
     },
 
