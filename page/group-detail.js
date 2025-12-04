@@ -257,52 +257,69 @@ Page(
       const dataConfig = []
       let currentStart = 0
 
-      // ✅ Usa user settings dalla response
-      if (this.state.userSettings.show_scenes && this.state.scenes.length > 0) {
-        logger.log(`Adding ${this.state.scenes.length} scenes to list`)
-        data.push({ type: 'header', name: getText('SCENES') })
-        dataConfig.push({ start: currentStart, end: currentStart, type_id: 1 })
-        currentStart++
+      // ✅ Helper function per aggiungere le scene
+      const addScenes = () => {
+        if (this.state.userSettings.show_scenes && this.state.scenes.length > 0) {
+          logger.log(`Adding ${this.state.scenes.length} scenes to list`)
+          data.push({ type: 'header', name: getText('SCENES') })
+          dataConfig.push({ start: currentStart, end: currentStart, type_id: 1 })
+          currentStart++
 
-        this.state.scenes.forEach(scene => {
-          data.push({ ...scene, type: 'scene' })
-        })
-        dataConfig.push({ start: currentStart, end: currentStart + this.state.scenes.length - 1, type_id: 2 })
-        currentStart += this.state.scenes.length
+          this.state.scenes.forEach(scene => {
+            data.push({ ...scene, type: 'scene' })
+          })
+          dataConfig.push({ start: currentStart, end: currentStart + this.state.scenes.length - 1, type_id: 2 })
+          currentStart += this.state.scenes.length
+        }
       }
 
-      if (this.state.lights.length > 0) {
-        data.push({ type: 'header', name: getText('LIGHTS'), name_color: COLORS.text })
-        dataConfig.push({ start: currentStart, end: currentStart, type_id: 1 })
-        currentStart++
+      // ✅ Helper function per aggiungere le luci
+      const addLights = () => {
+        if (this.state.lights.length > 0) {
+          data.push({ type: 'header', name: getText('LIGHTS'), name_color: COLORS.text })
+          dataConfig.push({ start: currentStart, end: currentStart, type_id: 1 })
+          currentStart++
 
-        this.state.lights.forEach(light => {
-          const isOn = !!light.ison
-          const modelInfo = LIGHT_MODELS[light.modelid] || LIGHT_MODELS.default
+          this.state.lights.forEach(light => {
+            const isOn = !!light.ison
+            const modelInfo = LIGHT_MODELS[light.modelid] || LIGHT_MODELS.default
 
-          let stateSuffix = '_off'
-          if (isOn) {
-            const isColorModeActive = light.colormode === 'hs' || light.colormode === 'xy'
-            stateSuffix = isColorModeActive ? '_color' : '_on'
-          }
-          const finalIconPath = `icons/${modelInfo.icon}${stateSuffix}.png`
+            let stateSuffix = '_off'
+            if (isOn) {
+              const isColorModeActive = light.colormode === 'hs' || light.colormode === 'xy'
+              stateSuffix = isColorModeActive ? '_color' : '_on'
+            }
+            const finalIconPath = `icons/${modelInfo.icon}${stateSuffix}.png`
 
-          const statusText = isOn
-            ? `${getText('BRIGHTNESS')} ${Math.round(light.bri / 254 * 100)}%`
-            : getText('OFF')
+            const statusText = isOn
+              ? `${getText('BRIGHTNESS')} ${Math.round(light.bri / 254 * 100)}%`
+              : getText('OFF')
 
-          data.push({
-            raw: light,
-            type: 'light',
-            icon: finalIconPath,
-            status_text: statusText,
-            color: isOn ? 0xFFFFFF : COLORS.inactive,
-            swatch_bg_color: this.getLightSwatchColor(light),
-            swatch_text: ' ',
-            name: light.name
+            data.push({
+              raw: light,
+              type: 'light',
+              icon: finalIconPath,
+              status_text: statusText,
+              color: isOn ? 0xFFFFFF : COLORS.inactive,
+              swatch_bg_color: this.getLightSwatchColor(light),
+              swatch_text: ' ',
+              name: light.name
+            })
           })
-        })
-        dataConfig.push({ start: currentStart, end: currentStart + this.state.lights.length - 1, type_id: 3 })
+          dataConfig.push({ start: currentStart, end: currentStart + this.state.lights.length - 1, type_id: 3 })
+        }
+      }
+
+      // ✅ LOGICA DISPLAY_ORDER: Rispetta impostazione utente
+      const displayOrder = this.state.userSettings.display_order || 'LIGHTS_FIRST'
+      logger.log(`Display order: ${displayOrder}`)
+
+      if (displayOrder === 'SCENES_FIRST') {
+        addScenes()  // Scene prima
+        addLights()  // Luci dopo
+      } else {
+        addLights()  // Luci prima (default)
+        addScenes()  // Scene dopo
       }
       
       logger.log(`ScrollList Data Prepared: total items = ${data.length}`)
