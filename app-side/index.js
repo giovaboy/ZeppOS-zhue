@@ -123,25 +123,25 @@ class HueBridgeManager {
       apiVersion: this.apiVersion
     })
   }
-  
+
   // Nuovo metodo per caricare e mappare le impostazioni utente
   _loadUserSettings() {
       // Legge i valori da settingsLib, usando i default se non presenti
       const show_global_toggle_str = settingsLib.getItem(SHOW_GLOBAL_TOGGLE)
       const show_scenes_str = settingsLib.getItem(SHOW_SCENES)
       const display_order_str = settingsLib.getItem(DISPLAY_ORDER)
-      
+
       return {
-          show_global_toggle: show_global_toggle_str !== null 
-            ? show_global_toggle_str === 'true' 
+          show_global_toggle: show_global_toggle_str !== null
+            ? show_global_toggle_str === 'true'
             : DEFAULT_USER_SETTINGS.show_global_toggle,
 
-          show_scenes: show_scenes_str !== null 
-            ? show_scenes_str === 'true' 
+          show_scenes: show_scenes_str !== null
+            ? show_scenes_str === 'true'
             : DEFAULT_USER_SETTINGS.show_scenes,
 
-          display_order: display_order_str !== null 
-            ? display_order_str 
+          display_order: display_order_str !== null
+            ? display_order_str
             : DEFAULT_USER_SETTINGS.display_order
       }
   }
@@ -360,7 +360,7 @@ class HueBridgeManager {
   async getGroups() {
      if (this.demo) {
         console.log('DEMO MODE: Get groups mock')
-        return { 
+        return {
             rooms: Object.values(this.DEMO_STATE.groups).filter(g => g.type === 'Room'),
             zones: Object.values(this.DEMO_STATE.groups).filter(g => g.type === 'Zone')
         }
@@ -509,7 +509,7 @@ class HueBridgeManager {
         const scenes = Object.values(this.DEMO_STATE.scenes)
             .filter(s => s.group === groupId)
             .map(s => ({ id: s.id, name: s.name, color: s.color }))
-        
+
         return { lights, scenes }
     }
     // Get lights in group
@@ -782,7 +782,7 @@ class HueBridgeManager {
     if (colorParams.hue !== undefined) body.hue = colorParams.hue
     if (colorParams.sat !== undefined) body.sat = colorParams.sat
     if (colorParams.bri !== undefined) body.bri = colorParams.bri
-    
+
     // Per assicurarsi che la luce si accenda quando si imposta il colore
     if (Object.keys(body).length > 0) body.on = true
 
@@ -839,6 +839,46 @@ class HueBridgeManager {
     return { success: true }
   }
 
+  async applyScene(sceneId, groupId) {
+  if (this.demo) {
+    console.log(`DEMO MODE: Apply scene ${sceneId} to group ${groupId}`)
+    // In demo, applica i colori della scena alle luci del gruppo
+    const scene = this.DEMO_STATE.scenes[sceneId]
+    const group = this.DEMO_STATE.groups[groupId]
+
+    if (scene && group) {
+      group.lights.forEach(lightId => {
+        const light = this.DEMO_STATE.lights[lightId]
+        if (light) {
+          light.ison = true
+          // Puoi impostare colori/bri specifici della scena qui
+        }
+      })
+      this._updateGroupState()
+      return { success: true }
+    }
+    throw new Error('Demo scene or group not found')
+  }
+
+  if (!this.bridgeIp || !this.username)
+    throw new Error('Bridge not configured')
+
+  return await this.applySceneV1(sceneId, groupId)
+}
+
+async applySceneV1(sceneId, groupId) {
+  const url = `http://${this.bridgeIp}/api/${this.username}/groups/${groupId}/action`
+  const res = await fetch({
+    url,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ scene: sceneId })
+  })
+  const result = await safeJson(res)
+  if (result[0]?.error) throw new Error(result[0].error.description)
+  return { success: true }
+}
+
 
   async getLightDetail(lightId) {
      if (this.demo) {
@@ -889,8 +929,6 @@ class HueBridgeManager {
   }
 
 
-
-  // In HueBridgeManager
   async fetchAllData() {
      if (this.demo) {
         console.log('DEMO MODE: Fetching all data mock')
@@ -962,7 +1000,7 @@ AppSideService(
     onDestroy() {
       console.log('App side service destroyed')
     },
-    
+
     onSettingsChange({ key, newValue, oldValue }) {
       console.log('settings changed:', key, ':', oldValue, '>', newValue)
         switch (key) {
@@ -1055,12 +1093,16 @@ AppSideService(
           this.HandleGetGroupDetail(req, res)
           break
 
+        case 'APPLY_SCENE':
+          this.handleApplyScene(req, res)
+          break
+
         default:
           console.error('Unknown method:', req.method)
           res({ error: 'Unknown method: ' + req.method })
       }
     },
-    
+
     async handleGetUserSettings(res) {
         try {
             console.log('Retrieving user settings...')
@@ -1322,36 +1364,7 @@ AppSideService(
         res({ error: error.message })
       }
     },
-/*
-    async HandleGetGroupDetail(req, res) {
-      try {
-        // Uso l'optional chaining (?.) per leggere groupId in modo sicuro.
-        // Se req o req.params sono undefined, groupId sarà semplicemente undefined (non c'è crash).
-        const groupId = req?.params?.groupId;
 
-        // Se l'ID è ancora mancante (cioè non è arrivato correttamente)
-        if (!groupId) {
-          console.error('Missing group ID in request. (req.params was undefined)')
-          // Invia una risposta di errore pulita al client
-          res({ error: 'Missing group ID in request.' })
-          return;
-        }
-
-        console.log('Getting group detail for:', groupId);
-
-        // Chiama la funzione del bridge con l'ID finalmente valido
-        const groupDetails = await hueBridge.getGroupDetail(groupId);
-
-        res(null, {
-          success: true,
-          data: groupDetails
-        });
-      } catch (error) {
-        console.error('Get group detail error:', error);
-        res({ error: error.message });
-      }
-    },*/
-    
     async HandleGetGroupDetail(req, res) {
   try {
     const groupId = req?.params?.groupId;
@@ -1366,7 +1379,7 @@ AppSideService(
 
     // ✅ Recupera dati gruppo
     const groupDetails = await hueBridge.getGroupDetail(groupId);
-    
+
     // ✅ Recupera user settings
     const userSettings = hueBridge.getUserSettings();
 
@@ -1381,6 +1394,19 @@ AppSideService(
   } catch (error) {
     console.error('Get group detail error:', error);
     res({ error: error.message });
+  }
+},
+
+async handleApplyScene(req, res) {
+  try {
+    const { sceneId, groupId } = req.params
+    console.log(`Apply scene ${sceneId} to group ${groupId}`)
+
+    await hueBridge.applyScene(sceneId, groupId)
+    res(null, { success: true })
+  } catch (error) {
+    console.error('Apply scene error:', error)
+    res({ error: error.message })
   }
 },
 

@@ -63,7 +63,7 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
     // 3. Pulsante Toggle Globale (condizionale su userSettings)
     let currentY = px(60)
     
-    if (userSettings.show_global_toggle) {
+    if (userSettings.show_global_toggle && state.lights.length > 1) {
         const anyOn = state.lights.some(light => !!light.ison) 
         const buttonColor = anyOn ? COLORS.toggleOn : COLORS.toggleOff
 
@@ -155,7 +155,7 @@ function renderHeader(container, item, yPos, COLORS) {
         text: item.name,
         text_size: px(26),
         color: COLORS.sectionHeader,
-        align_h: align.LEFT,
+        align_h: align.CENTER_H,
         align_v: align.CENTER_V
     })
 
@@ -207,7 +207,7 @@ function renderSceneItem(container, scene, yPos, COLORS, onTap) {
     })
 
     // Clickable overlay
-    container.createWidget(widget.BUTTON, {
+    const overlay = container.createWidget(widget.BUTTON, {
         x: px(20), 
         y: yPos, 
         w: px(440), 
@@ -218,6 +218,8 @@ function renderSceneItem(container, scene, yPos, COLORS, onTap) {
         radius: px(10),
         click_func: onTap
     })
+
+    overlay.setAlpha(0)
 
     return yPos + itemHeight + px(10) // item + spacing
 }
@@ -239,7 +241,7 @@ function renderLightItem(container, light, yPos, COLORS, onToggle, onNavigate) {
 
     // Color swatch (left indicator)
     container.createWidget(widget.FILL_RECT, {
-        x: px(20), 
+        x: px(30), 
         y: yPos + px(20), 
         w: px(16), 
         h: px(16),
@@ -249,7 +251,7 @@ function renderLightItem(container, light, yPos, COLORS, onToggle, onNavigate) {
 
     // Light name
     container.createWidget(widget.TEXT, {
-        x: px(45), 
+        x: px(55), 
         y: yPos + px(15), 
         w: px(300), 
         h: px(30),
@@ -262,7 +264,7 @@ function renderLightItem(container, light, yPos, COLORS, onToggle, onNavigate) {
 
     // Status text
     container.createWidget(widget.TEXT, {
-        x: px(45), 
+        x: px(55), 
         y: yPos + px(45), 
         w: px(300), 
         h: px(25),
@@ -285,7 +287,7 @@ function renderLightItem(container, light, yPos, COLORS, onToggle, onNavigate) {
         })
 
         // Clickable overlay for toggle
-        container.createWidget(widget.BUTTON, {
+        const overlay = container.createWidget(widget.BUTTON, {
             x: px(380), 
             y: yPos + px(10), 
             w: px(70), 
@@ -296,10 +298,12 @@ function renderLightItem(container, light, yPos, COLORS, onToggle, onNavigate) {
             radius: px(10),
             click_func: onToggle
         })
+
+        overlay.setAlpha(0)
     }
 
     // Clickable overlay for navigation (left area)
-    container.createWidget(widget.BUTTON, {
+    const overlay = container.createWidget(widget.BUTTON, {
         x: px(20), 
         y: yPos, 
         w: px(350), 
@@ -310,6 +314,8 @@ function renderLightItem(container, light, yPos, COLORS, onToggle, onNavigate) {
         radius: px(10),
         click_func: onNavigate
     })
+
+    overlay.setAlpha(0)
 
     return yPos + itemHeight + px(10) // item + spacing
 }

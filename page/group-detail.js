@@ -211,7 +211,7 @@ Page(
       })
         .then(result => {
           if (result.success) {
-            setTimeout(() => this.loadGroupDetail(), 500)
+            setTimeout(() => this.loadGroupDetail(), 200)
           }
         })
         .catch(err => logger.error('Apply scene error:', err))
