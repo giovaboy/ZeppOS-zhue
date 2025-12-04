@@ -9,7 +9,7 @@ import { renderGroupDetailPage } from 'zosLoader:./group-detail.[pf].layout.js'
 
 const logger = getLogger('hue-group-detail-page')
 
-const COLORS = { // Manteniamo i colori qui, li passiamo al layout
+const COLORS = {
   background: 0x000000,
   text: 0xffffff,
   highlight: 0x0055ff,
@@ -23,17 +23,24 @@ const COLORS = { // Manteniamo i colori qui, li passiamo al layout
   sectionHeader: 0x0088ff
 }
 
+// ✅ Default settings come fallback
+const DEFAULT_USER_SETTINGS = {
+  show_global_toggle: true,
+  show_scenes: true,
+  display_order: 'LIGHTS_FIRST'
+}
+
 Page(
   BasePage({
     state: {
-      userSettings: {},
+      userSettings: DEFAULT_USER_SETTINGS, // ✅ Inizializzato con default
       groupId: null,
       groupType: null,
       groupName: '',
       lights: [],
       scenes: [],
       isLoading: false,
-      error: null // Aggiunto stato errore per coerenza
+      error: null
     },
 
     widgets: [],
@@ -44,13 +51,13 @@ Page(
 
       let params = {}
       if (typeof p === 'string' && p.startsWith('{')) {
-          try {
-              params = JSON.parse(p)
-          } catch (e) {
-              logger.error('Failed to parse params string:', e)
-          }
+        try {
+          params = JSON.parse(p)
+        } catch (e) {
+          logger.error('Failed to parse params string:', e)
+        }
       } else if (typeof p === 'object' && p !== null) {
-          params = p
+        params = p
       }
 
       if (params) {
@@ -66,33 +73,13 @@ Page(
       setPageBrightTime({ brightTime: 60000 })
 
       if (this.state.groupId) {
-          this.loadUserSettings()
-          this.loadGroupDetail()
+        this.loadGroupDetail() // ✅ Una sola chiamata!
       } else {
-          this.state.error = "ID Gruppo Mancante. Torna Indietro."
-          this.renderPage()
+        this.state.error = "ID Gruppo Mancante. Torna Indietro."
+        this.renderPage()
       }
     },
-    
-    loadUserSettings() {
-        this.request({
-          method: 'GET_USER_SETTINGS' 
-        })
-        .then(result => {
-            if (result && result.success && result.settings) {
-                this.setState({ userSettings: result.settings });
-                logger.log('User settings loaded:', result.settings);
-                // Non serve chiamare renderPage qui, perché loadGroupDetail la chiama
-                // quando ha finito, e a quel punto avrà anche le impostazioni.
-            }
-        })
-        .catch (error => {
-            logger.error('Failed to load user settings:', error);
-            // Non blocchiamo la pagina se le impostazioni falliscono, usiamo i default.
-        })
-    },
 
-    // --- HELPER WIDGET ---
     createTrackedWidget(type, props) {
       const w = createWidget(type, props)
       if (!this.widgets) this.widgets = []
@@ -112,54 +99,58 @@ Page(
       this.listWidget = null
     },
 
-    // --- DATA LOADING & ACTIONS ---
-
+    // ✅ UNICA CHIAMATA: Recupera dati + settings insieme
     loadGroupDetail() {
       this.state.isLoading = true
       this.state.error = null
       this.renderPage()
 
-      logger.log('Inizio richiesta GET_GROUP_DETAIL per Gruppo ID:', this.state.groupId)
+      logger.log('Requesting GET_GROUP_DETAIL for Group ID:', this.state.groupId)
 
       this.request({
         method: 'GET_GROUP_DETAIL',
         params: { groupId: this.state.groupId }
       })
         .then(result => {
-          logger.log('Risposta App Side ricevuta:', result)
+          logger.log('Response received:', result)
           this.state.isLoading = false
 
           if (result.success && result.data) {
+            const rawLights = result.data.lights || []
 
-            const rawLights = result.data.lights || [];
+            // ✅ User Settings arrivano nella stessa response!
+            if (result.data.userSettings) {
+              this.state.userSettings = result.data.userSettings
+              logger.log('User settings loaded:', this.state.userSettings)
+            } else {
+              // Fallback a default se non presenti
+              logger.warn('No user settings in response, using defaults')
+              this.state.userSettings = DEFAULT_USER_SETTINGS
+            }
 
-            // Logghiamo le luci RAW appena ricevute
-            logger.log('Luci RAW ricevute (totale):', rawLights.length)
+            logger.log('Raw lights received:', rawLights.length)
 
-            // Pulizia e Filtraggio (il filtro che abbiamo aggiunto prima)
+            // Filtra luci valide
             this.state.lights = rawLights.filter(light =>
-                light &&
-                light.id &&
-                typeof light.ison !== 'undefined'
-            );
+              light &&
+              light.id &&
+              typeof light.ison !== 'undefined'
+            )
 
-            // Logghiamo le luci filtrate
-            logger.log('Luci filtrate e valide (totale):', this.state.lights.length)
+            logger.log('Filtered lights:', this.state.lights.length)
 
             this.state.scenes = result.data.scenes || []
             this.renderPage()
           } else {
-            // Logghiamo il fallimento della risposta
-            logger.error('Risposta App Side fallita:', result.message || 'Nessun messaggio di errore specificato.')
+            logger.error('Response failed:', result.message || 'No error message')
             this.state.isLoading = false
             this.state.error = 'Failed to load detail'
             this.renderPage()
           }
         })
         .catch(err => {
-          // ... (la gestione degli errori rimane la stessa)
           const errorMessage = (err && err.message) ? err.message : getText('NETWORK_ERROR')
-          logger.error('Load group detail error (CATCH):', errorMessage, err)
+          logger.error('Load group detail error:', errorMessage, err)
 
           this.state.isLoading = false
           this.state.error = errorMessage
@@ -167,7 +158,6 @@ Page(
         })
     },
 
-    // ... toggleGroup, toggleLight, applyScene, navigateToLightDetail (rimangono invariate nella logica)
     toggleGroup() {
       const anyOn = this.state.lights.some(light => !!light.ison)
       const newState = !anyOn
@@ -183,7 +173,7 @@ Page(
         .then(result => {
           if (result.success) {
             this.state.lights.forEach(light => {
-                 light.ison = newState
+              light.ison = newState
             })
             this.renderPage()
           }
@@ -192,8 +182,8 @@ Page(
     },
 
     toggleLight(light) {
-      const currentOnState = light.ison;
-      const newState = !currentOnState;
+      const currentOnState = light.ison
+      const newState = !currentOnState
 
       this.request({
         method: 'TOGGLE_LIGHT',
@@ -204,7 +194,7 @@ Page(
       })
         .then(result => {
           if (result.success) {
-                 light.ison = newState
+            light.ison = newState
             this.renderPage()
           }
         })
@@ -229,9 +219,9 @@ Page(
 
     navigateToLightDetail(light) {
       const paramsString = JSON.stringify({
-          lightId: light.id,
-          lightName: light.name
-        })
+        lightId: light.id,
+        lightName: light.name
+      })
 
       push({
         url: 'page/light-detail',
@@ -239,97 +229,89 @@ Page(
       })
     },
 
-    // --- HELPER DATA FUNCTION ---
-
     getLightSwatchColor(light) {
       if (!light.ison) {
-        return COLORS.inactive;
+        return COLORS.inactive
       }
 
-      const isColorModeActive = light.colormode === 'hs' || light.colormode === 'xy';
+      const isColorModeActive = light.colormode === 'hs' || light.colormode === 'xy'
 
       if (isColorModeActive && light.hex) {
         try {
           if (typeof light.hex === 'string') {
-              const hexStr = light.hex.startsWith('#') ? light.hex.substring(1) : light.hex;
-              return parseInt(hexStr, 16);
+            const hexStr = light.hex.startsWith('#') ? light.hex.substring(1) : light.hex
+            return parseInt(hexStr, 16)
           }
-          return light.hex;
+          return light.hex
         } catch (e) {
-          return 0xFFCC66;
+          return 0xFFCC66
         }
       }
-      return 0xFFCC66;
+      return 0xFFCC66
     },
-
-    // --- RENDERING MAIN ENTRY ---
 
     renderPage() {
       this.clearAllWidgets()
 
-      // 1. Prepara i dati della lista (ViewModel)
       const data = []
       const dataConfig = []
       let currentStart = 0
 
-      // Aggiungi le SCENE
+      // ✅ Usa user settings dalla response
       if (this.state.userSettings.show_scenes && this.state.scenes.length > 0) {
-          logger.log(`Aggiungo ${this.state.scenes.length} scene alla lista.`)
-          data.push({ type: 'header', name: getText('SCENES') })
-          dataConfig.push({ start: currentStart, end: currentStart, type_id: 1 })
-          currentStart++
+        logger.log(`Adding ${this.state.scenes.length} scenes to list`)
+        data.push({ type: 'header', name: getText('SCENES') })
+        dataConfig.push({ start: currentStart, end: currentStart, type_id: 1 })
+        currentStart++
 
-          this.state.scenes.forEach(scene => {
-               data.push({ ...scene, type: 'scene' })
-          })
-          dataConfig.push({ start: currentStart, end: currentStart + this.state.scenes.length - 1, type_id: 2 })
-          currentStart += this.state.scenes.length
+        this.state.scenes.forEach(scene => {
+          data.push({ ...scene, type: 'scene' })
+        })
+        dataConfig.push({ start: currentStart, end: currentStart + this.state.scenes.length - 1, type_id: 2 })
+        currentStart += this.state.scenes.length
       }
 
-      // Aggiungi le LUCI
       if (this.state.lights.length > 0) {
-          data.push({ type: 'header', name: getText('LIGHTS'), name_color: COLORS.text })
-          dataConfig.push({ start: currentStart, end: currentStart, type_id: 1 })
-          currentStart++
+        data.push({ type: 'header', name: getText('LIGHTS'), name_color: COLORS.text })
+        dataConfig.push({ start: currentStart, end: currentStart, type_id: 1 })
+        currentStart++
 
-          this.state.lights.forEach(light => {
-              const isOn = !!light.ison;
-              const modelInfo = LIGHT_MODELS[light.modelid] || LIGHT_MODELS.default
+        this.state.lights.forEach(light => {
+          const isOn = !!light.ison
+          const modelInfo = LIGHT_MODELS[light.modelid] || LIGHT_MODELS.default
 
-              let stateSuffix = '_off'
-              if (isOn) {
-                  const isColorModeActive = light.colormode === 'hs' || light.colormode === 'xy'
-                  stateSuffix = isColorModeActive ? '_color' : '_on'
-              }
-              const finalIconPath = `icons/${modelInfo.icon}${stateSuffix}.png`
+          let stateSuffix = '_off'
+          if (isOn) {
+            const isColorModeActive = light.colormode === 'hs' || light.colormode === 'xy'
+            stateSuffix = isColorModeActive ? '_color' : '_on'
+          }
+          const finalIconPath = `icons/${modelInfo.icon}${stateSuffix}.png`
 
-              const statusText = isOn
-                  ? `${getText('BRIGHTNESS')} ${Math.round(light.bri / 254 * 100)}%`
-                  : getText('OFF');
+          const statusText = isOn
+            ? `${getText('BRIGHTNESS')} ${Math.round(light.bri / 254 * 100)}%`
+            : getText('OFF')
 
-              data.push({
-                  raw: light,
-                  type: 'light',
-                  icon: finalIconPath,
-                  status_text: statusText,
-                  color: isOn ? 0xFFFFFF : COLORS.inactive,
-                  swatch_bg_color: this.getLightSwatchColor(light),
-                  swatch_text: ' ',
-                  name: light.name
-              })
+          data.push({
+            raw: light,
+            type: 'light',
+            icon: finalIconPath,
+            status_text: statusText,
+            color: isOn ? 0xFFFFFF : COLORS.inactive,
+            swatch_bg_color: this.getLightSwatchColor(light),
+            swatch_text: ' ',
+            name: light.name
           })
-          dataConfig.push({ start: currentStart, end: currentStart + this.state.lights.length - 1, type_id: 3 })
+        })
+        dataConfig.push({ start: currentStart, end: currentStart + this.state.lights.length - 1, type_id: 3 })
       }
-      logger.log(`ScrollList Data Prepared: Headers/Items total = ${data.length}`)
+      
+      logger.log(`ScrollList Data Prepared: total items = ${data.length}`)
 
       const viewData = { data, dataConfig, lights: this.state.lights }
 
-
-      // 2. Chiama la funzione di layout
       renderGroupDetailPage(this, this.state, viewData, {
         toggleGroup: () => this.toggleGroup(),
         retry: () => this.build(),
-        // Passiamo l'oggetto light/scene originale alle funzioni di azione
         applyScene: (item) => this.applyScene(item.raw),
         toggleLight: (item) => this.toggleLight(item),
         navigateToLightDetail: (item) => this.navigateToLightDetail(item)

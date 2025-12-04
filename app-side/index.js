@@ -1322,7 +1322,7 @@ AppSideService(
         res({ error: error.message })
       }
     },
-
+/*
     async HandleGetGroupDetail(req, res) {
       try {
         // Uso l'optional chaining (?.) per leggere groupId in modo sicuro.
@@ -1350,7 +1350,39 @@ AppSideService(
         console.error('Get group detail error:', error);
         res({ error: error.message });
       }
-    },
+    },*/
+    
+    async HandleGetGroupDetail(req, res) {
+  try {
+    const groupId = req?.params?.groupId;
+
+    if (!groupId) {
+      console.error('Missing group ID in request.')
+      res({ error: 'Missing group ID in request.' })
+      return;
+    }
+
+    console.log('Getting group detail for:', groupId);
+
+    // ✅ Recupera dati gruppo
+    const groupDetails = await hueBridge.getGroupDetail(groupId);
+    
+    // ✅ Recupera user settings
+    const userSettings = hueBridge.getUserSettings();
+
+    // ✅ Ritorna tutto insieme
+    res(null, {
+      success: true,
+      data: {
+        ...groupDetails,  // lights, scenes
+        userSettings      // ← AGGIUNTO
+      }
+    });
+  } catch (error) {
+    console.error('Get group detail error:', error);
+    res({ error: error.message });
+  }
+},
 
     async handleGetLightDetail(req, res) {
       try {
