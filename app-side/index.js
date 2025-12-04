@@ -10,6 +10,16 @@ const BRIDGE_IP_KEY = 'hue_bridge_ip'
 const USERNAME_KEY = 'hue_username'
 const API_VERSION_KEY = 'hue_api_version'
 const DEMO_MODE = 'hue_demo_mode'
+const SHOW_GLOBAL_TOGGLE = 'hue_show_global_toggle'
+const SHOW_SCENES = 'hue_show_scenes'
+const DISPLAY_ORDER = 'hue_display_order'
+
+// Valori predefiniti per le impostazioni utente
+const DEFAULT_USER_SETTINGS = {
+    show_global_toggle: false,
+    show_scenes: true,
+    display_order: 'LIGHTS_FIRST'
+}
 
 // --- Nuova funzione: HSB (0-65535, 0-254, 0-254) a RGB (0-255) ---
 function hsbToRgb(h, s, v) {
@@ -95,6 +105,8 @@ class HueBridgeManager {
     this.username = settingsLib.getItem(USERNAME_KEY) || null
     this.apiVersion = settingsLib.getItem(API_VERSION_KEY) || 'v1'
     this.demo = settingsLib.getItem(DEMO_MODE) === 'true'
+    // Inizializza le impostazioni utente leggendole da settingsLib
+    this.user_settings = this._loadUserSettings()
 
     // --- LOGICA DEMO ---
     if (this.demo) {
@@ -110,6 +122,35 @@ class HueBridgeManager {
       username: this.username,
       apiVersion: this.apiVersion
     })
+  }
+  
+  // Nuovo metodo per caricare e mappare le impostazioni utente
+  _loadUserSettings() {
+      // Legge i valori da settingsLib, usando i default se non presenti
+      const show_global_toggle_str = settingsLib.getItem(SHOW_GLOBAL_TOGGLE)
+      const show_scenes_str = settingsLib.getItem(SHOW_SCENES)
+      const display_order_str = settingsLib.getItem(DISPLAY_ORDER)
+      
+      return {
+          show_global_toggle: show_global_toggle_str !== null 
+            ? show_global_toggle_str === 'true' 
+            : DEFAULT_USER_SETTINGS.show_global_toggle,
+
+          show_scenes: show_scenes_str !== null 
+            ? show_scenes_str === 'true' 
+            : DEFAULT_USER_SETTINGS.show_scenes,
+
+          display_order: display_order_str !== null 
+            ? display_order_str 
+            : DEFAULT_USER_SETTINGS.display_order
+      }
+  }
+
+  // Nuovo metodo per esporre le impostazioni utente
+  getUserSettings() {
+      // Ricarica per assicurarsi di avere lo stato più recente (utile se le settings sono cambiate)
+      this.user_settings = this._loadUserSettings()
+      return this.user_settings
   }
 
   // --- Funzioni per lo stato DEMO ---
@@ -514,8 +555,6 @@ class HueBridgeManager {
         color: '#0088ff' // Placeholder
       }))
   }
-
-
 
   async getLights() {
      if (this.demo) {
@@ -923,7 +962,7 @@ AppSideService(
     onDestroy() {
       console.log('App side service destroyed')
     },
-
+    
     onSettingsChange({ key, newValue, oldValue }) {
       console.log('settings changed:', key, ':', oldValue, '>', newValue)
         switch (key) {
@@ -931,6 +970,12 @@ AppSideService(
           this.settings.clear()
           break
         }
+        // AGGIUNTO: Forziamo il ricaricamento delle impostazioni utente in caso di un cambio rilevante
+        case SHOW_GLOBAL_TOGGLE:
+        case SHOW_SCENES:
+        case DISPLAY_ORDER:
+          hueBridge.getUserSettings() // Ricarica le impostazioni
+          break
       }
     },
 
@@ -938,6 +983,10 @@ AppSideService(
       console.log('Received request:', req.method)
 
       switch (req.method) {
+        case 'GET_USER_SETTINGS':
+          this.handleGetUserSettings(res)
+          break
+
         case 'CHECK_CONNECTION':
           this.handleCheckConnection(res)
           break
@@ -1010,6 +1059,17 @@ AppSideService(
           console.error('Unknown method:', req.method)
           res({ error: 'Unknown method: ' + req.method })
       }
+    },
+    
+    async handleGetUserSettings(res) {
+        try {
+            console.log('Retrieving user settings...')
+            const settings = hueBridge.getUserSettings()
+            res(null, { success: true, settings })
+        } catch (error) {
+            console.error('Get user settings error:', error)
+            res({ error: error.message })
+        }
     },
 
     async handleCheckConnection(res) {

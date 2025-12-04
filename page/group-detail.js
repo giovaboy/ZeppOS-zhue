@@ -1,5 +1,4 @@
 import { BasePage } from '@zeppos/zml/base-page'
-import { LocalStorage } from '@zos/storage'
 import { setPageBrightTime } from '@zos/display'
 import { getLogger } from '../utils/logger.js'
 import { getText } from '@zos/i18n'
@@ -9,10 +8,6 @@ import { LIGHT_MODELS } from '../utils/constants.js'
 import { renderGroupDetailPage } from 'zosLoader:./group-detail.[pf].layout.js'
 
 const logger = getLogger('hue-group-detail-page')
-
-const SHOW_GLOBAL_TOGGLE = 'hue_show_global_toggle'
-const SHOW_SCENES = 'hue_show_scenes'
-const DISPLAY_ORDER = 'hue_display_order'
 
 const COLORS = { // Manteniamo i colori qui, li passiamo al layout
   background: 0x000000,
@@ -28,16 +23,10 @@ const COLORS = { // Manteniamo i colori qui, li passiamo al layout
   sectionHeader: 0x0088ff
 }
 
-const localStorage = new LocalStorage()
-const USER_SETTINGS = {
-  show_global_toggle: localStorage.getItem(SHOW_GLOBAL_TOGGLE, false) === 'true',
-  show_scenes: localStorage.getItem(SHOW_SCENES, true) === 'true',
-  display_order: localStorage.getItem(DISPLAY_ORDER, 'LIGHTS_FIRST')
-}
-
 Page(
   BasePage({
     state: {
+      userSettings: {},
       groupId: null,
       groupType: null,
       groupName: '',
@@ -77,11 +66,30 @@ Page(
       setPageBrightTime({ brightTime: 60000 })
 
       if (this.state.groupId) {
+          this.loadUserSettings()
           this.loadGroupDetail()
       } else {
           this.state.error = "ID Gruppo Mancante. Torna Indietro."
           this.renderPage()
       }
+    },
+    
+    loadUserSettings() {
+        this.request({
+          method: 'GET_USER_SETTINGS' 
+        })
+        .then(result => {
+            if (result && result.success && result.settings) {
+                this.setState({ userSettings: result.settings });
+                logger.log('User settings loaded:', result.settings);
+                // Non serve chiamare renderPage qui, perché loadGroupDetail la chiama
+                // quando ha finito, e a quel punto avrà anche le impostazioni.
+            }
+        })
+        .catch (error => {
+            logger.error('Failed to load user settings:', error);
+            // Non blocchiamo la pagina se le impostazioni falliscono, usiamo i default.
+        })
     },
 
     // --- HELPER WIDGET ---
@@ -265,7 +273,7 @@ Page(
       let currentStart = 0
 
       // Aggiungi le SCENE
-      if (USER_SETTINGS.show_scenes && this.state.scenes.length > 0) {
+      if (this.state.userSettings.show_scenes && this.state.scenes.length > 0) {
           logger.log(`Aggiungo ${this.state.scenes.length} scene alla lista.`)
           data.push({ type: 'header', name: getText('SCENES') })
           dataConfig.push({ start: currentStart, end: currentStart, type_id: 1 })
