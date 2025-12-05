@@ -187,7 +187,7 @@ Page(
             const currentHex = hsb2hex(
                   (h / HUE_RANGE) * 360,
                   (s / SAT_RANGE) * 100,
-                  (this.state.bri / BRI_RANGE) * 100
+                  100//(this.state.bri / BRI_RANGE) * 100
                 );
             this.state.cursorWidget.setProperty(prop.COLOR, currentHex);
         }

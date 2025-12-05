@@ -14,7 +14,10 @@ export const LAYOUT_CONFIG = {
   // Configurazioni per il bottone che apre il picker
   colorBtnX: px(60),
   colorBtnW: DEVICE_WIDTH - px(120),
-  colorBtnH: px(50)
+  colorBtnH: px(50),
+  
+  presetsX: px(60),
+  presetsW: DEVICE_WIDTH - px(120)
 }
 
 export function renderLightDetail(pageContext, state, callbacks) {
@@ -179,10 +182,11 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
 }
 
 function renderPresets(pageContext, state, yPos, applyCallback, addCallback, callbacks) {
+    const { presetsW, presetsX} = LAYOUT_CONFIG
     const { favoriteColors, light } = state
 
     pageContext.createTrackedWidget(widget.TEXT, {
-        x: px(20), y: yPos, w: DEVICE_WIDTH - px(60), h: px(35),
+        x: presetsX, y: yPos, w: presetsW - px(40), h: px(35),
         text: getText('PRESETS_TITLE'),
         text_size: px(24),
         color: COLORS.text,
@@ -190,18 +194,18 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, cal
     })
 
     pageContext.createTrackedWidget(widget.BUTTON, {
-        x: DEVICE_WIDTH - px(60), y: yPos, w: px(40), h: px(35),
+        x: DEVICE_WIDTH - presetX - px(40), y: yPos, w: px(40), h: px(35),
         text: '+',
         normal_color: COLORS.highlight, press_color: COLORS.success, radius: px(6),
         click_func: addCallback
     })
 
     let currentY = yPos + px(40)
-    const ITEM_SIZE = px(50)
+    const ITEM_SIZE = px(60)
     const ITEM_MARGIN = px(10)
-    const ROW_WIDTH = DEVICE_WIDTH - px(40)
+    const ROW_WIDTH = presetsW//DEVICE_WIDTH - px(40)
     const COLS = Math.floor(ROW_WIDTH / (ITEM_SIZE + ITEM_MARGIN))
-    const startX = px(20) + (ROW_WIDTH - (COLS * (ITEM_SIZE + ITEM_MARGIN) - ITEM_MARGIN)) / 2
+    const startX = presetsX + (ROW_WIDTH - (COLS * (ITEM_SIZE + ITEM_MARGIN) - ITEM_MARGIN)) / 2
 
     // Access caps from callbacks safely
     const caps = callbacks.capabilities || [];

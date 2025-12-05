@@ -24,7 +24,7 @@ export const COLORS = {
   toggleOff: 0x444444,
   sectionHeader: 0x0088ff,
   sliderBg: 0x2a2a2a,
-  sliderFill: 0x0088ff,
+  sliderFill: 0xffffff,
   defaultSwatchColor: 0xFFCC66
 }
 
