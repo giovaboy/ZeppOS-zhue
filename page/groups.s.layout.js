@@ -79,11 +79,12 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
 
     // 5. Lista con VIEW_CONTAINER
     const listStartY = px(120)
+    const noun = currentTab === 'ROOMS' ? 'ROOM' : 'ZONE';
 
     if (listData.length === 0) {
         pageContext.createTrackedWidget(widget.TEXT, {
             x: 0, y: px(200), w: DEVICE_WIDTH, h: px(50),
-            text: `Nessuna ${currentTab === 'ROOMS' ? 'stanza' : 'zona'} trovata`,
+            text: getText(`NO_${noun}_FOUND`),
             text_size: px(24),
             color: COLORS.inactive,
             align_h: align.CENTER_H,
@@ -164,7 +165,7 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
         h: px(25),
         text: group.status,
         text_size: px(20),
-        color: 0xAAAAAA,
+        color: COLORS.textSubtitle,
         align_h: align.LEFT,
         align_v: align.CENTER_V
     })
@@ -189,7 +190,7 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
         h: px(50),
         text: group.on_off,
         text_size: px(26),
-        color: 0xFFFFFF,
+        color: COLORS.text,
         align_h: align.CENTER_H,
         align_v: align.CENTER_V
     })

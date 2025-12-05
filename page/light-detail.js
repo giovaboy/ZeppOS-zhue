@@ -1,41 +1,15 @@
 import { BasePage } from '@zeppos/zml/base-page'
-import { px } from '@zos/utils'
 import { setPageBrightTime } from '@zos/display'
 import { setScrollLock } from '@zos/page'
 import { getText } from '@zos/i18n'
-import { getLogger } from '../utils/logger.js'
 import { createWidget, deleteWidget, widget, prop } from '@zos/ui'
 import { back, push } from '@zos/router'
+import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import { renderLightDetail, LAYOUT_CONFIG } from 'zosLoader:./light-detail.[pf].layout.js'
+import { getLogger } from '../utils/logger.js'
+import { DEFAULT_PRESETS, PRESET_TYPES, hsb2hex } from '../utils/constants.js'
 
-const logger = getLogger('hue-light-detail-page')
-
-// Helper per calcolare hex per il bottone anteprima se manca
-function hsb2hex(h, s, v) {
-  if (s === 0) { const val = Math.round(v * 2.55); return val << 16 | val << 8 | val; }
-  h /= 60; s /= 100; v /= 100;
-  const i = Math.floor(h); const f = h - i; const p = v * (1 - s); const q = v * (1 - f * s); const t = v * (1 - (1 - f) * s);
-  let r = 0, g = 0, b = 0;
-  switch (i % 6) {
-    case 0: r = v; g = t; b = p; break;
-    case 1: r = q; g = v; b = p; break;
-    case 2: r = p; g = v; b = t; break;
-    case 3: r = p; g = q; b = v; break;
-    case 4: r = t; g = p; b = v; break;
-    case 5: r = v; g = p; b = q; break;
-  }
-  const toInt = (c) => Math.round(c * 255);
-  return (toInt(r) << 16) + (toInt(g) << 8) + toInt(b);
-}
-
-const DEFAULT_PRESETS = [
-  { hex: '#FFA500', bri: 200, hue: 8000, sat: 200, isColor: true },
-  { hex: '#87CEEB', bri: 220, hue: 32000, sat: 150, isColor: true },
-  { hex: '#FF6B6B', bri: 180, hue: 0, sat: 254, isColor: true },
-  { hex: '#FFFFFF', bri: 254, ct: 250, isColor: false },
-  { hex: '#F0EAD6', bri: 200, ct: 450, isColor: false },
-  { hex: '#4A148C', bri: 100, hue: 48000, sat: 254, isColor: true }
-]
+const logger = getLogger('zhue-light-detail-page')
 
 Page(
   BasePage({
@@ -60,7 +34,7 @@ Page(
         logger.error('Error parsing params', e)
       }
       this.state.lightId = params?.lightId
-      this.state.lightName = params?.lightName || 'Light'
+      this.state.lightName = params?.lightName || getText('LIGHT')
       this.loadFavoriteColors()
     },
 
@@ -75,6 +49,7 @@ Page(
     onResume() {
       logger.log('Resuming Light Detail - Refreshing Data');
       if (this.state.lightId) {
+        this.loadFavoriteColors() // Ricarica i preferiti
         this.loadLightDetail(); // Aggiorna stato (colore bottone, slider, etc.)
       }
     },
@@ -94,6 +69,38 @@ Page(
       const w = createWidget(type, props)
       this.widgets.push(w)
       return w
+    },
+
+    // --- GESTURE LOCK LOGIC ---
+
+    // La funzione di uscita che viene allegata al listener di ZeppOS
+    exitOnSwipe(event) {
+        if (event === GESTURE_RIGHT) {
+            back();
+            return true;
+        }
+        return false;
+    },
+
+    /** Blocca lo swipe laterale per l'uscita rimuovendo il listener. */
+    lockExitGesture() {
+        if (this.exitGestureListener) {
+            this.exitGestureListener(); // Rimuove il listener
+            this.exitGestureListener = null;
+            logger.debug('Exit gesture LOCKED');
+        }
+    },
+
+    /** Ripristina lo swipe laterale per l'uscita. */
+    unlockExitGesture() {
+        if (this.exitGestureListener) {
+            this.exitGestureListener(); // Rimuove il precedente se esiste
+        }
+        // Crea un nuovo listener e salva il suo distruttore (unlistener)
+        this.exitGestureListener = onGesture({
+            callback: (event) => this.exitOnSwipe(event)
+        });
+        logger.debug('Exit gesture UNLOCKED');
     },
 
     renderPage() {
@@ -123,7 +130,7 @@ Page(
       renderLightDetail(this, this.state, {
         toggleLightFunc: () => this.toggleLight(),
         setBrightnessDrag: (evtType, info) => this.handleBrightnessDrag(evtType, info),
-        openColorPickerFunc: () => this.openColorPicker(), // NUOVO
+        openColorPickerFunc: () => this.openColorPicker(),
         applyPresetFunc: (fav) => this.applyPreset(fav),
         addFavoriteFunc: () => this.addCurrentColorToFavorites(),
         goBackFunc: () => this.goBack(),
@@ -170,6 +177,7 @@ Page(
       }
 
       if (evtType === 'DOWN') {
+        this.lockExitGesture(); // BLOCCA GESTURE
         setScrollLock({ lock: true })
         const newBri = getBrightnessFromX(info.x)
         this.state.isDraggingBrightness = true
@@ -188,6 +196,7 @@ Page(
           this.state.brightnessLabel.setProperty(prop.TEXT, getText('BRIGHTNESS', newPercent))
       } else if (evtType === 'UP') {
         if (!this.state.isDraggingBrightness) return
+        this.unlockExitGesture(); // SBLOCCA GESTURE
         setScrollLock({ lock: false })
         if (this.state.tempBrightness !== this.state.light.bri) {
           this.setBrightness(this.state.tempBrightness, false)
@@ -195,8 +204,6 @@ Page(
         this.state.isDraggingBrightness = false
       }
     },
-
-    loadFavoriteColors() { logger.log('Loading favs') }, // Placeholder
 
     getLightCapabilities(light) {
       if (!light) return [];
@@ -274,11 +281,69 @@ Page(
         .then(res => { if (res.success) this.loadLightDetail() }) // Reload per sicurezza
     },
 
+    // --- FAVORITE COLORS MANAGEMENT ---
+
+    loadFavoriteColors() {
+      logger.log('Loading favorite colors...')
+      this.request({ method: 'GET_FAVORITE_COLORS' })
+        .then(result => {
+          if (result.success) {
+            this.state.favoriteColors = result.colors || DEFAULT_PRESETS
+            logger.log('Favorite colors loaded:', this.state.favoriteColors.length)
+          }
+        })
+        .catch(err => {
+          logger.error('Failed to load favorite colors:', err)
+          this.state.favoriteColors = DEFAULT_PRESETS
+        })
+    },
+
     addCurrentColorToFavorites() {
       const light = this.state.light
-      // Logica semplificata, hex dovrebbe già esserci grazie a renderPage
-      this.state.favoriteColors.push({ hex: light.hex || '#FFFFFF', hue: light.hue, sat: light.sat, bri: light.bri, isColor: !light.ct })
-      this.renderPage()
+      let newFavorite = { bri: light.bri }
+
+      // 1. Logica per determinare il PRESET_TYPE
+      if (light.has_color && (light.sat > 0 || light.hue > 0)) {
+        // A. PRESET_TYPES.COLOR: se la luce supporta il colore ed è attualmente impostata su un colore.
+        newFavorite.type = PRESET_TYPES.COLOR
+        newFavorite.hue = light.hue || 0
+        newFavorite.sat = light.sat || 0
+        newFavorite.hex = light.hex || '#FF0000' // Usa l'HEX attuale per il colore
+        
+      } else if (light.has_ct && light.ct > 0) {
+        // B. PRESET_TYPES.CT: se la luce supporta CT ed è attualmente impostata su una temperatura colore.
+        newFavorite.type = PRESET_TYPES.CT
+        newFavorite.ct = light.ct
+        newFavorite.hex = light.hex || '#FFFFFF' // Usa l'HEX attuale (che sarà un bianco)
+
+      } else {
+        // C. PRESET_TYPES.WHITE: è solo luminosità (bri), la scelta più sicura per il minimo comune denominatore.
+        newFavorite.type = PRESET_TYPES.WHITE
+        
+        // Seguiamo la tua indicazione: forziamo HEX a #FFFFFF per i preset BRI-only in storage
+        // (anche se la UI potrebbe mostrarlo diversamente a seconda del bri, come grigio scuro)
+        newFavorite.hex = '#FFFFFF' 
+      }
+
+      // La proprietà BRI è sempre inclusa
+      newFavorite.bri = light.bri || 254;
+
+      logger.log('Adding color to favorites:', newFavorite)
+
+      this.request({
+        method: 'ADD_FAVORITE_COLOR',
+        params: { colorData: newFavorite }
+      })
+        .then(result => {
+          if (result.success) {
+            logger.log('Color added to favorites')
+            this.loadFavoriteColors() // Ricarica per aggiornare UI
+            this.renderPage()
+          }
+        })
+        .catch(err => {
+          logger.error('Failed to add favorite color:', err)
+        })
     },
 
     goBack() { back() },

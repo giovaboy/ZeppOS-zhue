@@ -5,11 +5,12 @@ import { createWidget, deleteWidget, prop } from '@zos/ui'
 import { back } from '@zos/router'
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import { getLogger } from '../utils/logger.js'
+import { hsb2hex } from '../utils/constants.js'
 
 // Import Layout
-import { renderColorPickerPage, hsb2hex, LAYOUT_CONFIG } from 'zosLoader:./color-picker.[pf].layout.js'
+import { renderColorPickerPage, LAYOUT_CONFIG } from 'zosLoader:./color-picker.[pf].layout.js'
 
-const logger = getLogger('color-picker-page')
+const logger = getLogger('zhue-color-picker-page')
 
 const HUE_RANGE = 65535;
 const SAT_RANGE = 254;
@@ -77,7 +78,7 @@ Page(
         this.render();
     },
 
-     // --- GESTURE LOCK LOGIC ---
+    // --- GESTURE LOCK LOGIC ---
 
     // La funzione di uscita che viene allegata al listener di ZeppOS
     exitOnSwipe(event) {

@@ -1,44 +1,28 @@
-msgid "loading"
+# English translations for zhue integration
+# INDEX.JS
+msgid "LOADING"
 msgstr "Loading..."
 
-msgid "INDEX_SEARCHING_BRIDGE"
+msgid "HUE_BRIDGE"
+msgstr "Hue Bridge"
+
+msgid "BRIDGE_POWERED_ON"
+msgstr "Make sure your bridge is powered on"
+
+msgid "SEARCHING_BRIDGE"
 msgstr "Searching for Hue Bridge on your network..."
 
-msgid "INDEX_BRIDGE_FOUND"
+msgid "BRIDGE_FOUND"
 msgstr "Bridge Found!"
 
-msgid "INDEX_PRESS_BUTTON"
+msgid "PRESS_BUTTON_TO_PAIR"
 msgstr "Press the button on your Hue Bridge to pair"
 
-msgid "INDEX_WAIT_PRESS"
+msgid "WAIT_PRESS"
 msgstr "Waiting for button press..."
 
-msgid "INDEX_PAIRED_SUCCESS"
+msgid "PAIRED_SUCCESS"
 msgstr "Paired Successfully!"
-
-msgid "INDEX_LOADING"
-msgstr "Loading your Hue setup..."
-
-msgid "GROUPS"
-msgstr "Groups"
-
-msgid "PROGRESS_ROOMS"
-msgstr "Rooms: %d"
-
-msgid "ROOMS"
-msgstr "Rooms"
-
-msgid "PROGRESS_ZONES"
-msgstr "Zones: %d"
-
-msgid "ZONES"
-msgstr "Zones"
-
-msgid "PROGRESS_LIGHTS"
-msgstr "Lights: %d"
-
-msgid "PROGRESS_SCENES"
-msgstr "Scenes: %d"
 
 msgid "INDEX_CONNECTION_ERROR"
 msgstr "Connection Error"
@@ -46,14 +30,8 @@ msgstr "Connection Error"
 msgid "INDEX_CONNECTION_ERROR_DESC"
 msgstr "Could not connect to Hue Bridge"
 
-msgid "INDEX_RETRY"
-msgstr "RETRY"
-
-msgid "SEARCHING_BRIDGE"
-msgstr "Searching for Hue Bridge on your network..."
-
-msgid "PRESS_BUTTON_TO_PAIR"
-msgstr "Press the button on your Hue Bridge to pair"
+msgid "DISCOVERY_FAILED"
+msgstr "Discovery failed"
 
 msgid "BRIDGE_NOT_FOUND"
 msgstr "No bridge found on network"
@@ -66,6 +44,43 @@ msgstr "Press the link button on the bridge and try again"
 
 msgid "INITIAL_CONNECTION_FAILED"
 msgstr "Initial connection check failed"
+
+msgid "FAILED_TO_FETCH_LIGHTS_DATA"
+msgstr "Failed to fetch lights data"
+
+msgid "LOADING_HUE_SETUP"
+msgstr "Loading your Hue setup..."
+
+msgid "RETRY"
+msgstr "Retry"
+
+# GROUPS.JS
+msgid "GROUPS"
+msgstr "Groups"
+
+msgid "ROOMS"
+msgstr "Rooms"
+
+msgid "PROGRESS_ROOMS"
+msgstr "Rooms: %d"
+
+msgid "ZONES"
+msgstr "Zones"
+
+msgid "PROGRESS_ZONES"
+msgstr "Zones: %d"
+
+msgid "NO_ROOM_FOUND"
+msgstr "No rooms found"
+
+msgid "NO_ZONE_FOUND"
+msgstr "No zones found"
+
+msgid "PROGRESS_LIGHTS"
+msgstr "Lights: %d"
+
+msgid "PROGRESS_SCENES"
+msgstr "Scenes: %d"
 
 msgid "NAVIGATING_TO_GROUPS"
 msgstr "Navigating to groups page"
@@ -84,3 +99,6 @@ msgstr "Brightness: "
 
 msgid "ERROR_MSG"
 msgstr "Error: "
+
+msgid "LIGHT"
+msgstr "Light"

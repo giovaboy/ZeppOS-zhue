@@ -2,6 +2,7 @@
 export const COLORS = {
   background: 0x000000,
   text: 0xffffff,
+  textSubtitle: 0xaaaaaa,
   highlight: 0x0055ff,
   cardBg: 0x222222,
   activeTab: 0x0055ff,
@@ -16,7 +17,15 @@ export const COLORS = {
   error: 0xff0000,
   inactive: 0x666666,
   roomIndicator: 0x0000cc,
-  zoneIndicator: 0x009900
+  zoneIndicator: 0x009900,
+  lightBg: 0x1a1a1a,
+  sceneBg: 0x0a2540,
+  toggleOn: 0x00aa00,
+  toggleOff: 0x444444,
+  sectionHeader: 0x0088ff,
+  sliderBg: 0x2a2a2a,
+  sliderFill: 0x0088ff,
+  defaultSwatchColor: 0xFFCC66
 }
 
 // Mappatura completa dei Model ID di Philips Hue
@@ -77,22 +86,56 @@ export const LIGHT_MODELS = {
   'default': { name: 'Light', icon: 'a19_white' }
 }
 
-export const MESSAGE_KEYS = {
-  ID: 0,
-  NAME: 1,
-  MODELID: 2,
-  ISON: 3,
-  BRI: 4,
-  HUE: 5,
-  SAT: 6,
-  X: 7,
-  Y: 8,
-  HEX: 9,
-  REACHABLE: 10,
-  UPDATE: 11,
-  ALL: 12,
-  ALL_STATE: 13,
-  PAIR: 14,
-  ERROR: 15,
-  SUCCESS: 16
+export const PRESET_TYPES = {
+  COLOR: 'COLOR',    // Preset che usano HUE e SAT (per luci colorate)
+  CT: 'CT',          // Preset che usano CT (per luci CT o colorate)
+  WHITE: 'WHITE'     // Preset che usano solo BRI (compatibili con tutte)
+};
+
+export const DEFAULT_PRESETS = [
+  { hex: '#FFA500', bri: 200, hue: 8000, sat: 200, type: PRESET_TYPES.COLOR },
+  { hex: '#87CEEB', bri: 220, hue: 32000, sat: 150, type: PRESET_TYPES.COLOR },
+  { hex: '#FF6B6B', bri: 180, hue: 0, sat: 254, type: PRESET_TYPES.COLOR },
+  { hex: '#FFFFFF', bri: 254, ct: 250, type: PRESET_TYPES.CT },
+  { hex: '#F0EAD6', bri: 200, ct: 450, type: PRESET_TYPES.CT },
+  { hex: '#4A148C', bri: 100, hue: 48000, sat: 254, type: PRESET_TYPES.COLOR },
+  { hex: '#FFFFFF', bri: 50, type: PRESET_TYPES.WHITE }
+];
+
+// Utility HSB to Hex (Visuale)
+export function hsb2hex(h, s, v) {
+    if (s === 0) {
+        const val = Math.round(v * 2.55)
+        return val << 16 | val << 8 | val;
+    }
+    h /= 60; s /= 100; v /= 100;
+    const i = Math.floor(h);
+    const f = h - i;
+    const p = v * (1 - s);
+    const q = v * (1 - f * s);
+    const t = v * (1 - (1 - f) * s);
+    let r = 0, g = 0, b = 0;
+    switch (i % 6) {
+        case 0: r = v; g = t; b = p; break;
+        case 1: r = q; g = v; b = p; break;
+        case 2: r = p; g = v; b = t; break;
+        case 3: r = p; g = q; b = v; break;
+        case 4: r = t; g = p; b = v; break;
+        case 5: r = v; g = p; b = q; break;
+    }
+    const toInt = (c) => Math.round(c * 255);
+    return (toInt(r) << 16) + (toInt(g) << 8) + toInt(b);
+}
+
+// Utility CT (Mireds) to Hex approssimativo per visualizzazione
+export function ct2hex(mireds) {
+    // 153 (6500K - Freddo) -> 500 (2000K - Caldo)
+    // Semplificazione visiva: interpoliamo tra Bluino e Giallino
+    const pct = (mireds - 153) / (500 - 153);
+    // Cold: 0xCCDDFF, Warm: 0xFFB044
+    // R: CC->FF, G: DD->B0, B: FF->44
+    const r = 0xCC + (0xFF - 0xCC) * pct;
+    const g = 0xDD + (0xB0 - 0xDD) * pct;
+    const b = 0xFF + (0x44 - 0xFF) * pct;
+    return (Math.round(r) << 16) + (Math.round(g) << 8) + Math.round(b);
 }

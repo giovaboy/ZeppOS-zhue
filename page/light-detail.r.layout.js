@@ -1,7 +1,9 @@
 import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
 import { widget, align, text_style, prop, event } from '@zos/ui'
+import { createModal, MODAL_CONFIRM } from '@zos/interaction'
 import { getText } from '@zos/i18n'
+import { COLORS, PRESET_TYPES } from '../utils/constants'
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
@@ -13,16 +15,6 @@ export const LAYOUT_CONFIG = {
   colorBtnX: px(60),
   colorBtnW: DEVICE_WIDTH - px(120),
   colorBtnH: px(50)
-}
-
-const COLORS = {
-  background: 0x000000,
-  text: 0xffffff,
-  highlight: 0x0055ff,
-  success: 0x00aa00,
-  error: 0xff0000,
-  sliderBg: 0x2a2a2a,
-  sliderFill: 0x0088ff,
 }
 
 export function renderLightDetail(pageContext, state, callbacks) {
@@ -69,8 +61,14 @@ export function renderLightDetail(pageContext, state, callbacks) {
 
     const caps = callbacks.capabilities || ['brightness']
 
-    // 4. Brightness Slider (Rimane qui per accesso rapido)
-    if (lightOn && caps.includes('brightness')) {
+    // 4. Brightness Slider
+    // Mostralo SOLO se:
+    // - La luce è accesa
+    // - Supporta brightness
+    // - NON supporta colori (se supporta colori, lo slider è nel color-picker)
+    const showBrightnessSlider = lightOn && caps.includes('brightness') && !caps.includes('color') && !caps.includes('ct')
+
+    if (showBrightnessSlider) {
         currentY = renderBrightnessSlider(pageContext, state, currentY, setBrightnessDrag)
     }
 
@@ -91,50 +89,63 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
     const brightness = isDraggingBrightness ? tempBrightness : light.bri
     const brightnessPercent = Math.round(brightness / 254 * 100)
     const { sliderX, sliderW, sliderH } = LAYOUT_CONFIG
-    const trackHeight = px(20)
-    const sliderY = yPos + px(40)
-    const trackCenterY = sliderY + (sliderH / 2)
 
-    // Label
+    // Posizionamento come nel color-picker
+    const sliderY = yPos
+
+    // Track (sfondo dello slider)
+    pageContext.createTrackedWidget(widget.FILL_RECT, {
+        x: sliderX,
+        y: sliderY,
+        w: sliderW,
+        h: sliderH,
+        radius: sliderH/2,
+        color: COLORS.sliderBg
+    })
+
+    // Fill (parte riempita in base al valore)
+    const fillWidth = Math.max(px(20), (brightness / 254) * sliderW)
+    const fillWidget = pageContext.createTrackedWidget(widget.FILL_RECT, {
+        x: sliderX,
+        y: sliderY,
+        w: fillWidth,
+        h: sliderH,
+        radius: sliderH/2,
+        color: COLORS.sliderFill
+    })
+    pageContext.state.brightnessSliderFillWidget = fillWidget
+
+    // Label sopra lo slider (opzionale, per mostrare la percentuale)
     const labelWidget = pageContext.createTrackedWidget(widget.TEXT, {
-        x: sliderX, y: yPos, w: sliderW, h: px(35),
+        x: sliderX,
+        y: sliderY - px(35),
+        w: sliderW,
+        h: px(30),
         text: getText('BRIGHTNESS', brightnessPercent),
-        text_size: px(26),
+        text_size: px(22),
         color: COLORS.text,
-        align_h: align.LEFT,
+        align_h: align.CENTER_H,
         align_v: align.CENTER_V
     })
     pageContext.state.brightnessLabel = labelWidget
 
-    // Track
-    pageContext.createTrackedWidget(widget.FILL_RECT, {
-        x: sliderX, y: trackCenterY - (trackHeight / 2),
-        w: sliderW, h: trackHeight,
-        color: COLORS.sliderBg, radius: trackHeight / 2
-    })
-
-    // Fill
-    const fillWidth = Math.round(sliderW * brightness / 254)
-    const fillWidget = pageContext.createTrackedWidget(widget.FILL_RECT, {
-        x: sliderX, y: trackCenterY - (trackHeight / 2),
-        w: fillWidth, h: trackHeight,
-        color: COLORS.sliderFill, radius: trackHeight / 2
-    })
-    pageContext.state.brightnessSliderFillWidget = fillWidget
-
-    // Hitbox
-    const trackHitbox = pageContext.createTrackedWidget(widget.FILL_RECT, {
-        x: sliderX, y: sliderY, w: sliderW, h: sliderH,
-        color: 0, alpha: 0
+    // Hitbox (area touch estesa come nel color-picker)
+    const hitbox = pageContext.createTrackedWidget(widget.FILL_RECT, {
+        x: sliderX - 20,
+        y: sliderY - 20,
+        w: sliderW + 40,
+        h: sliderH + 40,
+        color: 0,
+        alpha: 0
     })
 
     if (dragCallback) {
-        trackHitbox.addEventListener(event.CLICK_DOWN, (info) => dragCallback('DOWN', info))
-        trackHitbox.addEventListener(event.MOVE, (info) => dragCallback('MOVE', info))
-        trackHitbox.addEventListener(event.CLICK_UP, (info) => dragCallback('UP', info))
+        hitbox.addEventListener(event.CLICK_DOWN, (info) => dragCallback('DOWN', info))
+        hitbox.addEventListener(event.MOVE, (info) => dragCallback('MOVE', info))
+        hitbox.addEventListener(event.CLICK_UP, (info) => dragCallback('UP', info))
     }
 
-    return sliderY + sliderH + px(20)
+    return sliderY + sliderH + px(60)
 }
 
 function renderColorButton(pageContext, state, yPos, openCallback) {
@@ -195,23 +206,47 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, cal
     // Access caps from callbacks safely
     const caps = callbacks.capabilities || [];
     const isColorLight = caps.includes('color');
+    const isCtLight = caps.includes('ct');
 
-    favoriteColors.forEach((fav, i) => {
-        // Mostra solo preset compatibili
-        if (fav.isColor && !isColorLight) return;
+    // Filtra i preset in base alla compatibilità della luce (IL FIX)
+    const compatiblePresets = favoriteColors.filter(fav => {
+        switch (fav.type) {
+            case PRESET_TYPES.COLOR:
+                // Richiede una luce che supporti il colore
+                return isColorLight;
+            case PRESET_TYPES.CT:
+                // Richiede una luce che supporti CT *o* COLOR
+                return isCtLight || isColorLight;
+            case PRESET_TYPES.WHITE:
+            default:
+                // WHITE è sempre compatibile
+                return true;
+        }
+    });
 
+    compatiblePresets.forEach((fav, i) => {
         const col = i % COLS
         const row = Math.floor(i / COLS)
+
+        let buttonText = '';
+        if (fav.type === PRESET_TYPES.WHITE) {
+            // Calcola la percentuale di luminosità (bri va da 0 a 254)
+            const briPercent = Math.round((fav.bri / 254) * 100);
+            buttonText = `${briPercent}%`;
+        }
 
         pageContext.createTrackedWidget(widget.BUTTON, {
             x: startX + col * (ITEM_SIZE + ITEM_MARGIN),
             y: currentY + row * (ITEM_SIZE + ITEM_MARGIN),
             w: ITEM_SIZE, h: ITEM_SIZE,
-            text: '',
-            normal_color: parseInt(fav.hex.replace('#', ''), 16),
+            color: 0x000000,
+            text: buttonText,
+            text_size: px(18),
+            normal_color: parseInt(fav.hex.replace('#', '0x'), 16),
             press_color: 0x33ffffff,
             radius: px(8),
-            click_func: () => applyCallback(fav)
+            click_func: () => applyCallback(fav),
+            //longpress_func: () => deleteCallback(fav) //qui aprimo un createModal per eliminare il preferito
         })
     })
 }

@@ -6,24 +6,11 @@ import { createWidget, deleteWidget } from '@zos/ui'
 import { push } from '@zos/router'
 import { LIGHT_MODELS } from '../utils/constants.js'
 import { renderGroupDetailPage } from 'zosLoader:./group-detail.[pf].layout.js'
+import { COLORS } from '../utils/constants.js'
 
-const logger = getLogger('hue-group-detail-page')
+const logger = getLogger('zhue-group-detail-page')
 
-const COLORS = {
-  background: 0x000000,
-  text: 0xffffff,
-  highlight: 0x0055ff,
-  success: 0x00aa00,
-  error: 0xff0000,
-  inactive: 0x666666,
-  lightBg: 0x1a1a1a,
-  sceneBg: 0x0a2540,
-  toggleOn: 0x00aa00,
-  toggleOff: 0x444444,
-  sectionHeader: 0x0088ff
-}
-
-// ✅ Default settings come fallback
+// Default settings fallback
 const DEFAULT_USER_SETTINGS = {
   show_global_toggle: true,
   show_scenes: true,
@@ -33,7 +20,7 @@ const DEFAULT_USER_SETTINGS = {
 Page(
   BasePage({
     state: {
-      userSettings: DEFAULT_USER_SETTINGS, // ✅ Inizializzato con default
+      userSettings: DEFAULT_USER_SETTINGS,
       groupId: null,
       groupType: null,
       groupName: '',
@@ -73,7 +60,7 @@ Page(
       setPageBrightTime({ brightTime: 60000 })
 
       if (this.state.groupId) {
-        this.loadGroupDetail() // ✅ Una sola chiamata!
+        this.loadGroupDetail()
       } else {
         this.state.error = "ID Gruppo Mancante. Torna Indietro."
         this.renderPage()
@@ -99,7 +86,6 @@ Page(
       this.listWidget = null
     },
 
-    // ✅ UNICA CHIAMATA: Recupera dati + settings insieme
     loadGroupDetail() {
       this.state.isLoading = true
       this.state.error = null
@@ -118,12 +104,10 @@ Page(
           if (result.success && result.data) {
             const rawLights = result.data.lights || []
 
-            // ✅ User Settings arrivano nella stessa response!
             if (result.data.userSettings) {
               this.state.userSettings = result.data.userSettings
               logger.log('User settings loaded:', this.state.userSettings)
             } else {
-              // Fallback a default se non presenti
               logger.warn('No user settings in response, using defaults')
               this.state.userSettings = DEFAULT_USER_SETTINGS
             }
@@ -244,16 +228,14 @@ Page(
           }
           return light.hex
         } catch (e) {
-          return 0xFFCC66
+          return COLORS.defaultSwatchColor
         }
       }
-      return 0xFFCC66
+      return COLORS.defaultSwatchColor
     },
 
     renderPage() {
       this.clearAllWidgets()
-
-      // ✅ SEMPLIFICATO: Prepara solo array di items, niente data_config
       const data = []
 
       // Helper function per aggiungere le scene
@@ -310,7 +292,7 @@ Page(
         }
       }
 
-      // ✅ LOGICA DISPLAY_ORDER
+      // DISPLAY_ORDER
       const displayOrder = this.state.userSettings.display_order || 'LIGHTS_FIRST'
       logger.log(`Display order: ${displayOrder}`)
 
@@ -323,8 +305,6 @@ Page(
       }
 
       logger.log(`Data prepared: ${data.length} total items`)
-
-      // ✅ SEMPLIFICATO: Passa solo data array
       const viewData = { data }
 
       renderGroupDetailPage(this, this.state, viewData, {

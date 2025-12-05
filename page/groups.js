@@ -7,7 +7,7 @@ import { setPageBrightTime } from '@zos/display'
 import { renderGroupsPage } from 'zosLoader:./groups.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
 
-const logger = getLogger('hue-groups-page')
+const logger = getLogger('zhue-groups-page')
 
 Page(
   BasePage({

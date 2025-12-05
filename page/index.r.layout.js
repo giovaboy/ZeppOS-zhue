@@ -4,18 +4,16 @@ import { widget, align, text_style, anim_status, setStatusBarVisible } from '@zo
 import { getText } from '@zos/i18n'
 import { COLORS } from '../utils/constants.js'
 
+const STATES = {
+  LOADING: 'LOADING',
+  SEARCHING_BRIDGE: 'SEARCHING_BRIDGE',
+  WAITING_FOR_PRESS: 'WAITING_FOR_PRESS',
+  FETCHING_DATA: 'FETCHING_DATA',
+  ERROR: 'ERROR',
+  SUCCESS: 'SUCCESS'
+}
 // Costanti Globali del Dispositivo (Round)
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
-export const TEXT_SIZE = px(30); // DEVICE_WIDTH / 16;
-
-const STATES = {
-    LOADING: 'LOADING',
-    SEARCHING_BRIDGE: 'SEARCHING_BRIDGE',
-    WAITING_FOR_PRESS: 'WAITING_FOR_PRESS',
-    FETCHING_DATA: 'FETCHING_DATA',
-    ERROR: 'ERROR',
-    SUCCESS: 'SUCCESS'
-}
 
 setStatusBarVisible(false)
 
@@ -42,7 +40,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
                 align_h: align.CENTER_H,
                 align_v: align.CENTER_V,
                 text_style: text_style.WRAP,
-                text: getText('loading')
+                text: getText('LOADING')
             });
 
             // 2. Animazione (IMG_ANIM è nativa, parte da sola con anim_status.START)
@@ -63,7 +61,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
             // Titolo
             pageContext.createTrackedWidget(widget.TEXT, {
                 x: 0, y: px(40), w: DEVICE_WIDTH, h: px(60),
-                text: 'Hue Bridge', text_size: px(40),
+                text: getText('HUE_BRIDGE'), text_size: px(40),
                 color: COLORS.text, align_h: align.CENTER_H, align_v: align.CENTER_V
             })
             // Animazione/Icona placeholder
@@ -82,7 +80,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
             // Testo informativo
             pageContext.createTrackedWidget(widget.TEXT, {
                 x: 0, y: px(360), w: DEVICE_WIDTH, h: px(40),
-                text: 'Make sure your bridge is powered on', text_size: px(20),
+                text: getText('BRIDGE_POWERED_ON'), text_size: px(20),
                 color: COLORS.inactive, align_h: align.CENTER_H, align_v: align.CENTER_V
             })
             // Barra di progresso
@@ -100,7 +98,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
             })
             pageContext.createTrackedWidget(widget.TEXT, {
                 x: 0, y: px(50), w: DEVICE_WIDTH, h: px(50),
-                text: 'Bridge Found!', text_size: px(38),
+                text: getText('BRIDGE_FOUND'), text_size: px(38),
                 color: COLORS.warningText, align_h: align.CENTER_H, align_v: align.CENTER_V
             })
             // Icona bridge
@@ -119,7 +117,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
 
             pageContext.createTrackedWidget(widget.TEXT, {
                 x: 0, y: px(390), w: DEVICE_WIDTH, h: px(30),
-                text: 'Waiting for button press...', text_size: px(20),
+                text: getText('WAIT_PRESS'), text_size: px(20),
                 color: COLORS.warningText, align_h: align.CENTER_H, align_v: align.CENTER_V
             })
 
@@ -138,13 +136,13 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
             })
             pageContext.createTrackedWidget(widget.TEXT, {
                 x: 0, y: px(60), w: DEVICE_WIDTH, h: px(50),
-                text: 'Paired Successfully!', text_size: px(36),
+                text: getText('PAIRED_SUCCESS'), text_size: px(36),
                 color: COLORS.text, align_h: align.CENTER_H, align_v: align.CENTER_V
             })
 
             pageContext.createTrackedWidget(widget.TEXT, {
                 x: 0, y: px(210), w: DEVICE_WIDTH, h: px(40),
-                text: 'Loading your Hue setup...', text_size: px(26),
+                text: getText('LOADING_HUE_SETUP'), text_size: px(26),
                 color: COLORS.text, align_h: align.CENTER_H, align_v: align.CENTER_V
             })
 
@@ -177,7 +175,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
             // Bottone RETRY
             pageContext.createTrackedWidget(widget.BUTTON, {
                 x: px(90), y: px(360), w: px(300), h: px(60),
-                text: 'RETRY', text_size: px(28),
+                text: getText('RETRY'), text_size: px(28),
                 normal_color: COLORS.highlight, press_color: COLORS.success, radius: px(10),
                 click_func: retryFunc // Usa la funzione passata da index.js
             })

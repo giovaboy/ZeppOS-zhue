@@ -2,13 +2,11 @@ import { BasePage } from '@zeppos/zml/base-page'
 import { createWidget, deleteWidget, prop } from '@zos/ui'
 import { push } from '@zos/router'
 import { renderMainWidgets } from 'zosLoader:./index.[pf].layout.js'
+import { getText } from '@zos/i18n'
 import { px } from '@zos/utils'
 import { setPageBrightTime } from '@zos/display'
 import { getLogger } from '../utils/logger.js'
 
-const logger = getLogger('hue-welcome-page')
-
-// Stati della pagina benvenuto
 const STATES = {
   LOADING: 'LOADING',
   SEARCHING_BRIDGE: 'SEARCHING_BRIDGE',
@@ -17,6 +15,8 @@ const STATES = {
   ERROR: 'ERROR',
   SUCCESS: 'SUCCESS'
 }
+
+const logger = getLogger('zhue-index-page')
 
 Page(
   BasePage({
@@ -33,11 +33,11 @@ Page(
     progressInterval: null,
 
     onInit() {
-      logger.debug('Welcome page onInit')
+      logger.debug('index page onInit')
     },
 
     build() {
-      logger.log('Building Welcome page')
+      logger.log('Building index page')
       setPageBrightTime({ brightTime: 60000 })
       this.renderPage()
       this.checkInitialConnection()
@@ -63,7 +63,9 @@ Page(
       }
 
       this.widgets.forEach(w => {
-        try { deleteWidget(w) } catch (e) {}
+        try { deleteWidget(w) } catch (e) {
+          logger.error('Delete widget:', e)
+        }
       })
       this.widgets = []
     },
@@ -103,11 +105,11 @@ Page(
             this.setState(STATES.WAITING_FOR_PRESS)
             this.startPairing()
           } else {
-            this.setState(STATES.ERROR, { error: 'No bridge found on network' })
+            this.setState(STATES.ERROR, { error: getText('BRIDGE_NOT_FOUND') } )
           }
         })
         .catch(err => {
-          this.setState(STATES.ERROR, { error: err.message || 'Discovery failed' })
+          this.setState(STATES.ERROR, { error: err.message || getText('DISCOVERY_FAILED') })
         })
     },
 
@@ -118,11 +120,11 @@ Page(
             this.setState(STATES.FETCHING_DATA)
             this.fetchAllData()
           } else {
-            this.setState(STATES.ERROR, { error: result.message || 'Pairing failed' })
+            this.setState(STATES.ERROR, { error: result.message || getText('PAIRING_FAILED') })
           }
         })
         .catch(err => {
-          this.setState(STATES.ERROR, { error: err.message || 'Pairing failed' })
+          this.setState(STATES.ERROR, { error: err.message || getText('PAIRING_FAILED') })
         })
     },
 
@@ -133,13 +135,13 @@ Page(
             this.setState(STATES.FETCHING_DATA, { progress: { lights: result.lights.length } })
             setTimeout(() => {
               this.setState(STATES.SUCCESS)
-            }, 1500)
+            }, 200)
           } else {
-            this.setState(STATES.ERROR, { error: 'Failed to fetch lights data' })
+            this.setState(STATES.ERROR, { error: getText('FAILED_TO_FETCH_LIGHTS_DATA') })
           }
         })
         .catch(err => {
-          this.setState(STATES.ERROR, { error: err.message || 'Failed to fetch data' })
+          this.setState(STATES.ERROR, { error: err.message || getText('FAILED_TO_FETCH_LIGHTS_DATA') })
         })
     },
 
@@ -152,7 +154,6 @@ Page(
 
     navigateToGroups() {
       logger.log('Navigating to groups page')
-      // Sostituirà la navigazione temporanea
       push({ url: 'page/groups', params: {} })
     },
 
@@ -170,7 +171,7 @@ Page(
       // Chiama la funzione di layout importata, passando il contesto e lo stato.
       renderMainWidgets(this, this.state, {
           retryFunc: () => this.retry(),
-          animateSpinner: (w) => this.animateSpinner(w), // Arrow function preserva il 'this'
+          animateSpinner: (w) => this.animateSpinner(w),
           animateProgressBar: (w) => this.animateProgressBar(w)
       })
     },
@@ -197,7 +198,9 @@ Page(
         try {
           // Usa la proprietà ALPHA per manipolare il cerchio (effetto pulsante)
           spinner.setProperty(prop.ALPHA, alpha);
-        } catch {}
+        } catch {
+          logger.error('spinner.SetProperty')
+        }
       }, 100);
     },
 
@@ -212,12 +215,14 @@ Page(
         progress = (progress + 5) % 100
         try {
           progressBar.setProperty(prop.W, px(10 + 2 * progress))
-        } catch {}
+        } catch {
+          logger.error('progressBar.setProperty')
+        }
       }, 150)
     },
 
     onDestroy() {
-      logger.debug('Welcome page onDestroy')
+      logger.debug('index page onDestroy')
       this.clearAllWidgets()
     }
   })

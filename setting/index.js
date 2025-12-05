@@ -1,4 +1,5 @@
 import { gettext } from 'i18n'
+import { DEFAULT_PRESETS, PRESET_TYPES } from '../utils/constants' 
 
 AppSettingsPage({
   build(props) {
@@ -300,6 +301,127 @@ AppSettingsPage({
             value: props.settingsStorage.getItem('hue_demo_mode') === 'true',
             onChange: (value) => {
               props.settingsStorage.setItem('hue_demo_mode', value ? 'true' : 'false')
+            }
+          })
+        ]
+      ),
+
+      // ===== FAVORITE COLORS SECTION =====
+      View(
+        {
+          style: {
+            marginTop: '20px',
+            padding: '20px',
+            backgroundColor: '#fff',
+            borderRadius: '8px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          },
+        },
+        [
+          Text(
+            {
+              style: {
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#333',
+                marginBottom: '15px'
+              }
+            },
+            ['🎨 Favorite Colors']
+          ),
+
+          Text(
+            {
+              style: {
+                fontSize: '14px',
+                color: '#6c757d',
+                marginBottom: '15px'
+              }
+            },
+            ['Manage your favorite color presets. You can add colors from the light detail page on your watch.']
+          ),
+
+          // Display current presets
+          View(
+            {
+              style: {
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '10px',
+                marginBottom: '15px',
+                padding: '15px',
+                backgroundColor: '#f8f9fa',
+                borderRadius: '6px'
+              }
+            },
+            (() => {
+              const favColorsStr = props.settingsStorage.getItem('hue_favorite_colors')
+              let colors = DEFAULT_PRESETS
+              
+              if (favColorsStr) {
+                try {
+                  colors = JSON.parse(favColorsStr)
+                } catch (e) {
+                  console.error('Failed to parse favorite colors')
+                }
+              }
+
+              return colors.map((color, i) => 
+                View(
+                  {
+                    style: {
+                      width: '50px',
+                      height: '50px',
+                      backgroundColor: color.hex,
+                      borderRadius: '8px',
+                      border: '2px solid #dee2e6',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    },
+                    title: color.name || color.hex
+                  },
+                  [color.type === PRESET_TYPES.WHITE ? `${Math.round((color.bri / 254) * 100)}%` : '']
+                )
+              )
+            })()
+          ),
+
+          Text(
+            {
+              style: {
+                fontSize: '12px',
+                color: '#6c757d',
+                marginBottom: '10px'
+              }
+            },
+            [`Current presets: ${(() => {
+              const favColorsStr = props.settingsStorage.getItem('hue_favorite_colors')
+              if (favColorsStr) {
+                try {
+                  return JSON.parse(favColorsStr).length
+                } catch (e) {
+                  return DEFAULT_PRESETS.length
+                }
+              }
+              return DEFAULT_PRESETS.length
+            })()}`]
+          ),
+
+          Button({
+            label: '🔄 Reset to Default Presets',
+            color: 'secondary',
+            style: {
+              width: '100%'
+            },
+            onClick: () => {
+              //if (confirm('Reset favorite colors to default presets?')) {
+                props.settingsStorage.setItem('hue_favorite_colors', JSON.stringify(DEFAULT_PRESETS))
+                //alert('✅ Favorite colors reset to defaults!')
+                //window.location.reload()
+              //}
             }
           })
         ]

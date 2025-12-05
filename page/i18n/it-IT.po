@@ -1,38 +1,80 @@
-msgid "loading"
+# Italian translations for zhue integration
+# INDEX.JS
+msgid "LOADING"
 msgstr "Caricamento..."
 
-msgid "INDEX_SEARCHING_BRIDGE"
-msgstr "Ricerca del bridge Hue in corso..."
+msgid "HUE_BRIDGE"
+msgstr "Hue Bridge"
 
-msgid "INDEX_BRIDGE_FOUND"
-msgstr "Bridge trovato!"
+msgid "BRIDGE_POWERED_ON"
+msgstr "Assicurati che il tuo bridge sia acceso"
 
-msgid "INDEX_PRESS_BUTTON"
-msgstr "Premi il pulsante sul tuo bridge Hue per accoppiare"
+msgid "SEARCHING_BRIDGE"
+msgstr "Ricerca del Bridge Hue sulla rete..."
 
-msgid "INDEX_WAIT_PRESS"
+msgid "BRIDGE_FOUND"
+msgstr "Bridge Trovato!"
+
+msgid "PRESS_BUTTON_TO_PAIR"
+msgstr "Premi il pulsante sul tuo Hue Bridge per l'associazione"
+
+msgid "WAIT_PRESS"
 msgstr "In attesa della pressione del pulsante..."
 
-msgid "INDEX_PAIRED_SUCCESS"
-msgstr "Accoppiamento completato!"
+msgid "PAIRED_SUCCESS"
+msgstr "Associazione Riuscita!"
 
-msgid "INDEX_LOADING"
-msgstr "Caricamento della configurazione Hue..."
+msgid "INDEX_CONNECTION_ERROR"
+msgstr "Errore di Connessione"
 
+msgid "INDEX_CONNECTION_ERROR_DESC"
+msgstr "Impossibile connettersi a Hue Bridge"
+
+msgid "DISCOVERY_FAILED"
+msgstr "Ricerca fallita"
+
+msgid "BRIDGE_NOT_FOUND"
+msgstr "Nessun bridge trovato sulla rete"
+
+msgid "PAIRING_FAILED"
+msgstr "Associazione fallita"
+
+msgid "BUTTON_NOT_PRESSED"
+msgstr "Premi il pulsante link sul bridge e riprova"
+
+msgid "INITIAL_CONNECTION_FAILED"
+msgstr "Verifica connessione iniziale fallita"
+
+msgid "FAILED_TO_FETCH_LIGHTS_DATA"
+msgstr "Impossibile recuperare i dati delle luci"
+
+msgid "LOADING_HUE_SETUP"
+msgstr "Caricamento della tua configurazione Hue..."
+
+msgid "RETRY"
+msgstr "Riprova"
+
+# GROUPS.JS
 msgid "GROUPS"
 msgstr "Gruppi"
-
-msgid "PROGRESS_ROOMS"
-msgstr "Stanze: %d"
 
 msgid "ROOMS"
 msgstr "Stanze"
 
-msgid "PROGRESS_ZONES"
-msgstr "Zone: %d"
+msgid "PROGRESS_ROOMS"
+msgstr "Stanze: %d"
 
 msgid "ZONES"
 msgstr "Zone"
+
+msgid "PROGRESS_ZONES"
+msgstr "Zone: %d"
+
+msgid "NO_ROOM_FOUND"
+msgstr "Nessuna stanza trovata"
+
+msgid "NO_ZONE_FOUND"
+msgstr "Nessuna zona trovata"
 
 msgid "PROGRESS_LIGHTS"
 msgstr "Luci: %d"
@@ -40,35 +82,8 @@ msgstr "Luci: %d"
 msgid "PROGRESS_SCENES"
 msgstr "Scene: %d"
 
-msgid "INDEX_CONNECTION_ERROR"
-msgstr "Errore di connessione"
-
-msgid "INDEX_CONNECTION_ERROR_DESC"
-msgstr "Impossibile connettersi al bridge Hue"
-
-msgid "INDEX_RETRY"
-msgstr "RIPROVA"
-
-msgid "SEARCHING_BRIDGE"
-msgstr "Ricerca del Bridge Hue nella tua rete..."
-
-msgid "PRESS_BUTTON_TO_PAIR"
-msgstr "Premi il bottone sul tuo Bridge Hue per accoppiare"
-
-msgid "BRIDGE_NOT_FOUND"
-msgstr "Nessun bridge trovato sulla rete"
-
-msgid "PAIRING_FAILED"
-msgstr "Accoppiamento fallito"
-
-msgid "BUTTON_NOT_PRESSED"
-msgstr "Premi il pulsante sul bridge e riprova"
-
-msgid "INITIAL_CONNECTION_FAILED"
-msgstr "Controllo iniziale della connessione fallito"
-
 msgid "NAVIGATING_TO_GROUPS"
-msgstr "Navigazione alla pagina gruppi"
+msgstr "Passaggio alla pagina gruppi"
 
 msgid "GROUP_DETAIL"
 msgstr "Dettaglio gruppo"
@@ -84,3 +99,6 @@ msgstr "Luminosità: "
 
 msgid "ERROR_MSG"
 msgstr "Errore: "
+
+msgid "LIGHT"
+msgstr "Luce"

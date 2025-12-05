@@ -2,6 +2,7 @@ import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
 import { widget, align, text_style, prop, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
+import { COLORS, hsb2hex, ct2hex } from '../utils/constants.js'
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
@@ -19,52 +20,6 @@ export const LAYOUT_CONFIG = {
   sliderH: px(40),
   sliderX: (DEVICE_WIDTH - px(300)) / 2,
   sliderY: DEVICE_HEIGHT - px(90) // In basso
-}
-
-const COLORS = {
-  text: 0xffffff,
-  activeTab: 0x0055ff,
-  inactiveTab: 0x333333,
-  sliderBg: 0x2a2a2a,
-  sliderFill: 0xffffff, // Bianco per la luminosità qui
-}
-
-// Utility HSB to Hex (Visuale)
-export function hsb2hex(h, s, v) {
-    if (s === 0) {
-        const val = Math.round(v * 2.55)
-        return val << 16 | val << 8 | val;
-    }
-    h /= 60; s /= 100; v /= 100;
-    const i = Math.floor(h);
-    const f = h - i;
-    const p = v * (1 - s);
-    const q = v * (1 - f * s);
-    const t = v * (1 - (1 - f) * s);
-    let r = 0, g = 0, b = 0;
-    switch (i % 6) {
-        case 0: r = v; g = t; b = p; break;
-        case 1: r = q; g = v; b = p; break;
-        case 2: r = p; g = v; b = t; break;
-        case 3: r = p; g = q; b = v; break;
-        case 4: r = t; g = p; b = v; break;
-        case 5: r = v; g = p; b = q; break;
-    }
-    const toInt = (c) => Math.round(c * 255);
-    return (toInt(r) << 16) + (toInt(g) << 8) + toInt(b);
-}
-
-// Utility CT (Mireds) to Hex approssimativo per visualizzazione
-function ct2hex(mireds) {
-    // 153 (6500K - Freddo) -> 500 (2000K - Caldo)
-    // Semplificazione visiva: interpoliamo tra Bluino e Giallino
-    const pct = (mireds - 153) / (500 - 153);
-    // Cold: 0xCCDDFF, Warm: 0xFFB044
-    // R: CC->FF, G: DD->B0, B: FF->44
-    const r = 0xCC + (0xFF - 0xCC) * pct;
-    const g = 0xDD + (0xB0 - 0xDD) * pct;
-    const b = 0xFF + (0x44 - 0xFF) * pct;
-    return (Math.round(r) << 16) + (Math.round(g) << 8) + Math.round(b);
 }
 
 export function renderColorPickerPage(pageContext, state, callbacks) {

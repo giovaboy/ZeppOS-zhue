@@ -1,4 +1,5 @@
 import { BaseSideService, settingsLib } from '@zeppos/zml/base-side'
+import { DEFAULT_PRESETS, PRESET_TYPES } from '../utils/constants.js'
 
 // ============================================
 // 1. CONFIGURAZIONE DEMO
@@ -13,12 +14,14 @@ const DEMO_MODE = 'hue_demo_mode'
 const SHOW_GLOBAL_TOGGLE = 'hue_show_global_toggle'
 const SHOW_SCENES = 'hue_show_scenes'
 const DISPLAY_ORDER = 'hue_display_order'
+const FAVORITE_COLORS = 'hue_favorite_colors'
 
 // Valori predefiniti per le impostazioni utente
 const DEFAULT_USER_SETTINGS = {
   show_global_toggle: false,
   show_scenes: true,
-  display_order: 'LIGHTS_FIRST'
+  display_order: 'LIGHTS_FIRST',
+  favorite_colors: DEFAULT_PRESETS
 }
 
 // --- Nuova funzione: HSB (0-65535, 0-254, 0-254) a RGB (0-255) ---
@@ -98,6 +101,37 @@ async function safeJson(resp) {
   return {}
 }
 
+// Funzione di utilità per confrontare due oggetti preset (solo i campi rilevanti)
+function presetsAreEqual(presetA, presetB) {
+  if (presetA.type !== presetB.type) {
+    return false;
+  }
+
+  // Confronta il BRI, che è sempre fondamentale
+  if (presetA.bri !== presetB.bri) {
+    return false;
+  }
+
+  switch (presetA.type) {
+    case PRESET_TYPES.COLOR:
+      // Per COLOR, confronta anche HUE e SAT (HEX è solo cosmetico)
+      return presetA.hue === presetB.hue && presetA.sat === presetB.sat;
+
+    case PRESET_TYPES.CT:
+      // Per CT, confronta il CT (temperatura colore)
+      return presetA.ct === presetB.ct;
+
+    case PRESET_TYPES.WHITE:
+      // Per WHITE, basta confrontare BRI (già fatto sopra).
+      // L'HEX salvato è sempre #FFFFFF, quindi non lo confrontiamo.
+      return true;
+
+    default:
+      // Se non riconosciuto, confronta solo HEX (per compatibilità)
+      return presetA.hex === presetB.hex;
+  }
+}
+
 class HueBridgeManager {
   constructor() {
     console.log('HueBridgeManager initializing')
@@ -123,12 +157,22 @@ class HueBridgeManager {
     })
   }
 
-  // Nuovo metodo per caricare e mappare le impostazioni utente
+  //carica le impostazioni utente
   _loadUserSettings() {
-    // Legge i valori da settingsLib, usando i default se non presenti
     const show_global_toggle_str = settingsLib.getItem(SHOW_GLOBAL_TOGGLE)
     const show_scenes_str = settingsLib.getItem(SHOW_SCENES)
     const display_order_str = settingsLib.getItem(DISPLAY_ORDER)
+    const favorite_colors_str = settingsLib.getItem(FAVORITE_COLORS)
+
+    // Parse favorite colors
+    let favorite_colors = DEFAULT_USER_SETTINGS.favorite_colors
+    if (favorite_colors_str) {
+      try {
+        favorite_colors = JSON.parse(favorite_colors_str)
+      } catch (e) {
+        console.error('Failed to parse favorite colors:', e)
+      }
+    }
 
     return {
       show_global_toggle: show_global_toggle_str !== null
@@ -141,15 +185,64 @@ class HueBridgeManager {
 
       display_order: display_order_str !== null
         ? display_order_str
-        : DEFAULT_USER_SETTINGS.display_order
+        : DEFAULT_USER_SETTINGS.display_order,
+
+      favorite_colors: favorite_colors
     }
   }
 
-  // Nuovo metodo per esporre le impostazioni utente
   getUserSettings() {
-    // Ricarica per assicurarsi di avere lo stato più recente (utile se le settings sono cambiate)
     this.user_settings = this._loadUserSettings()
     return this.user_settings
+  }
+
+  // Salva i colori preferiti
+  saveFavoriteColors(colors) {
+    try {
+      const colorsJson = JSON.stringify(colors)
+      settingsLib.setItem(FAVORITE_COLORS, colorsJson)
+      this.user_settings.favorite_colors = colors
+      console.log('Favorite colors saved:', colors.length)
+      return { success: true }
+    } catch (e) {
+      console.error('Failed to save favorite colors:', e)
+      throw new Error('Failed to save favorite colors')
+    }
+  }
+
+  // La funzione che hai chiesto di sistemare:
+  addFavoriteColor(colorData) {
+    // colorData ora contiene type, bri, e i parametri specifici (hue/sat o ct)
+    const currentColors = this.user_settings.favorite_colors || [];
+
+    // Controlla se esiste un preset logicamente equivalente
+    const exists = currentColors.some(existingColor => presetsAreEqual(existingColor, colorData));
+
+    if (exists) {
+      console.log('Color preset already exists in favorites');
+      return { success: true, added: false };
+    }
+
+    const newColors = [...currentColors, colorData];
+    // Assumendo che saveFavoriteColors salvi e aggiorni this.user_settings
+    return this.saveFavoriteColors(newColors);
+  }
+
+  // Rimuove un colore dai preferiti
+  removeFavoriteColor(index) {
+    const currentColors = this.user_settings.favorite_colors || []
+
+    if (index < 0 || index >= currentColors.length) {
+      throw new Error('Invalid color index')
+    }
+
+    const newColors = currentColors.filter((_, i) => i !== index)
+    return this.saveFavoriteColors(newColors)
+  }
+
+  // Reset ai preset di default
+  resetFavoriteColors() {
+    return this.saveFavoriteColors(DEFAULT_PRESETS)
   }
 
   // --- Funzioni per lo stato DEMO ---
@@ -1007,13 +1100,15 @@ AppSideService(
           this.settings.clear()
           break
         }
-        case DEMO_MODE:
-          this.demo = settingsLib.getItem(DEMO_MODE) === 'true'
-          break
+        //case DEMO_MODE:
+        //this.demo = settingsLib.getItem(DEMO_MODE) === 'true'
+        //break
         // AGGIUNTO: Forziamo il ricaricamento delle impostazioni utente in caso di un cambio rilevante
+        case DEMO_MODE:
         case SHOW_GLOBAL_TOGGLE:
         case SHOW_SCENES:
         case DISPLAY_ORDER:
+        case FAVORITE_COLORS:
           hueBridge.getUserSettings() // Ricarica le impostazioni
           break
       }
@@ -1025,6 +1120,22 @@ AppSideService(
       switch (req.method) {
         case 'GET_USER_SETTINGS':
           this.handleGetUserSettings(res)
+          break
+
+        case 'GET_FAVORITE_COLORS':
+          this.handleGetFavoriteColors(res)
+          break
+
+        case 'ADD_FAVORITE_COLOR':
+          this.handleAddFavoriteColor(req, res)
+          break
+
+        case 'REMOVE_FAVORITE_COLOR':
+          this.handleRemoveFavoriteColor(req, res)
+          break
+
+        case 'RESET_FAVORITE_COLORS':
+          this.handleResetFavoriteColors(res)
           break
 
         case 'CHECK_CONNECTION':
@@ -1112,6 +1223,57 @@ AppSideService(
         res(null, { success: true, settings })
       } catch (error) {
         console.error('Get user settings error:', error)
+        res({ error: error.message })
+      }
+    },
+
+    async handleGetFavoriteColors(res) {
+      try {
+        console.log('Getting favorite colors...')
+        const settings = hueBridge.getUserSettings()
+        res(null, {
+          success: true,
+          colors: settings.favorite_colors || DEFAULT_PRESETS
+        })
+      } catch (error) {
+        console.error('Get favorite colors error:', error)
+        res({ error: error.message })
+      }
+    },
+
+    async handleAddFavoriteColor(req, res) {
+      try {
+        const { colorData } = req.params
+        console.log('Adding favorite color:', colorData)
+
+        const result = hueBridge.addFavoriteColor(colorData)
+        res(null, result)
+      } catch (error) {
+        console.error('Add favorite color error:', error)
+        res({ error: error.message })
+      }
+    },
+
+    async handleRemoveFavoriteColor(req, res) {
+      try {
+        const { index } = req.params
+        console.log('Removing favorite color at index:', index)
+
+        const result = hueBridge.removeFavoriteColor(index)
+        res(null, result)
+      } catch (error) {
+        console.error('Remove favorite color error:', error)
+        res({ error: error.message })
+      }
+    },
+
+    async handleResetFavoriteColors(res) {
+      try {
+        console.log('Resetting favorite colors to defaults...')
+        const result = hueBridge.resetFavoriteColors()
+        res(null, result)
+      } catch (error) {
+        console.error('Reset favorite colors error:', error)
         res({ error: error.message })
       }
     },
