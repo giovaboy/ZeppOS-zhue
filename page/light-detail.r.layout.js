@@ -194,7 +194,7 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, cal
     })
 
     pageContext.createTrackedWidget(widget.BUTTON, {
-        x: DEVICE_WIDTH - presetX - px(40), y: yPos, w: px(40), h: px(35),
+        x: presetX + presetW - px(40), y: yPos, w: px(40), h: px(35),
         text: '+',
         normal_color: COLORS.highlight, press_color: COLORS.success, radius: px(6),
         click_func: addCallback
@@ -222,9 +222,9 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, cal
                 // Richiede una luce che supporti CT *o* COLOR
                 return isCtLight || isColorLight;
             case PRESET_TYPES.WHITE:
+                return !isCtLight && !isColorLight;
             default:
-                // WHITE è sempre compatibile
-                return true;
+                return false;
         }
     });
 

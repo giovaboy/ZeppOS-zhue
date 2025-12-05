@@ -180,14 +180,14 @@ Page(
         if (this.state.cursorWidget) {
             const { pickerX, pickerY, pickerSize } = LAYOUT_CONFIG;
             const curSz = px(36);
-            const x = pickerX + (h / HUE_RANGE) * pickerSize - curSz/2;
-            const y = pickerY + ((SAT_RANGE - s) / SAT_RANGE) * pickerSize - curSz/2;
-            this.state.cursorWidget.setProperty(prop.X, x);
-            this.state.cursorWidget.setProperty(prop.Y, y);
+            const x = pickerX + (h / HUE_RANGE) * pickerSize;
+            const y = pickerY + ((SAT_RANGE - s) / SAT_RANGE) * pickerSize;
+            this.state.cursorWidget.setProperty(prop.CENTER_X, x);
+            this.state.cursorWidget.setProperty(prop.CENTER_Y, y);
             const currentHex = hsb2hex(
                   (h / HUE_RANGE) * 360,
                   (s / SAT_RANGE) * 100,
-                  100//(this.state.bri / BRI_RANGE) * 100
+                  90//(this.state.bri / BRI_RANGE) * 100
                 );
             this.state.cursorWidget.setProperty(prop.COLOR, currentHex);
         }

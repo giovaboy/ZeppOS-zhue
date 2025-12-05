@@ -146,15 +146,14 @@ function renderHueSatPicker(pageContext, state, callbacks) {
     const currentHex = hsb2hex(
       (hue / HUE_RANGE) * 360,
       (sat / SAT_RANGE) * 100,
-      (bri / BRI_RANGE) * 100
+      90//(bri / BRI_RANGE) * 100
     );
 
-    const cursor = pageContext.createTrackedWidget(widget.FILL_RECT, {
-        x: posX - cursorSize/2, y: posY - cursorSize/2,
-        w: cursorSize, h: cursorSize,
+    const cursor = pageContext.createTrackedWidget(widget.CIRCLE, {
+        center_x: posX,
+        center_y: posY,
         color:  currentHex,//0xffffff,
-        radius: cursorSize/2,
-        line_width: 4, line_color: 0x000000
+        radius: cursorSize/2
     });
     pageContext.state.cursorWidget = cursor;
 
