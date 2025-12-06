@@ -125,7 +125,7 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
         h: sliderH,
         text: `${brightnessPercent}%`,
         text_size: px(20),
-        color: COLORS.text,
+        color: COLORS.briText,
         align_h: align.CENTER_H,
         align_v: align.CENTER_V
     })

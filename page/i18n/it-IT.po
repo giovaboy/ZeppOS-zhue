@@ -97,6 +97,9 @@ msgstr "Spegni"
 msgid "BRIGHTNESS"
 msgstr "Luminosità: "
 
+msgid "PRESETS_TITLE"
+msgstr "Preferiti:"
+
 msgid "ERROR_MSG"
 msgstr "Errore: "
 

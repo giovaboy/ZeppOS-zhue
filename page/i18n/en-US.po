@@ -97,6 +97,9 @@ msgstr "Turn Off"
 msgid "BRIGHTNESS"
 msgstr "Brightness: "
 
+msgid "PRESETS_TITLE"
+msgstr "Presets:"
+
 msgid "ERROR_MSG"
 msgstr "Error: "
 

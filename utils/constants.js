@@ -25,6 +25,7 @@ export const COLORS = {
   sectionHeader: 0x0088ff,
   sliderBg: 0x2a2a2a,
   sliderFill: 0xffffff,
+  briText: 0xcccccc,
   defaultSwatchColor: 0xFFCC66
 }
 

@@ -263,11 +263,17 @@ Page(
       const fillWidth = Math.max(0, Math.round(sliderW * brightness / 254))
       const percent = Math.round(brightness / 254 * 100)
       
-      if (this.state.brightnessSliderFillWidget) this.state.brightnessSliderFillWidget.setProperty(prop.W, fillWidth)
-      if (this.state.brightnessLabel) this.state.brightnessLabel.setProperty(prop.TEXT, getText('BRIGHTNESS', percent))
+      if (this.state.brightnessSliderFillWidget)
+        this.state.brightnessSliderFillWidget.setProperty(prop.W, fillWidth)
+      if (this.state.brightnessLabel)
+        this.state.brightnessLabel.setProperty(prop.TEXT, `${percent}%`) // Solo percentuale
       
       if (skipApiCall) return
-      this.request({ method: 'SET_BRIGHTNESS', params: { lightId: this.state.lightId, brightness } })
+      
+      this.request({
+        method: 'SET_BRIGHTNESS',
+        params: { lightId: this.state.lightId, brightness }
+      })
     },
     
     applyPreset(favorite) {
