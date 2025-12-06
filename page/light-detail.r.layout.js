@@ -118,14 +118,13 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
     })
     pageContext.state.brightnessSliderFillWidget = fillWidget
 
-    // Label sopra lo slider (opzionale, per mostrare la percentuale)
     const labelWidget = pageContext.createTrackedWidget(widget.TEXT, {
-        x: sliderX,
-        y: sliderY - px(35),
-        w: sliderW,
-        h: px(30),
-        text: getText('BRIGHTNESS', brightnessPercent),
-        text_size: px(22),
+        x: sliderX, 
+        y: sliderY, 
+        w: sliderW, 
+        h: sliderH,
+        text: `${brightnessPercent}%`,
+        text_size: px(20),
         color: COLORS.text,
         align_h: align.CENTER_H,
         align_v: align.CENTER_V
@@ -148,7 +147,7 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
         hitbox.addEventListener(event.CLICK_UP, (info) => dragCallback('UP', info))
     }
 
-    return sliderY + sliderH + px(60)
+    return sliderY + sliderH + px(30)
 }
 
 function renderColorButton(pageContext, state, yPos, openCallback) {
@@ -194,7 +193,7 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, cal
     })
 
     pageContext.createTrackedWidget(widget.BUTTON, {
-        x: presetX + presetW - px(40), y: yPos, w: px(40), h: px(35),
+        x: DEVICE_WIDTH - px(60),  y: yPos, w: px(40), h: px(35),
         text: '+',
         normal_color: COLORS.highlight, press_color: COLORS.success, radius: px(6),
         click_func: addCallback

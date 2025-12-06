@@ -210,7 +210,6 @@ class HueBridgeManager {
     }
   }
 
-  // La funzione che hai chiesto di sistemare:
   addFavoriteColor(colorData) {
     // colorData ora contiene type, bri, e i parametri specifici (hue/sat o ct)
     const currentColors = this.user_settings.favorite_colors || [];

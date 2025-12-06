@@ -133,9 +133,9 @@ Page(
         .then(result => {
           if (result.success && result.lights) {
             this.setState(STATES.FETCHING_DATA, { progress: { lights: result.lights.length } })
-            setTimeout(() => {
+            //setTimeout(() => {
               this.setState(STATES.SUCCESS)
-            }, 200)
+            //}, 200)
           } else {
             this.setState(STATES.ERROR, { error: getText('FAILED_TO_FETCH_LIGHTS_DATA') })
           }
