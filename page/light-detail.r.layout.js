@@ -134,13 +134,13 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
     pageContext.createTrackedWidget(widget.IMG, {
         x: sliderX + px(20),
         y: sliderY,
-        src: bri_low
+        src: 'bri-low.png'
     })
     
     pageContext.createTrackedWidget(widget.IMG, {
         x: sliderX + sliderW - px(20),
         y: sliderY,
-        src: bri_hi
+        src: 'bri-hi.png'
     })
     
     // Hitbox (area touch estesa come nel color-picker)
