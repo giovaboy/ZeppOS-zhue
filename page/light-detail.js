@@ -5,6 +5,7 @@ import { getText } from '@zos/i18n'
 import { createWidget, deleteWidget, widget, prop } from '@zos/ui'
 import { back, push } from '@zos/router'
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
+import { createModal, MODAL_CONFIRM } from '@zos/interaction'
 import { renderLightDetail, LAYOUT_CONFIG } from 'zosLoader:./light-detail.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
 import { DEFAULT_PRESETS, PRESET_TYPES, hsb2hex } from '../utils/constants.js'
@@ -27,6 +28,7 @@ Page(
     },
     
     widgets: [],
+    currentModal: null,
     
     onInit(p) {
       let params = {}
@@ -133,6 +135,7 @@ Page(
         openColorPickerFunc: () => this.openColorPicker(),
         applyPresetFunc: (fav) => this.applyPreset(fav),
         addFavoriteFunc: () => this.addCurrentColorToFavorites(),
+        deleteFavoriteFunc: (fav) => this.deletePreset(fav),
         goBackFunc: () => this.goBack(),
         getLightBgColor: (hex) => this.getLightBgColor(hex),
         capabilities: capabilities
@@ -276,6 +279,52 @@ Page(
       })
     },
     
+    deletePreset(favorite, index) {
+      // Chiude eventuali modal aperti
+      if (this.currentModal) {
+        this.currentModal.show(false)
+        this.currentModal = null
+      }
+      
+      // Crea descrizione personalizzata in base al tipo
+      let presetDescription = ''
+      if (favorite.type === PRESET_TYPES.COLOR) {
+        presetDescription = 'Color preset'
+      } else if (favorite.type === PRESET_TYPES.CT) {
+        presetDescription = 'White preset'
+      } else if (favorite.type === PRESET_TYPES.WHITE) {
+        const briPercent = Math.round((favorite.bri || 254) / 254 * 100)
+        presetDescription = `Brightness preset (${briPercent}%)`
+      }
+      
+      // Mostra modal di conferma
+      const dialog = createModal({
+        content: `Delete this preset?\n\n${presetDescription}`,
+        autoHide: false,
+        onClick: (keyObj) => {
+          if (keyObj.type === MODAL_CONFIRM) {
+            // Conferma: elimina tramite API
+            this.request({
+                method: 'REMOVE_FAVORITE_COLOR',
+                params: { index: index }
+              })
+              .then(result => {
+                if (result.success) {
+                  this.loadFavoriteColors()
+                  this.renderPage()
+                }
+              })
+          }
+          // Chiudi modal
+          dialog.show(false)
+          this.currentModal = null
+        }
+      })
+      
+      this.currentModal = dialog
+      dialog.show(true)
+    },
+    
     applyPreset(favorite) {
       this.state.light.hex = favorite.hex
       this.state.light.bri = favorite.bri
@@ -363,7 +412,19 @@ Page(
         })
     },
     
-    goBack() { back() },
-    onDestroy() { this.clearAllWidgets() }
+    goBack() {
+      if (this.currentModal) {
+        this.currentModal.show(false)
+        this.currentModal = null
+      }
+      back()
+    },
+    onDestroy() {
+      if (this.currentModal) {
+        this.currentModal.show(false)
+        this.currentModal = null
+      }
+      this.clearAllWidgets()
+    }
   })
 )

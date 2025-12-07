@@ -14,7 +14,7 @@ const STATES = {
   WAITING_FOR_PRESS: 'WAITING_FOR_PRESS',
   FETCHING_DATA: 'FETCHING_DATA',
   ERROR: 'ERROR',
-  BT_ERROR: 'BT_ERROR', // ← Corretto il typo
+  BT_ERROR: 'BT_ERROR',
   SUCCESS: 'SUCCESS'
 }
 
@@ -55,7 +55,7 @@ Page(
       if (!connectStatus()) {
         logger.warn('Bluetooth not connected')
         this.setState(STATES.BT_ERROR, {
-          error: getText('BT_NOT_CONNECTED') || 'Bluetooth not connected. Please connect your watch to your phone.'
+          error: getText('BT_NOT_CONNECTED')
         })
         
         // Avvia un controllo periodico per vedere se il BT si riconnette

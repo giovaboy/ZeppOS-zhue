@@ -22,7 +22,7 @@ export const LAYOUT_CONFIG = {
 
 export function renderLightDetail(pageContext, state, callbacks) {
     const { light, lightName, isDraggingBrightness, tempBrightness, favoriteColors } = state
-    const { toggleLightFunc, setBrightnessDrag, openColorPickerFunc, applyPresetFunc, addFavoriteFunc, getLightBgColor } = callbacks
+    const { toggleLightFunc, setBrightnessDrag, openColorPickerFunc, applyPresetFunc, addFavoriteFunc, deleteFavoriteFunc, getLightBgColor } = callbacks
 
     // 1. Sfondo
     const lightOn = !!light?.ison;
@@ -83,7 +83,7 @@ export function renderLightDetail(pageContext, state, callbacks) {
 
     // 6. Presets
     if (lightOn) {
-        renderPresets(pageContext, state, currentY, applyPresetFunc, addFavoriteFunc, callbacks)
+        renderPresets(pageContext, state, currentY, applyPresetFunc, addFavoriteFunc, deleteFavoriteFunc, callbacks)
     }
 }
 
@@ -133,22 +133,22 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
     
     pageContext.createTrackedWidget(widget.IMG, {
         x: sliderX + px(20),
-        y: sliderY,
-        src: 'bri-low.png'
+        y: sliderY + sliderH/2 - px(24/2),
+        src: 'bri-low.png'//24*24
     })
     
     pageContext.createTrackedWidget(widget.IMG, {
-        x: sliderX + sliderW - px(20),
-        y: sliderY,
-        src: 'bri-hi.png'
+        x: sliderX + sliderW - px(20 + 32),
+        y: sliderY + sliderH/2 - px(32/2),
+        src: 'bri-hi.png'//32*32
     })
     
     // Hitbox (area touch estesa come nel color-picker)
     const hitbox = pageContext.createTrackedWidget(widget.FILL_RECT, {
-        x: sliderX - 20,
-        y: sliderY - 20,
-        w: sliderW + 40,
-        h: sliderH + 40,
+        x: sliderX - px(20),
+        y: sliderY - px(20),
+        w: sliderW + px(40),
+        h: sliderH + px(40),
         color: 0,
         alpha: 0
     })
@@ -192,7 +192,7 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
     return yPos + colorBtnH + px(30)
 }
 
-function renderPresets(pageContext, state, yPos, applyCallback, addCallback, callbacks) {
+function renderPresets(pageContext, state, yPos, applyCallback, addCallback, deleteCallback, callbacks) {
     const { presetsW, presetsX} = LAYOUT_CONFIG
     const { favoriteColors, light } = state
 
@@ -242,6 +242,13 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, cal
     compatiblePresets.forEach((fav, i) => {
         const col = i % COLS
         const row = Math.floor(i / COLS)
+        
+        // Trova l'indice originale nel array favoriteColors (per la cancellazione)
+        const originalIndex = favoriteColors.findIndex(f => 
+            f.hex === fav.hex && 
+            f.bri === fav.bri && 
+            f.type === fav.type
+        )
 
         let buttonText = '';
         if (fav.type === PRESET_TYPES.WHITE) {
@@ -261,7 +268,7 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, cal
             press_color: 0x33ffffff,
             radius: px(8),
             click_func: () => applyCallback(fav),
-            //longpress_func: () => deleteCallback(fav) //qui aprimo un createModal per eliminare il preferito
+            longpress_func: () => deleteCallback(fav, originalIndex) //qui aprimo un createModal per eliminare il preferito
         })
     })
 }
