@@ -124,13 +124,25 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
         w: sliderW, 
         h: sliderH,
         text: `${brightnessPercent}%`,
-        text_size: px(20),
+        text_size: px(28),
         color: COLORS.briText,
         align_h: align.CENTER_H,
         align_v: align.CENTER_V
     })
     pageContext.state.brightnessLabel = labelWidget
-
+    
+    pageContext.createTrackedWidget(widget.IMG, {
+        x: sliderX + px(20),
+        y: sliderY,
+        src: bri_low
+    })
+    
+    pageContext.createTrackedWidget(widget.IMG, {
+        x: sliderX + sliderW - px(20),
+        y: sliderY,
+        src: bri_hi
+    })
+    
     // Hitbox (area touch estesa come nel color-picker)
     const hitbox = pageContext.createTrackedWidget(widget.FILL_RECT, {
         x: sliderX - 20,
