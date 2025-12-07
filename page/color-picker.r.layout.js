@@ -247,6 +247,31 @@ function renderBrightnessSlider(pageContext, state, callbacks) {
 
     // Icona Sole (Opzionale, dentro lo slider a sx)
     // ...
+    
+    const labelWidget = pageContext.createTrackedWidget(widget.TEXT, {
+        x: sliderX, 
+        y: sliderY, 
+        w: sliderW, 
+        h: sliderH,
+        text: `${brightnessPercent}%`,
+        text_size: px(28),
+        color: COLORS.briText,
+        align_h: align.CENTER_H,
+        align_v: align.CENTER_V
+    })
+    pageContext.state.brightnessLabel = labelWidget
+    
+    pageContext.createTrackedWidget(widget.IMG, {
+        x: sliderX + px(20),
+        y: sliderY + sliderH/2 - px(24/2),
+        src: 'bri-low.png'//24*24
+    })
+    
+    pageContext.createTrackedWidget(widget.IMG, {
+        x: sliderX + sliderW - px(20 + 32),
+        y: sliderY + sliderH/2 - px(32/2),
+        src: 'bri-hi.png'//32*32
+    })
 
     // Hitbox
     const hitbox = pageContext.createTrackedWidget(widget.FILL_RECT, {
