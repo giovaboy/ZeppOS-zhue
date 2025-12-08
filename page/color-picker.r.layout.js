@@ -16,11 +16,11 @@ export const LAYOUT_CONFIG = {
   pickerSize: px(300), // Area grande centrale
   pickerX: (DEVICE_WIDTH - px(300)) / 2,
   pickerY: px(70),     // Spazio per i tab sopra
-  //sliderW: px(300),
+  sliderW: px(300),
   sliderH: px(50),
-  sliderX: px(40),
-  sliderW: DEVICE_WIDTH - px(80),
-  //sliderX: (DEVICE_WIDTH - px(300)) / 2,
+  //sliderX: px(40),
+  //sliderW: DEVICE_WIDTH - px(80),
+  sliderX: (DEVICE_WIDTH - px(300)) / 2,
   sliderY: DEVICE_HEIGHT - px(90) // In basso
 }
 
