@@ -4,7 +4,6 @@ import { setScrollLock } from '@zos/page'
 import { getText } from '@zos/i18n'
 import { createWidget, deleteWidget, widget, prop } from '@zos/ui'
 import { back, push } from '@zos/router'
-// FIX 1: Unico import per interaction
 import { onGesture, GESTURE_RIGHT, createModal, MODAL_CONFIRM } from '@zos/interaction'
 import { renderLightDetail, LAYOUT_CONFIG } from 'zosLoader:./light-detail.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
@@ -48,7 +47,7 @@ Page(
     
     widgets: [],
     currentModal: null,
-    exitGestureListener: null, // Inizializzato esplicitamente
+    exitGestureListener: null, 
 
     onInit(p) {
       let params = {}
@@ -63,9 +62,11 @@ Page(
     build() {
       logger.log('Building Light Detail page')
       setPageBrightTime({ brightTime: 60000 })
-      setScrollLock({ lock: false })
+      // Disabilita scroll verticale di base (se la pagina sta in una schermata)
+      // Se hai una lista lunga di preset, gestiscilo dinamicamente.
+      setScrollLock({ lock: false }) 
       
-      // Assicuriamoci che la gesture sia sbloccata all'avvio
+      // Inizializza la gestione gesture (SBLOCCATA di default)
       this.unlockExitGesture();
       
       this.loadLightDetail()
@@ -84,6 +85,7 @@ Page(
         try { deleteWidget(w) } catch (e) { logger.error('Del widget err', e) }
       })
       this.widgets = []
+      // Reset riferimenti
       this.state.brightnessSliderFillWidget = null
       this.state.brightnessLabel = null
     },
@@ -94,34 +96,42 @@ Page(
       return w
     },
     
-    // --- GESTURE LOCK LOGIC (FIXED) ---
+    // --- GESTURE LOCK LOGIC (CORRETTA) ---
     
-    exitOnSwipe(event) {
-      if (event === GESTURE_RIGHT) {
-        back();
-        return true;
-      }
-      return false;
-    },
-    
-    lockExitGesture() {
-      // Controllo di sicurezza: se è una funzione, chiamala
-      if (typeof this.exitGestureListener === 'function') {
-        this.exitGestureListener(); 
-        this.exitGestureListener = null;
-        // logger.debug('Exit gesture LOCKED');
-      }
-    },
-    
+    /** * Sblocca l'uscita: Registra un listener che permette il comportamento custom (o di default).
+     * Se return true -> evento consumato (non fa altro).
+     * Se return false -> evento propagato (sistema fa back).
+     */
     unlockExitGesture() {
-      if (typeof this.exitGestureListener === 'function') {
+      if (this.exitGestureListener) {
+        this.exitGestureListener(); // Rimuovi vecchio listener
+      }
+      this.exitGestureListener = onGesture({
+        callback: (event) => {
+          if (event === GESTURE_RIGHT) {
+            back(); // Gestiamo noi il back
+            return true; 
+          }
+          return false;
+        }
+      });
+      // logger.debug('Exit gesture UNLOCKED (Custom Back)');
+    },
+
+    /** * Blocca l'uscita: Registra un listener che "mangia" l'evento e restituisce TRUE.
+     * Questo impedisce al sistema di fare qualsiasi cosa.
+     */
+    lockExitGesture() {
+      if (this.exitGestureListener) {
         this.exitGestureListener(); 
       }
-      // Re-registra il listener e salva la funzione di cancellazione
       this.exitGestureListener = onGesture({
-        callback: (event) => this.exitOnSwipe(event)
+        callback: (event) => {
+          // logger.debug('Gesture BLOCKED during drag');
+          return true; // CONSUMA L'EVENTO -> NESSUNA AZIONE
+        }
       });
-      // logger.debug('Exit gesture UNLOCKED');
+      // logger.debug('Exit gesture LOCKED');
     },
     
     // --- RENDERING ---
@@ -139,7 +149,6 @@ Page(
       const light = this.state.light
       const capabilities = this.getLightCapabilities(light);
       
-      // Hex fallback logic
       if (!light.hex) {
         const bri = light.bri || 100;
         const nBri = Math.round(bri / 254 * 100);
@@ -151,7 +160,6 @@ Page(
       
       renderLightDetail(this, this.state, {
         toggleLightFunc: () => this.toggleLight(),
-        // Binding esplicito per sicurezza
         setBrightnessDrag: (evtType, info) => this.handleBrightnessDrag(evtType, info),
         openColorPickerFunc: () => this.openColorPicker(),
         applyPresetFunc: (fav) => this.applyPreset(fav),
@@ -163,12 +171,11 @@ Page(
       })
     },
     
-    // --- DRAG LOGIC (CRASH FIX) ---
+    // --- DRAG LOGIC (ROBUST) ---
     
     handleBrightnessDrag(evtType, info) {
       const { sliderX, sliderW } = LAYOUT_CONFIG
       
-      // Calcolo matematico sicuro
       const getBrightnessFromX = (x) => {
         let positionInTrack = x - sliderX;
         positionInTrack = Math.max(0, Math.min(positionInTrack, sliderW));
@@ -176,9 +183,8 @@ Page(
       }
       
       if (evtType === 'DOWN') {
-        // Safe Calls per evitare TypeError
-        this.lockExitGesture(); 
-        if (typeof setScrollLock === 'function') setScrollLock({ lock: true });
+        this.lockExitGesture(); // BLOCCA gesture sistema
+        setScrollLock({ lock: true }); // BLOCCA scroll verticale
         
         const newBri = getBrightnessFromX(info.x)
         this.state.isDraggingBrightness = true
@@ -189,6 +195,7 @@ Page(
         if (!this.state.isDraggingBrightness) return
         
         const newBri = getBrightnessFromX(info.x)
+        // Ottimizzazione: aggiorna solo se cambiato
         if (newBri === this.state.tempBrightness) return
         
         this.state.tempBrightness = newBri
@@ -197,21 +204,47 @@ Page(
       } else if (evtType === 'UP') {
         if (!this.state.isDraggingBrightness) return
         
-        // Safe Calls per evitare TypeError
+        // RILASCIA I BLOCCHI
         this.unlockExitGesture(); 
-        if (typeof setScrollLock === 'function') setScrollLock({ lock: false });
+        setScrollLock({ lock: false });
         
         if (this.state.tempBrightness !== this.state.light.bri) {
           this.setBrightness(this.state.tempBrightness, false)
-        } else {
-          this.setBrightness(this.state.light.bri, true)
         }
         
         this.state.isDraggingBrightness = false
       }
     },
     
-    // ... (Il resto delle funzioni helper: getLightCapabilities, getLightBgColor, loadLightDetail, toggleLight, setBrightness, deletePreset, applyPreset, loadFavoriteColors, addCurrentColorToFavorites, goBack, onDestroy rimane invariato)
+    setBrightness(brightness, skipApiCall = false) {
+      this.state.light.bri = brightness
+      const { sliderW } = LAYOUT_CONFIG
+      const fillWidth = Math.max(px(5), Math.round(sliderW * brightness / 254))
+      const percent = Math.round(brightness / 254 * 100)
+      
+      // DEBUG: Verifica se i widget esistono
+      if (this.state.brightnessSliderFillWidget) {
+          try {
+            this.state.brightnessSliderFillWidget.setProperty(prop.W, fillWidth)
+          } catch(e) { logger.error('SetBri Fill Widget Error', e) }
+      }
+      
+      if (this.state.brightnessLabel) {
+          try {
+            this.state.brightnessLabel.setProperty(prop.TEXT, `${percent}%`)
+          } catch(e) { logger.error('SetBri Label Widget Error', e) }
+      }
+      
+      if (skipApiCall) return
+      
+      this.request({
+        method: 'SET_BRIGHTNESS',
+        params: { lightId: this.state.lightId, brightness }
+      }).catch(e => logger.error(e))
+    },
+
+    // ... (rest of methods: getLightCapabilities, getLightBgColor, loadLightDetail, toggleLight, deletePreset, applyPreset, loadFavoriteColors, addCurrentColorToFavorites, goBack, onDestroy)
+    // Assicurati che onDestroy chiami this.unlockExitGesture() o pulisca il listener!
     
     getLightCapabilities(light) {
         if (!light) return [];
@@ -255,25 +288,6 @@ Page(
             setTimeout(() => this.loadLightDetail(), 100); 
           }
         })
-    },
-
-    setBrightness(brightness, skipApiCall = false) {
-      this.state.light.bri = brightness
-      const { sliderW } = LAYOUT_CONFIG
-      const fillWidth = Math.max(px(5), Math.round(sliderW * brightness / 254))
-      const percent = Math.round(brightness / 254 * 100)
-      
-      if (this.state.brightnessSliderFillWidget)
-        this.state.brightnessSliderFillWidget.setProperty(prop.W, fillWidth)
-      if (this.state.brightnessLabel)
-        this.state.brightnessLabel.setProperty(prop.TEXT, `${percent}%`)
-      
-      if (skipApiCall) return
-      
-      this.request({
-        method: 'SET_BRIGHTNESS',
-        params: { lightId: this.state.lightId, brightness }
-      })
     },
 
     deletePreset(favorite, index) {
@@ -393,12 +407,12 @@ Page(
         this.currentModal = null
       }
       // Rimuovi esplicitamente il listener di gesture prima di uscire
-      this.lockExitGesture();
+      if (this.exitGestureListener) this.exitGestureListener();
       back()
     },
 
     onDestroy() {
-      this.lockExitGesture(); // Pulisce il listener
+      if (this.exitGestureListener) this.exitGestureListener();
       this.clearAllWidgets()
     }
   })
