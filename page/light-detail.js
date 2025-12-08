@@ -188,8 +188,11 @@ Page(
         
         const newBri = getBrightnessFromX(info.x)
         this.state.isDraggingBrightness = true
+        // Ottimizzazione: aggiorna solo se cambiato
+        if (newBri === this.state.tempBrightness) return
+        
         this.state.tempBrightness = newBri
-        this.setBrightness(newBri, true)
+        this.setBrightness(newBri, false)
         
       } else if (evtType === 'MOVE') {
         if (!this.state.isDraggingBrightness) return
@@ -199,7 +202,7 @@ Page(
         if (newBri === this.state.tempBrightness) return
         
         this.state.tempBrightness = newBri
-        this.setBrightness(newBri, true) 
+        this.setBrightness(newBri, false) 
         
       } else if (evtType === 'UP') {
         if (!this.state.isDraggingBrightness) return
