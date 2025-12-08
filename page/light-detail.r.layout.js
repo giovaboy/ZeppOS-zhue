@@ -21,7 +21,7 @@ export const LAYOUT_CONFIG = {
 }
 
 export function renderLightDetail(pageContext, state, callbacks) {
-    const { light, lightName, isDraggingBrightness, tempBrightness, favoriteColors } = state
+    const { light, lightName, favoriteColors } = state
     const { toggleLightFunc, setBrightnessDrag, openColorPickerFunc, applyPresetFunc, addFavoriteFunc, deleteFavoriteFunc, getLightBgColor } = callbacks
 
     // 1. Sfondo
@@ -83,8 +83,10 @@ export function renderLightDetail(pageContext, state, callbacks) {
 
     // 6. Presets
     if (lightOn) {
-        renderPresets(pageContext, state, currentY, applyPresetFunc, addFavoriteFunc, deleteFavoriteFunc, callbacks)
+        currentY = renderPresets(pageContext, state, currentY, applyPresetFunc, addFavoriteFunc, deleteFavoriteFunc, callbacks)
     }
+    
+    return currentY; // Ritorna l'ultima Y
 }
 
 function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
@@ -107,7 +109,8 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
     })
 
     // Fill (parte riempita in base al valore)
-    const fillWidth = Math.max(px(20), (brightness / 254) * sliderW)
+    // Utilizziamo Math.max(px(5), ...) per garantire che il riempimento sia visibile anche a luminosità molto basse
+    const fillWidth = Math.max(px(5), (brightness / 254) * sliderW)
     const fillWidget = pageContext.createTrackedWidget(widget.FILL_RECT, {
         x: sliderX,
         y: sliderY,
@@ -118,6 +121,7 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
     })
     pageContext.state.brightnessSliderFillWidget = fillWidget
 
+    // Testo / Percentuale
     const labelWidget = pageContext.createTrackedWidget(widget.TEXT, {
         x: sliderX, 
         y: sliderY, 
@@ -125,35 +129,39 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
         h: sliderH,
         text: `${brightnessPercent}%`,
         text_size: px(28),
-        color: COLORS.briText,
+        color: COLORS.briText || COLORS.text,
         align_h: align.CENTER_H,
         align_v: align.CENTER_V
     })
     pageContext.state.brightnessLabel = labelWidget
     
+    // Icona Bassa Luminosità
     pageContext.createTrackedWidget(widget.IMG, {
         x: sliderX + px(20),
         y: sliderY + sliderH/2 - px(24/2),
         src: 'bri-low.png'//24*24
     })
     
+    // Icona Alta Luminosità
     pageContext.createTrackedWidget(widget.IMG, {
         x: sliderX + sliderW - px(20 + 32),
         y: sliderY + sliderH/2 - px(32/2),
         src: 'bri-hi.png'//32*32
     })
     
-    // Hitbox (area touch estesa come nel color-picker)
+    // Hitbox (area touch estesa - CRUCIALE per la stabilità del touch)
+    const HITBOX_PADDING = px(20);
     const hitbox = pageContext.createTrackedWidget(widget.FILL_RECT, {
-        x: sliderX - px(20),
-        y: sliderY - px(20),
-        w: sliderW + px(40),
-        h: sliderH + px(40),
+        x: sliderX - HITBOX_PADDING,
+        y: sliderY - HITBOX_PADDING,
+        w: sliderW + (HITBOX_PADDING * 2),
+        h: sliderH + (HITBOX_PADDING * 2),
         color: 0,
-        alpha: 0
+        alpha: 0 // Invisibile
     })
 
     if (dragCallback) {
+        // Aggiungi i listener al widget hitbox
         hitbox.addEventListener(event.CLICK_DOWN, (info) => dragCallback('DOWN', info))
         hitbox.addEventListener(event.MOVE, (info) => dragCallback('MOVE', info))
         hitbox.addEventListener(event.CLICK_UP, (info) => dragCallback('UP', info))
@@ -167,8 +175,7 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
     const { light } = state
 
     // Usiamo light.hex per il colore del bottone.
-    // light.hex dovrebbe essere calcolato dalla logica (HSB to Hex o CT to Hex)
-    const btnColor = light.hex ? parseInt(light.hex.replace('#',''), 16) : 0xFFFFFF;
+    const btnColor = light.hex ? parseInt(light.hex.replace('#','0x'), 16) : 0xFFFFFF;
 
     // Bordo per visibilità su colori scuri
     pageContext.createTrackedWidget(widget.STROKE_RECT, {
@@ -182,7 +189,7 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
         w: colorBtnW-4, h: colorBtnH-4,
         text: getText('CHANGE'),
         text_size: px(22),
-        color: 0x000000, // Testo nero per contrasto su colori vivaci? O dinamico? Teniamo nero per sicurezza su luci accese.
+        color: 0x000000, 
         normal_color: btnColor,
         press_color: 0xFFFFFF,
         radius: 12,
@@ -233,18 +240,33 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
                 // Richiede una luce che supporti CT *o* COLOR
                 return isCtLight || isColorLight;
             case PRESET_TYPES.WHITE:
+                // Un preset WHITE viene mostrato solo se la luce NON supporta CT o COLOR,
+                // altrimenti l'utente dovrebbe usare lo slider Bri nel picker.
                 return !isCtLight && !isColorLight;
             default:
                 return false;
         }
     });
+    
+    if (compatiblePresets.length === 0) {
+        pageContext.createTrackedWidget(widget.TEXT, {
+            x: presetsX, y: currentY, w: presetsW, h: px(50),
+            text: getText('NO_PRESETS'),
+            text_size: px(22),
+            color: COLORS.inactive,
+            align_h: align.CENTER_H
+        })
+        currentY += px(60);
+        return currentY;
+    }
 
     compatiblePresets.forEach((fav, i) => {
         const col = i % COLS
         const row = Math.floor(i / COLS)
         
         // Trova l'indice originale nel array favoriteColors (per la cancellazione)
-        const originalIndex = favoriteColors.findIndex(f => 
+        // Usiamo findIndex per l'indice (la cancellazione deve agire sull'array originale)
+        const originalIndex = state.favoriteColors.findIndex(f => 
             f.hex === fav.hex && 
             f.bri === fav.bri && 
             f.type === fav.type
@@ -264,6 +286,7 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
             color: 0x000000,
             text: buttonText,
             text_size: px(18),
+            // Usa parseInt con prefisso 0x
             normal_color: parseInt(fav.hex.replace('#', '0x'), 16),
             press_color: 0x33ffffff,
             radius: px(8),
@@ -271,4 +294,7 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
             longpress_func: () => deleteCallback(fav, originalIndex) //qui aprimo un createModal per eliminare il preferito
         })
     })
+    
+    const numRows = Math.ceil(compatiblePresets.length / COLS);
+    return currentY + (numRows * (ITEM_SIZE + ITEM_MARGIN)) + px(20);
 }

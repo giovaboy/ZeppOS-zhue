@@ -237,24 +237,30 @@ Page(
         this.state.isDraggingBrightness = true
         this.state.tempBrightness = newBri
         this.setBrightness(newBri, true)
+        // Non facciamo renderPage qui, usiamo solo setProperty nel MOVE
       } else if (evtType === 'MOVE') {
         if (!this.state.isDraggingBrightness) return
         const newBri = getBrightnessFromX(info.x)
-        this.state.tempBrightness = newBri
-        const newBriPosition = Math.max(0, Math.round(sliderW * newBri / 254))
-        const newPercent = Math.round(newBri / 254 * 100)
         
-        if (this.state.brightnessSliderFillWidget)
-          this.state.brightnessSliderFillWidget.setProperty(prop.W, newBriPosition)
-        if (this.state.brightnessLabel)
-          this.state.brightnessLabel.setProperty(prop.TEXT, `${newPercent}%`) // Solo percentuale
+        // Evita di aggiornare se la luminosità non è cambiata
+        if (newBri === this.state.tempBrightness) return
+        
+        this.state.tempBrightness = newBri
+        this.setBrightness(newBri, true) // Aggiorna solo UI (skipApiCall = true)
+        
       } else if (evtType === 'UP') {
         if (!this.state.isDraggingBrightness) return
         this.unlockExitGesture(); // SBLOCCA GESTURE
         setScrollLock({ lock: false })
+        
+        // Invia comando finale solo se è stato diverso
         if (this.state.tempBrightness !== this.state.light.bri) {
-          this.setBrightness(this.state.tempBrightness, false)
+          this.setBrightness(this.state.tempBrightness, false) // Invia API Call (skipApiCall = false)
+        } else {
+          // Se non c'è stato MOVE, ripristina lo stato originale della luce
+          this.setBrightness(this.state.light.bri, true)
         }
+        
         this.state.isDraggingBrightness = false
       }
     },
@@ -274,9 +280,11 @@ Page(
     },
     
     getLightBgColor(hex) {
+      // Funzione di oscuramento per lo sfondo
       const cleanHex = hex.replace('#', '')
       if (cleanHex === '000000') return 0x000000
       const color = parseInt(cleanHex, 16)
+      // Diminuzione della luminosità del colore per lo sfondo
       return ((color >> 3) & 0x1f1f1f) + 0x0a0a0a
     },
     
@@ -306,7 +314,8 @@ Page(
         .then(result => {
           if (result.success) {
             this.state.light.ison = newState;
-            this.renderPage();
+            // Aggiungo un piccolo ritardo per evitare race condition con il reload
+            setTimeout(() => this.loadLightDetail(), 100); 
           }
         })
     },
@@ -314,9 +323,10 @@ Page(
     setBrightness(brightness, skipApiCall = false) {
       this.state.light.bri = brightness
       const { sliderW } = LAYOUT_CONFIG
-      const fillWidth = Math.max(0, Math.round(sliderW * brightness / 254))
+      const fillWidth = Math.max(px(5), Math.round(sliderW * brightness / 254)) // Minimo 5px per visibilità
       const percent = Math.round(brightness / 254 * 100)
       
+      // Aggiorna i widget in tempo reale
       if (this.state.brightnessSliderFillWidget)
         this.state.brightnessSliderFillWidget.setProperty(prop.W, fillWidth)
       if (this.state.brightnessLabel)
@@ -406,11 +416,13 @@ Page(
           if (result.success) {
             this.state.favoriteColors = result.colors || DEFAULT_PRESETS
             logger.log('Favorite colors loaded:', this.state.favoriteColors.length)
+            this.renderPage() // Aggiunto renderPage qui per aggiornare i preset subito
           }
         })
         .catch(err => {
           logger.error('Failed to load favorite colors:', err)
           this.state.favoriteColors = DEFAULT_PRESETS
+          this.renderPage()
         })
     },
     
@@ -455,7 +467,6 @@ Page(
           if (result.success) {
             logger.log('Color added to favorites')
             this.loadFavoriteColors() // Ricarica per aggiornare UI
-            this.renderPage()
           }
         })
         .catch(err => {
