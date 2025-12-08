@@ -12,6 +12,55 @@ import { DEFAULT_PRESETS, PRESET_TYPES, hsb2hex } from '../utils/constants.js'
 
 const logger = getLogger('zhue-light-detail-page')
 
+/**
+ * Ritorna la priorità di ordinamento per il tipo di preset.
+ * 1: WHITE (prima), 2: CT (seconda), 3: COLOR (terza)
+ */
+function getPresetTypePriority(type) {
+  switch (type) {
+    case PRESET_TYPES.WHITE:
+      return 1;
+    case PRESET_TYPES.CT:
+      return 2;
+    case PRESET_TYPES.COLOR:
+      return 3;
+    default:
+      return 99;
+  }
+}
+
+/**
+ * Funzione di comparazione per ordinare i preset.
+ * Applica la logica: WHITE (per bri) -> CT -> COLOR
+ */
+function comparePresets(a, b) {
+  const priorityA = getPresetTypePriority(a.type);
+  const priorityB = getPresetTypePriority(b.type);
+  
+  // 1. Ordinamento per priorità di Tipo (WHITE < CT < COLOR)
+  if (priorityA !== priorityB) {
+    return priorityA - priorityB;
+  }
+  
+  // 2. Ordinamento secondario (se il tipo è lo stesso)
+  if (a.type === PRESET_TYPES.WHITE) {
+    // Ordina i preset WHITE per luminosità (bri crescente)
+    return a.bri - b.bri;
+  }
+  
+  if (a.type === PRESET_TYPES.CT) {
+    // Ordina i preset CT per temperatura colore (ct crescente, che di solito va da freddo a caldo)
+    return a.ct - b.ct;
+  }
+  
+  if (a.type === PRESET_TYPES.COLOR) {
+    // Ordina i preset COLOR per tonalità (hue crescente)
+    return a.hue - b.hue;
+  }
+  
+  return 0;
+}
+
 Page(
   BasePage({
     state: {
@@ -107,6 +156,8 @@ Page(
     
     renderPage() {
       this.clearAllWidgets()
+      // *** APPLICA L'ORDINAMENTO RICHIESTO QUI ***
+      this.state.favoriteColors.sort(comparePresets);
       
       if (this.state.isLoading && !this.state.light) { // Mostra loading solo se non abbiamo dati
         this.createTrackedWidget(widget.TEXT, { x: 0, y: 200, w: 480, h: 50, text: getText('LOADING'), align_h: widget.ALIGN_CENTER_H || 2 })
