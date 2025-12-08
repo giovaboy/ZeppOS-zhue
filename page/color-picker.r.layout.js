@@ -16,9 +16,11 @@ export const LAYOUT_CONFIG = {
   pickerSize: px(300), // Area grande centrale
   pickerX: (DEVICE_WIDTH - px(300)) / 2,
   pickerY: px(70),     // Spazio per i tab sopra
-  sliderW: px(300),
-  sliderH: px(40),
-  sliderX: (DEVICE_WIDTH - px(300)) / 2,
+  //sliderW: px(300),
+  sliderH: px(50),
+  sliderX: px(40),
+  sliderW: DEVICE_WIDTH - px(80),
+  //sliderX: (DEVICE_WIDTH - px(300)) / 2,
   sliderY: DEVICE_HEIGHT - px(90) // In basso
 }
 
@@ -80,44 +82,7 @@ function renderHueSatPicker(pageContext, state, callbacks) {
     const { pickerX, pickerY, pickerSize } = LAYOUT_CONFIG;
     const { hue, sat, bri } = state;
     const { onDragColor } = callbacks;
-/*
-    // --- Selettore Colore (Matrice Hue/Saturation) ---
-    const H_RESOLUTION = 18; // Numero di colonne (Hue)
-    const S_RESOLUTION = 18; // Numero di righe (Saturation)
 
-    const cellW = pickerSize / H_RESOLUTION; // Larghezza di ogni quadratino
-    const cellH = pickerSize / S_RESOLUTION; // Altezza di ogni quadratino
-
-    // Ciclo esterno: Tonalità (Hue) sull'asse X
-    for(let i = 0; i < H_RESOLUTION; i++) {
-        // Calcolo della Tonalità per questa colonna
-        const hueVal = (i / H_RESOLUTION) * 360;
-
-        // Ciclo interno: Saturazione (Saturation) sull'asse Y
-        for(let j = 0; j < S_RESOLUTION; j++) {
-
-            // Calcolo della Saturazione per questa riga
-            // La Saturazione è massima (100) in fondo (j=S_RESOLUTION-1) e minima (0) in cima (j=0).
-            const satVal = (1 - (j / S_RESOLUTION)) * 100; // 100% in cima, 0% in fondo
-
-            // Colore da disegnare: Hue della colonna, Saturation della riga, Luminosità massima (100)
-            const hexColor = hsb2hex(hueVal, satVal, 100);
-
-            // Disegna il quadratino
-            pageContext.createTrackedWidget(widget.FILL_RECT, {
-                x: pickerX + (i * cellW),
-                //y: pickerY + (pickerSize - cellH) - (j * cellH), // <--- ATTENZIONE: Disegno dal basso
-                // Disegno dall'alto (j=0) verso il basso (j=max)
-                y: pickerY + (j * cellH),
-                w: cellW + 1,
-                h: cellH + 1,
-                color: hexColor,
-                radius: 0
-            });
-        }
-    }
-
-*/
     pageContext.createTrackedWidget(widget.IMG, {
       x: pickerX,
       y: pickerY,
@@ -224,13 +189,8 @@ function renderBrightnessSlider(pageContext, state, callbacks) {
     const { sliderX, sliderY, sliderW, sliderH } = LAYOUT_CONFIG;
     const { bri } = state;
     const { onDragBri } = callbacks;
-
-    // Label
-    /*pageContext.createTrackedWidget(widget.TEXT, {
-        x: sliderX, y: sliderY - px(30), w: sliderW, h: px(30),
-        text: 'Brightness', color: 0xaaaaaa, align_h: align.CENTER_H
-    })*/
-
+    const brightnessPercent = Math.round(bri / 254 * 100)
+    
     // Track
     pageContext.createTrackedWidget(widget.FILL_RECT, {
         x: sliderX, y: sliderY, w: sliderW, h: sliderH,
@@ -244,9 +204,6 @@ function renderBrightnessSlider(pageContext, state, callbacks) {
         radius: sliderH/2, color: COLORS.sliderFill
     });
     pageContext.state.briFillWidget = fill;
-
-    // Icona Sole (Opzionale, dentro lo slider a sx)
-    // ...
     
     const labelWidget = pageContext.createTrackedWidget(widget.TEXT, {
         x: sliderX, 

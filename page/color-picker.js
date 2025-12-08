@@ -36,7 +36,8 @@ Page(
       // Widget refs (popolati dal layout)
       cursorWidget: null,
       ctCursorWidget: null,
-      briFillWidget: null
+      briFillWidget: null,
+      brightnessLabel: null
     },
 
     widgets: [],
@@ -124,6 +125,7 @@ Page(
         this.state.cursorWidget = null;
         this.state.ctCursorWidget = null;
         this.state.briFillWidget = null;
+        this.state.brightnessLabel = null;
     },
 
     render() {
@@ -283,6 +285,10 @@ Page(
         if (this.state.briFillWidget) {
             const w = Math.max(px(20), (val / 254) * LAYOUT_CONFIG.sliderW);
             this.state.briFillWidget.setProperty(prop.W, w);
+        }
+        if (this.state.brightnessLabel) {
+            const brightnessPercent = Math.round(val / 254 * 100);
+            this.state.brightnessLabel.setProperty(prop.TEXT, `${brightnessPercent}%`);
         }
     },
 
