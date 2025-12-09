@@ -97,8 +97,8 @@ export const DEFAULT_PRESETS = [
   { id: '1', hex: '#FFA500', bri: 200, hue: 8000, sat: 200, type: PRESET_TYPES.COLOR },
   { id: '2', hex: '#87CEEB', bri: 220, hue: 32000, sat: 150, type: PRESET_TYPES.COLOR },
   { id: '3', hex: '#FF6B6B', bri: 180, hue: 0, sat: 254, type: PRESET_TYPES.COLOR },
-  { id: '4', hex: '#FFFFFF', bri: 254, ct: 250, type: PRESET_TYPES.CT },
-  { id: '5', hex: '#F0EAD6', bri: 200, ct: 450, type: PRESET_TYPES.CT },
+  { id: '4', hex: '#CCDDFF', bri: 254, ct: 153, type: PRESET_TYPES.CT },
+  { id: '5', hex: '#FFB044', bri: 254, ct: 500, type: PRESET_TYPES.CT },
   { id: '6', hex: '#4A148C', bri: 100, hue: 48000, sat: 254, type: PRESET_TYPES.COLOR },
   { id: '7', hex: '#FFFFFF', bri: 50, type: PRESET_TYPES.WHITE }
 ];
@@ -127,7 +127,6 @@ export function hsb2hex(h, s, v) {
   const toInt = (c) => Math.round(c * 255);
   return (toInt(r) << 16) + (toInt(g) << 8) + toInt(b);
 }
-
 
 function calculateCtRgb(mireds) {
   // 153 (Freddo) -> 500 (Caldo)
