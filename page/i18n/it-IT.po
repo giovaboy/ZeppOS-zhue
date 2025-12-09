@@ -105,3 +105,9 @@ msgstr "Errore: "
 
 msgid "LIGHT"
 msgstr "Luce"
+
+msgid "LIGHT_ON"
+msgstr "Spegni"
+
+msgid "LIGHT_OFF"
+msgstr "Accendi"

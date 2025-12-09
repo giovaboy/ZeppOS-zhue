@@ -3,21 +3,24 @@ import { px } from '@zos/utils'
 import { widget, align, text_style, prop, event } from '@zos/ui'
 import { createModal, MODAL_CONFIRM } from '@zos/interaction'
 import { getText } from '@zos/i18n'
-import { COLORS, PRESET_TYPES } from '../utils/constants'
+import { COLORS, PRESET_TYPES, ct2hex, hsb2hex } from '../utils/constants'
+import { getLogger } from '../utils/logger'
+
+const logger = getLogger('light-detail.layout')
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
 export const LAYOUT_CONFIG = {
-  sliderX: px(40),
-  sliderW: DEVICE_WIDTH - px(80),
-  sliderH: px(60),
-  // Configurazioni per il bottone che apre il picker
-  colorBtnX: px(60),
-  colorBtnW: DEVICE_WIDTH - px(120),
-  colorBtnH: px(50),
-  
-  presetsX: px(60),
-  presetsW: DEVICE_WIDTH - px(120)
+    sliderX: px(40),
+    sliderW: DEVICE_WIDTH - px(80),
+    sliderH: px(60),
+    // Configurazioni per il bottone che apre il picker
+    colorBtnX: px(60),
+    colorBtnW: DEVICE_WIDTH - px(120),
+    colorBtnH: px(50),
+
+    presetsX: px(60),
+    presetsW: DEVICE_WIDTH - px(120)
 }
 
 export function renderLightDetail(pageContext, state, callbacks) {
@@ -26,7 +29,21 @@ export function renderLightDetail(pageContext, state, callbacks) {
 
     // 1. Sfondo
     const lightOn = !!light?.ison;
-    const bgColor = lightOn && light.hex ? getLightBgColor(light.hex) : COLORS.background
+    let bgColor = COLORS.background;
+
+    if (!lightOn) {
+        // Se la luce è spenta, il colore rimane il default (sfondo)
+        // bgColor = COLORS.background; // Già fatto sopra
+    } else if (light.colormode === 'hs' && light.hex) {
+        // 1. Modalità Colore
+        bgColor = getLightBgColor(light.hex);
+    } else if (light.colormode === 'ct' && light.ct) {
+        // 2. Modalità Temperatura Colore
+        bgColor = ((ct2hex(light.ct) >> 3) & 0x1f1f1f) + 0x0a0a0a
+    } else {
+        // Modalità sconosciuta (es. solo luminosità) o dati mancanti
+        bgColor = COLORS.background;
+    }
 
     pageContext.createTrackedWidget(widget.FILL_RECT, {
         x: 0, y: 0, w: DEVICE_WIDTH, h: DEVICE_HEIGHT,
@@ -85,7 +102,7 @@ export function renderLightDetail(pageContext, state, callbacks) {
     if (lightOn) {
         currentY = renderPresets(pageContext, state, currentY, applyPresetFunc, addFavoriteFunc, deleteFavoriteFunc, callbacks)
     }
-    
+
     return currentY; // Ritorna l'ultima Y
 }
 
@@ -104,7 +121,7 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
         y: sliderY,
         w: sliderW,
         h: sliderH,
-        radius: sliderH/2,
+        radius: sliderH / 2,
         color: COLORS.sliderBg
     })
 
@@ -116,16 +133,16 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
         y: sliderY,
         w: fillWidth,
         h: sliderH,
-        radius: sliderH/2,
+        radius: sliderH / 2,
         color: COLORS.sliderFill
     })
     pageContext.state.brightnessSliderFillWidget = fillWidget
 
     // Testo / Percentuale
     const labelWidget = pageContext.createTrackedWidget(widget.TEXT, {
-        x: sliderX, 
-        y: sliderY, 
-        w: sliderW, 
+        x: sliderX,
+        y: sliderY,
+        w: sliderW,
         h: sliderH,
         text: `${brightnessPercent}%`,
         text_size: px(28),
@@ -134,21 +151,21 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
         align_v: align.CENTER_V
     })
     pageContext.state.brightnessLabel = labelWidget
-    
+
     // Icona Bassa Luminosità
     pageContext.createTrackedWidget(widget.IMG, {
         x: sliderX + px(20),
-        y: sliderY + sliderH/2 - px(24/2),
+        y: sliderY + sliderH / 2 - px(24 / 2),
         src: 'bri-low.png'//24*24
     })
-    
+
     // Icona Alta Luminosità
     pageContext.createTrackedWidget(widget.IMG, {
         x: sliderX + sliderW - px(20 + 32),
-        y: sliderY + sliderH/2 - px(32/2),
+        y: sliderY + sliderH / 2 - px(32 / 2),
         src: 'bri-hi.png'//32*32
     })
-    
+
     // Hitbox (area touch estesa - CRUCIALE per la stabilità del touch)
     const HITBOX_PADDING = px(20);
     const hitbox = pageContext.createTrackedWidget(widget.FILL_RECT, {
@@ -175,7 +192,23 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
     const { light } = state
 
     // Usiamo light.hex per il colore del bottone.
-    const btnColor = light.hex ? parseInt(light.hex.replace('#','0x'), 16) : 0xFFFFFF;
+    //const btnColor = light.colormode === 'hs' ? parseInt(light.hex.replace('#', '0x'), 16) : ct2hex(light.ct);
+
+    let btnColor;
+
+    if (light.colormode === 'hs' && light.hex) {
+        // Caso 2: Modalità Colore (HS). Usa il valore HEX già calcolato.
+        btnColor = parseInt(light.hex.replace('#', '0x'), 16);
+    } else if (light.colormode === 'ct' && light.ct) {
+        // Caso 3: Modalità Temperatura (CT). Converte CT -> HEX String -> Intero.
+        btnColor = ct2hex(light.ct);
+    } else {
+        // Caso 4: Solo Luminosità / Fallback (es. light.colormode non definito).
+        // Usiamo il bianco puro per indicare che è accesa ma non ha un colore specifico.
+        btnColor = 0xFFFFFF; // Bianco
+    }
+
+    logger.debug('Rendering color button. light.colormode:', light.colormode, 'light.ct:', light.ct, 'hex:', light.hex, 'parsed as', btnColor);
 
     // Bordo per visibilità su colori scuri
     pageContext.createTrackedWidget(widget.STROKE_RECT, {
@@ -185,11 +218,11 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
 
     // Disegna il bottone con il colore attuale
     pageContext.createTrackedWidget(widget.BUTTON, {
-        x: colorBtnX+2, y: yPos+2,
-        w: colorBtnW-4, h: colorBtnH-4,
+        x: colorBtnX + 2, y: yPos + 2,
+        w: colorBtnW - 4, h: colorBtnH - 4,
         text: getText('CHANGE'),
         text_size: px(22),
-        color: 0x000000, 
+        color: 0x000000,
         normal_color: btnColor,
         press_color: 0xFFFFFF,
         radius: 12,
@@ -200,7 +233,7 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
 }
 
 function renderPresets(pageContext, state, yPos, applyCallback, addCallback, deleteCallback, callbacks) {
-    const { presetsW, presetsX} = LAYOUT_CONFIG
+    const { presetsW, presetsX } = LAYOUT_CONFIG
     const { favoriteColors, light } = state
 
     pageContext.createTrackedWidget(widget.TEXT, {
@@ -212,16 +245,16 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
     })
 
     pageContext.createTrackedWidget(widget.BUTTON, {
-        x: DEVICE_WIDTH - px(60),  y: yPos, w: px(40), h: px(35),
+        x: DEVICE_WIDTH - px(60), y: yPos, w: px(40), h: px(35),
         text: '+',
-        normal_color: COLORS.highlight, press_color: COLORS.success, radius: px(6),
+        normal_color: COLORS.highlight, press_color: COLORS.success, radius: 6,
         click_func: addCallback
     })
 
     let currentY = yPos + px(40)
     const ITEM_SIZE = px(60)
     const ITEM_MARGIN = px(10)
-    const ROW_WIDTH = presetsW//DEVICE_WIDTH - px(40)
+    const ROW_WIDTH = presetsW
     const COLS = Math.floor(ROW_WIDTH / (ITEM_SIZE + ITEM_MARGIN))
     const startX = presetsX + (ROW_WIDTH - (COLS * (ITEM_SIZE + ITEM_MARGIN) - ITEM_MARGIN)) / 2
 
@@ -247,7 +280,7 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
                 return false;
         }
     });
-    
+
     if (compatiblePresets.length === 0) {
         pageContext.createTrackedWidget(widget.TEXT, {
             x: presetsX, y: currentY, w: presetsW, h: px(50),
@@ -263,14 +296,6 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
     compatiblePresets.forEach((fav, i) => {
         const col = i % COLS
         const row = Math.floor(i / COLS)
-        
-        // Trova l'indice originale nel array favoriteColors (per la cancellazione)
-        // Usiamo findIndex per l'indice (la cancellazione deve agire sull'array originale)
-        const originalIndex = state.favoriteColors.findIndex(f => 
-            f.hex === fav.hex && 
-            f.bri === fav.bri && 
-            f.type === fav.type
-        )
 
         let buttonText = '';
         if (fav.type === PRESET_TYPES.WHITE) {
@@ -289,12 +314,12 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
             // Usa parseInt con prefisso 0x
             normal_color: parseInt(fav.hex.replace('#', '0x'), 16),
             press_color: 0x33ffffff,
-            radius: px(8),
+            radius: fav.type === PRESET_TYPES.COLOR ? ITEM_SIZE/2 : 8,
             click_func: () => applyCallback(fav),
-            longpress_func: () => deleteCallback(fav, originalIndex) //qui aprimo un createModal per eliminare il preferito
+            longpress_func: () => deleteCallback(fav) //qui aprimo un createModal per eliminare il preferito
         })
     })
-    
+
     const numRows = Math.ceil(compatiblePresets.length / COLS);
     return currentY + (numRows * (ITEM_SIZE + ITEM_MARGIN)) + px(20);
 }

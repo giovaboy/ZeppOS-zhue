@@ -373,7 +373,7 @@ AppSettingsPage({
                       width: '50px',
                       height: '50px',
                       backgroundColor: color.hex,
-                      borderRadius: '8px',
+                      borderRadius: color.type === PRESET_TYPES.COLOR ? '25px' : '8px',
                       border: '2px solid #dee2e6',
                       cursor: 'pointer',
                       position: 'relative',

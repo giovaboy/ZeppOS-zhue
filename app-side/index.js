@@ -210,33 +210,42 @@ class HueBridgeManager {
     }
   }
 
+  // Funzione di aggiunta - DEVE assegnare l'ID
   addFavoriteColor(colorData) {
-    // colorData ora contiene type, bri, e i parametri specifici (hue/sat o ct)
-    const currentColors = this.user_settings.favorite_colors || [];
+    const currentColors = this.user_settings.favorite_colors || []
 
-    // Controlla se esiste un preset logicamente equivalente
+     // Controlla se esiste un preset logicamente equivalente
     const exists = currentColors.some(existingColor => presetsAreEqual(existingColor, colorData));
-
     if (exists) {
       console.log('Color preset already exists in favorites');
       return { success: true, added: false };
     }
 
-    const newColors = [...currentColors, colorData];
-    // Assumendo che saveFavoriteColors salvi e aggiorni this.user_settings
-    return this.saveFavoriteColors(newColors);
-  }
-
-  // Rimuove un colore dai preferiti
-  removeFavoriteColor(index) {
-    const currentColors = this.user_settings.favorite_colors || []
-
-    if (index < 0 || index >= currentColors.length) {
-      throw new Error('Invalid color index')
+    // Aggiunge l'ID univoco prima di salvare
+    const newColor = {
+      id: Date.now().toString(36) + Math.random().toString(36).substring(2),
+      ...colorData
     }
 
-    const newColors = currentColors.filter((_, i) => i !== index)
+    const newColors = [...currentColors, newColor]
+    console.log(newColors)
     return this.saveFavoriteColors(newColors)
+  }
+
+  // Funzione di rimozione - FILTRA PER ID
+  removeFavoriteColor(favoriteId) {
+    const currentColors = this.user_settings.favorite_colors || []
+
+    // Filtra l'array, mantenendo solo gli elementi il cui ID è DIVERSO da quello da eliminare
+    const newColors = currentColors.filter(favorite => favorite.id !== favoriteId)
+
+    // Se la lunghezza è cambiata, salviamo
+    if (newColors.length < currentColors.length) {
+      return this.saveFavoriteColors(newColors)
+    } else {
+      // ID non trovato, gestisci l'errore o logga
+      throw new Error(`Favorite with ID ${favoriteId} not found.`)
+    }
   }
 
   // Reset ai preset di default
@@ -1015,6 +1024,7 @@ class HueBridgeManager {
   getLightCapabilities(light) {
     const caps = []
     if (light.state?.bri !== undefined) caps.push('brightness')
+    if (light.state?.ct !== undefined) caps.push('ct')
     if (light.state?.hue !== undefined) caps.push('color')
     return caps
   }
@@ -1230,6 +1240,7 @@ AppSideService(
       try {
         console.log('Getting favorite colors...')
         const settings = hueBridge.getUserSettings()
+        console.log('Favorite colors from settings:', settings.favorite_colors)
         res(null, {
           success: true,
           colors: settings.favorite_colors || DEFAULT_PRESETS
@@ -1575,14 +1586,14 @@ AppSideService(
 
     async handleGetLightDetail(req, res) {
       try {
-        const { lightId } = req.params // *** FIX: Estrae lightId da req.params ***
+        const { lightId } = req.params
         console.log('Getting light detail for ID:', lightId)
 
-        const lightDetail = await hueBridge.getLightDetail(lightId) // *** FIX: Passa lightId ***
-
+        const lightDetail = await hueBridge.getLightDetail(lightId)
+        console.log('Light detail retrieved:', lightDetail)
         res(null, {
           success: true,
-          data: { light: lightDetail } // *** FIX: Ritorna come { data: { light: ... } } ***
+          data: { light: lightDetail }
         })
       } catch (error) {
         console.error('Get light detail error:', error)

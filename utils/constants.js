@@ -94,49 +94,91 @@ export const PRESET_TYPES = {
 };
 
 export const DEFAULT_PRESETS = [
-  { hex: '#FFA500', bri: 200, hue: 8000, sat: 200, type: PRESET_TYPES.COLOR },
-  { hex: '#87CEEB', bri: 220, hue: 32000, sat: 150, type: PRESET_TYPES.COLOR },
-  { hex: '#FF6B6B', bri: 180, hue: 0, sat: 254, type: PRESET_TYPES.COLOR },
-  { hex: '#FFFFFF', bri: 254, ct: 250, type: PRESET_TYPES.CT },
-  { hex: '#F0EAD6', bri: 200, ct: 450, type: PRESET_TYPES.CT },
-  { hex: '#4A148C', bri: 100, hue: 48000, sat: 254, type: PRESET_TYPES.COLOR },
-  { hex: '#FFFFFF', bri: 50, type: PRESET_TYPES.WHITE }
+  { id: '1', hex: '#FFA500', bri: 200, hue: 8000, sat: 200, type: PRESET_TYPES.COLOR },
+  { id: '2', hex: '#87CEEB', bri: 220, hue: 32000, sat: 150, type: PRESET_TYPES.COLOR },
+  { id: '3', hex: '#FF6B6B', bri: 180, hue: 0, sat: 254, type: PRESET_TYPES.COLOR },
+  { id: '4', hex: '#FFFFFF', bri: 254, ct: 250, type: PRESET_TYPES.CT },
+  { id: '5', hex: '#F0EAD6', bri: 200, ct: 450, type: PRESET_TYPES.CT },
+  { id: '6', hex: '#4A148C', bri: 100, hue: 48000, sat: 254, type: PRESET_TYPES.COLOR },
+  { id: '7', hex: '#FFFFFF', bri: 50, type: PRESET_TYPES.WHITE }
 ];
 
 // Utility HSB to Hex (Visuale)
 export function hsb2hex(h, s, v) {
-    if (s === 0) {
-        const val = Math.round(v * 2.55)
-        return val << 16 | val << 8 | val;
-    }
-    h /= 60; s /= 100; v /= 100;
-    const i = Math.floor(h);
-    const f = h - i;
-    const p = v * (1 - s);
-    const q = v * (1 - f * s);
-    const t = v * (1 - (1 - f) * s);
-    let r = 0, g = 0, b = 0;
-    switch (i % 6) {
-        case 0: r = v; g = t; b = p; break;
-        case 1: r = q; g = v; b = p; break;
-        case 2: r = p; g = v; b = t; break;
-        case 3: r = p; g = q; b = v; break;
-        case 4: r = t; g = p; b = v; break;
-        case 5: r = v; g = p; b = q; break;
-    }
-    const toInt = (c) => Math.round(c * 255);
-    return (toInt(r) << 16) + (toInt(g) << 8) + toInt(b);
+  if (s === 0) {
+    const val = Math.round(v * 2.55)
+    return val << 16 | val << 8 | val;
+  }
+  h /= 60; s /= 100; v /= 100;
+  const i = Math.floor(h);
+  const f = h - i;
+  const p = v * (1 - s);
+  const q = v * (1 - f * s);
+  const t = v * (1 - (1 - f) * s);
+  let r = 0, g = 0, b = 0;
+  switch (i % 6) {
+    case 0: r = v; g = t; b = p; break;
+    case 1: r = q; g = v; b = p; break;
+    case 2: r = p; g = v; b = t; break;
+    case 3: r = p; g = q; b = v; break;
+    case 4: r = t; g = p; b = v; break;
+    case 5: r = v; g = p; b = q; break;
+  }
+  const toInt = (c) => Math.round(c * 255);
+  return (toInt(r) << 16) + (toInt(g) << 8) + toInt(b);
 }
+
+
+function calculateCtRgb(mireds) {
+  // 153 (Freddo) -> 500 (Caldo)
+  const MIN_CT = 153;
+  const MAX_CT = 500;
+
+  // Normalizza la percentuale tra 0 (freddo) e 1 (caldo)
+  const pct = Math.max(0, Math.min(1, (mireds - MIN_CT) / (MAX_CT - MIN_CT)));
+
+  // Cold: 0xCCDDFF (RGB 204, 221, 255), Warm: 0xFFB044 (RGB 255, 176, 68)
+  // Interpolazione:
+  // R: 204 -> 255
+  const r = 204 + (255 - 204) * pct;
+  // G: 221 -> 176
+  const g = 221 + (176 - 221) * pct;
+  // B: 255 -> 68
+  const b = 255 + (68 - 255) * pct;
+
+  return {
+    r: Math.round(r),
+    g: Math.round(g),
+    b: Math.round(b)
+  };
+}
+
 
 // Utility CT (Mireds) to Hex approssimativo per visualizzazione
 export function ct2hex(mireds) {
-    // 153 (6500K - Freddo) -> 500 (2000K - Caldo)
-    // Semplificazione visiva: interpoliamo tra Bluino e Giallino
-    const pct = (mireds - 153) / (500 - 153);
-    // Cold: 0xCCDDFF, Warm: 0xFFB044
-    // R: CC->FF, G: DD->B0, B: FF->44
-    const r = 0xCC + (0xFF - 0xCC) * pct;
-    const g = 0xDD + (0xB0 - 0xDD) * pct;
-    const b = 0xFF + (0x44 - 0xFF) * pct;
-    return (Math.round(r) << 16) + (Math.round(g) << 8) + Math.round(b);
+  const { r, g, b } = calculateCtRgb(mireds);
+  // Costruisce l'intero: (R << 16) + (G << 8) + B
+  return (r << 16) + (g << 8) + b;
 }
+
+
+
+export function ct2hexString(mireds) {
+  const { r, g, b } = calculateCtRgb(mireds);
+
+  // Funzione helper per convertire un componente in HEX a due cifre
+  const componentToHex = (c) => {
+    const hex = c.toString(16);
+    return hex.length === 1 ? '0' + hex : hex;
+  };
+
+  return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+
+
+// Funzione per normalizzare HEX: aggiunge # se manca
+export const normalizeHex = (hex) => {
+  if (!hex) return '#FFFFFF'; // Fallback se è nullo
+  if (hex.startsWith('#')) return hex;
+  return `#${hex}`;
+};

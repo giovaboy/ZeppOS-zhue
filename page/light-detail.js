@@ -2,12 +2,13 @@ import { BasePage } from '@zeppos/zml/base-page'
 import { setPageBrightTime } from '@zos/display'
 import { setScrollLock } from '@zos/page'
 import { getText } from '@zos/i18n'
-import { createWidget, deleteWidget, widget, prop } from '@zos/ui'
+import { createWidget, deleteWidget, widget, prop, align } from '@zos/ui'
 import { back, push } from '@zos/router'
 import { onGesture, GESTURE_RIGHT, createModal, MODAL_CONFIRM } from '@zos/interaction'
+import { px } from '@zos/utils'
 import { renderLightDetail, LAYOUT_CONFIG } from 'zosLoader:./light-detail.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
-import { DEFAULT_PRESETS, PRESET_TYPES, hsb2hex } from '../utils/constants.js'
+import { DEFAULT_PRESETS, PRESET_TYPES, hsb2hex, ct2hexString, normalizeHex } from '../utils/constants.js'
 
 const logger = getLogger('zhue-light-detail-page')
 
@@ -44,10 +45,10 @@ Page(
       brightnessSliderFillWidget: null,
       brightnessLabel: null,
     },
-    
+
     widgets: [],
     currentModal: null,
-    exitGestureListener: null, 
+    exitGestureListener: null,
 
     onInit(p) {
       let params = {}
@@ -58,20 +59,20 @@ Page(
       this.state.lightName = params?.lightName || getText('LIGHT')
       this.loadFavoriteColors()
     },
-    
+
     build() {
       logger.log('Building Light Detail page')
       setPageBrightTime({ brightTime: 60000 })
       // Disabilita scroll verticale di base (se la pagina sta in una schermata)
       // Se hai una lista lunga di preset, gestiscilo dinamicamente.
-      setScrollLock({ lock: false }) 
-      
+      setScrollLock({ lock: false })
+
       // Inizializza la gestione gesture (SBLOCCATA di default)
       this.unlockExitGesture();
-      
+
       this.loadLightDetail()
     },
-    
+
     onResume() {
       logger.log('Resuming Light Detail');
       if (this.state.lightId) {
@@ -79,7 +80,7 @@ Page(
         this.loadLightDetail();
       }
     },
-    
+
     clearAllWidgets() {
       this.widgets.forEach(w => {
         try { deleteWidget(w) } catch (e) { logger.error('Del widget err', e) }
@@ -89,15 +90,15 @@ Page(
       this.state.brightnessSliderFillWidget = null
       this.state.brightnessLabel = null
     },
-    
+
     createTrackedWidget(type, props) {
       const w = createWidget(type, props)
       this.widgets.push(w)
       return w
     },
-    
+
     // --- GESTURE LOCK LOGIC (CORRETTA) ---
-    
+
     /** * Sblocca l'uscita: Registra un listener che permette il comportamento custom (o di default).
      * Se return true -> evento consumato (non fa altro).
      * Se return false -> evento propagato (sistema fa back).
@@ -110,7 +111,7 @@ Page(
         callback: (event) => {
           if (event === GESTURE_RIGHT) {
             back(); // Gestiamo noi il back
-            return true; 
+            return true;
           }
           return false;
         }
@@ -123,7 +124,7 @@ Page(
      */
     lockExitGesture() {
       if (this.exitGestureListener) {
-        this.exitGestureListener(); 
+        this.exitGestureListener();
       }
       this.exitGestureListener = onGesture({
         callback: (event) => {
@@ -133,22 +134,24 @@ Page(
       });
       // logger.debug('Exit gesture LOCKED');
     },
-    
+
     // --- RENDERING ---
 
     renderPage() {
       this.clearAllWidgets()
       this.state.favoriteColors.sort(comparePresets);
-      
-      if (this.state.isLoading && !this.state.light) { 
-        this.createTrackedWidget(widget.TEXT, { x: 0, y: 200, w: 480, h: 50, text: getText('LOADING'), align_h: widget.ALIGN_CENTER_H || 2 })
+
+      if (this.state.isLoading && !this.state.light) {
+        this.createTrackedWidget(widget.TEXT, { x: 0, y: 200, w: 480, h: 50, text: getText('LOADING'), align_h: widget.ALIGN_CENTER_H, align_v: widget.ALIGN_CENTER_V })
         return
       }
       if (!this.state.light) return
-      
+
       const light = this.state.light
       const capabilities = this.getLightCapabilities(light);
-      
+
+      logger.debug('Rendering page for light:', light.id, 'Name:', light.name, 'Capabilities:', capabilities);
+
       if (!light.hex) {
         const bri = light.bri || 100;
         const nBri = Math.round(bri / 254 * 100);
@@ -157,7 +160,7 @@ Page(
         const val = hsb2hex(nHue, nSat, nBri);
         light.hex = '#' + val.toString(16).padStart(6, '0').toUpperCase();
       }
-      
+
       renderLightDetail(this, this.state, {
         toggleLightFunc: () => this.toggleLight(),
         setBrightnessDrag: (evtType, info) => this.handleBrightnessDrag(evtType, info),
@@ -170,76 +173,103 @@ Page(
         capabilities: capabilities
       })
     },
-    
+
+    // --- NAVIGATION ---
+
+    openColorPicker() {
+      const light = this.state.light;
+      const caps = this.getLightCapabilities(light);
+
+      // Determina modalità iniziale
+      // Se la luce è in modalità 'ct' (temperatura), apriamo il tab 'White'
+      let initialMode = 'color';
+      if (light.colormode === 'ct' || !caps.includes('color')) {
+        initialMode = 'ct';
+      }
+
+      push({
+        url: 'page/color-picker',
+        params: JSON.stringify({
+          lightId: this.state.lightId,
+          hue: light.hue,
+          sat: light.sat,
+          bri: light.bri,
+          ct: light.ct,
+          caps: caps,
+          initialMode: initialMode
+        })
+      })
+    },
+
     // --- DRAG LOGIC (ROBUST) ---
-    
+
     handleBrightnessDrag(evtType, info) {
       const { sliderX, sliderW } = LAYOUT_CONFIG
-      
+
       const getBrightnessFromX = (x) => {
         let positionInTrack = x - sliderX;
         positionInTrack = Math.max(0, Math.min(positionInTrack, sliderW));
         return Math.max(this.state.light.ison ? 1 : 0, Math.round((positionInTrack / sliderW) * 254));
       }
-      
+
       if (evtType === 'DOWN') {
         this.lockExitGesture(); // BLOCCA gesture sistema
         setScrollLock({ lock: true }); // BLOCCA scroll verticale
-        
+
         const newBri = getBrightnessFromX(info.x)
         this.state.isDraggingBrightness = true
         // Ottimizzazione: aggiorna solo se cambiato
         if (newBri === this.state.tempBrightness) return
-        
+
         this.state.tempBrightness = newBri
         this.setBrightness(newBri, false)
-        
+
       } else if (evtType === 'MOVE') {
         if (!this.state.isDraggingBrightness) return
-        
+
         const newBri = getBrightnessFromX(info.x)
         // Ottimizzazione: aggiorna solo se cambiato
         if (newBri === this.state.tempBrightness) return
-        
+
         this.state.tempBrightness = newBri
-        this.setBrightness(newBri, false) 
-        
+        this.setBrightness(newBri, false)
+
       } else if (evtType === 'UP') {
         if (!this.state.isDraggingBrightness) return
-        
+
         // RILASCIA I BLOCCHI
-        this.unlockExitGesture(); 
+        this.unlockExitGesture();
         setScrollLock({ lock: false });
-        
+
         if (this.state.tempBrightness !== this.state.light.bri) {
           this.setBrightness(this.state.tempBrightness, false)
         }
-        
+
         this.state.isDraggingBrightness = false
       }
     },
-    
+
     setBrightness(brightness, skipApiCall = false) {
       this.state.light.bri = brightness
       const { sliderW } = LAYOUT_CONFIG
       const fillWidth = Math.max(px(5), Math.round(sliderW * brightness / 254))
       const percent = Math.round(brightness / 254 * 100)
-      
+
       // DEBUG: Verifica se i widget esistono
       if (this.state.brightnessSliderFillWidget) {
           try {
             this.state.brightnessSliderFillWidget.setProperty(prop.W, fillWidth)
           } catch(e) { logger.error('SetBri Fill Widget Error', e) }
       }
-      
+
       if (this.state.brightnessLabel) {
           try {
             this.state.brightnessLabel.setProperty(prop.TEXT, `${percent}%`)
           } catch(e) { logger.error('SetBri Label Widget Error', e) }
       }
-      
+
       if (skipApiCall) return
-      
+
       this.request({
         method: 'SET_BRIGHTNESS',
         params: { lightId: this.state.lightId, brightness }
@@ -248,14 +278,28 @@ Page(
 
     // ... (rest of methods: getLightCapabilities, getLightBgColor, loadLightDetail, toggleLight, deletePreset, applyPreset, loadFavoriteColors, addCurrentColorToFavorites, goBack, onDestroy)
     // Assicurati che onDestroy chiami this.unlockExitGesture() o pulisca il listener!
-    
-    getLightCapabilities(light) {
+
+    /*getLightCapabilities(light) {
         if (!light) return [];
         const type = light.type || '';
         let caps = ['brightness'];
         if (type.toLowerCase().includes('color') || light.state?.hasOwnProperty('hue')) caps.push('color');
         if (type.toLowerCase().includes('color') || type.toLowerCase().includes('ambiance') || light.state?.hasOwnProperty('ct')) caps.push('ct');
         return caps;
+    },*/
+
+    getLightCapabilities(light) {
+      if (!light) return [];
+      const type = light.type || '';
+      let caps = ['brightness'];
+      // Rilevamento capabilities un po' più robusto
+      if (type.toLowerCase().includes('color') || light.state?.hasOwnProperty('hue')) caps.push('color');
+      if (type.toLowerCase().includes('color') || type.toLowerCase().includes('ambiance') || light.state?.hasOwnProperty('ct')) caps.push('ct');
+      // Hack per vecchie API che espongono le capabilities esplicitamente
+      logger.debug(light)
+      if (light.capabilities) return light.capabilities;
+      logger.debug(caps)
+      return caps;
     },
 
     getLightBgColor(hex) {
@@ -288,17 +332,17 @@ Page(
         .then(result => {
           if (result.success) {
             this.state.light.ison = newState;
-            setTimeout(() => this.loadLightDetail(), 100); 
+            setTimeout(() => this.loadLightDetail(), 100);
           }
         })
     },
 
-    deletePreset(favorite, index) {
+    deletePreset(favorite) {
       if (this.currentModal) {
         this.currentModal.show(false)
         this.currentModal = null
       }
-      
+
       let presetDescription = ''
       if (favorite.type === PRESET_TYPES.COLOR) {
         presetDescription = 'Color preset'
@@ -308,7 +352,7 @@ Page(
         const briPercent = Math.round((favorite.bri || 254) / 254 * 100)
         presetDescription = `Brightness preset (${briPercent}%)`
       }
-      
+
       const dialog = createModal({
         content: `Delete this preset?\n\n${presetDescription}`,
         autoHide: false,
@@ -316,7 +360,7 @@ Page(
           if (keyObj.type === MODAL_CONFIRM) {
             this.request({
                 method: 'REMOVE_FAVORITE_COLOR',
-                params: { index: index }
+                params: { index: favorite.id }
               })
               .then(result => {
                 if (result.success) {
@@ -339,7 +383,7 @@ Page(
       this.state.light.hue = favorite.hue
       this.state.light.sat = favorite.sat
       this.state.light.ct = favorite.ct
-      
+
       this.request({
           method: 'SET_COLOR',
           params: {
@@ -372,24 +416,23 @@ Page(
 
     addCurrentColorToFavorites() {
       const light = this.state.light
-      const caps = this.getLightCapabilities(light);
       let newFavorite = { bri: light.bri }
-      
-      if (caps.includes('color') && (light.sat > 0 || light.hue > 0)) {
+
+      if (light.colormode === 'hs' && (light.sat > 0 || light.hue > 0)){
         newFavorite.type = PRESET_TYPES.COLOR
         newFavorite.hue = light.hue || 0
         newFavorite.sat = light.sat || 0
-        newFavorite.hex = light.hex || '#FF0000'
-      } else if (caps.includes('ct') && light.ct > 0) {
+        newFavorite.hex = normalizeHex(light.hex) || '#FF0000'
+      } else if (light.colormode === 'ct' && light.ct > 0){
         newFavorite.type = PRESET_TYPES.CT
         newFavorite.ct = light.ct
-        newFavorite.hex = light.hex || '#FFFFFF'
+        newFavorite.hex = ct2hexString(light.ct) || '#FFFFFF'
       } else {
         newFavorite.type = PRESET_TYPES.WHITE
         newFavorite.hex = '#FFFFFF'
       }
       newFavorite.bri = light.bri || 254;
-      
+
       this.request({
           method: 'ADD_FAVORITE_COLOR',
           params: { colorData: newFavorite }

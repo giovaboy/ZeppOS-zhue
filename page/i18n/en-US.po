@@ -105,3 +105,9 @@ msgstr "Error: "
 
 msgid "LIGHT"
 msgstr "Light"
+
+msgid "LIGHT_ON"
+msgstr "Turn off"
+
+msgid "LIGHT_OFF"
+msgstr "Turn on"
