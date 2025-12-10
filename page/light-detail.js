@@ -141,10 +141,10 @@ Page(
       this.clearAllWidgets()
       this.state.favoriteColors.sort(comparePresets);
 
-      if (this.state.isLoading && !this.state.light) {
+      /*if (this.state.isLoading && !this.state.light) {
         this.createTrackedWidget(widget.TEXT, { x: 0, y: 200, w: 480, h: 50, text: getText('LOADING'), align_h: widget.ALIGN_CENTER_H, align_v: widget.ALIGN_CENTER_V })
         return
-      }
+      }*/
       if (!this.state.light) return
 
       const light = this.state.light

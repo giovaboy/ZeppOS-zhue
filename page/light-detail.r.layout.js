@@ -24,7 +24,7 @@ export const LAYOUT_CONFIG = {
 }
 
 export function renderLightDetail(pageContext, state, callbacks) {
-    const { light, lightName, favoriteColors } = state
+    const { light, lightName, favoriteColors, isLoading } = state
     const { toggleLightFunc, setBrightnessDrag, openColorPickerFunc, applyPresetFunc, addFavoriteFunc, deleteFavoriteFunc, getLightBgColor } = callbacks
 
     // 1. Sfondo
@@ -54,16 +54,28 @@ export function renderLightDetail(pageContext, state, callbacks) {
 
     // 2. Header (Titolo)
     pageContext.createTrackedWidget(widget.TEXT, {
-        x: px(40), y: px(30), w: DEVICE_WIDTH - px(80), h: px(50),
+        x: 0, y: px(10), w: DEVICE_WIDTH, h: px(40),
         text: lightName,
-        text_size: px(32),
+        text_size: px(34),
         color: COLORS.text,
         align_h: align.CENTER_H,
-        align_v: align.CENTER_V,
-        text_style: text_style.ELLIPSIS
+        align_v: align.CENTER_V
     })
 
     let currentY = px(90)
+    
+      // 2. Loading State
+    if (isLoading) {
+        pageContext.createTrackedWidget(widget.TEXT, {
+            x: 0, y: px(200), w: DEVICE_WIDTH, h: px(50),
+            text: getText('LOADING'),
+            text_size: px(28),
+            color: COLORS.inactive,
+            align_h: align.CENTER_H,
+            align_v: align.CENTER_V
+        })
+        return
+    }
 
     // 3. Main Toggle Button
     const toggleColor = lightOn ? COLORS.success : COLORS.error
