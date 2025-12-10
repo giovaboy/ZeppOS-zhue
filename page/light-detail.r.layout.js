@@ -5,7 +5,7 @@ import { getText } from '@zos/i18n'
 import { COLORS, PRESET_TYPES, ct2hex } from '../utils/constants'
 import { getLogger } from '../utils/logger'
 
-const logger = getLogger('light-detail.layout')
+const logger = getLogger('zhue-light-detail-layout')
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
@@ -23,27 +23,27 @@ export const LAYOUT_CONFIG = {
 export function renderLightDetail(pageContext, state, callbacks) {
   const { light, lightName, favoriteColors, isLoading, error } = state
   const { retryFunc } = callbacks
-  
+
   // === GESTIONE STATI PRIORITARIA ===
-  
+
   // 1. LOADING (priorità massima)
   if (isLoading) {
     renderLoadingState(pageContext, lightName)
     return
   }
-  
+
   // 2. ERROR
   if (error) {
     renderErrorState(pageContext, lightName, error, retryFunc)
     return
   }
-  
+
   // 3. NO DATA (sanity check)
   if (!light) {
     renderNoDataState(pageContext, lightName, retryFunc)
     return
   }
-  
+
   // === RENDERING NORMALE ===
   renderNormalState(pageContext, state, callbacks)
 }
@@ -58,7 +58,7 @@ function renderLoadingState(pageContext, lightName) {
     h: DEVICE_HEIGHT,
     color: COLORS.background
   })
-  
+
   // Header
   pageContext.createTrackedWidget(widget.TEXT, {
     x: 0,
@@ -71,7 +71,7 @@ function renderLoadingState(pageContext, lightName) {
     align_h: align.CENTER_H,
     align_v: align.CENTER_V
   })
-  
+
   // Loading text
   pageContext.createTrackedWidget(widget.TEXT, {
     x: 0,
@@ -94,7 +94,7 @@ function renderErrorState(pageContext, lightName, error, retryFunc) {
     h: DEVICE_HEIGHT,
     color: COLORS.background
   })
-  
+
   // Header
   pageContext.createTrackedWidget(widget.TEXT, {
     x: 0,
@@ -107,7 +107,7 @@ function renderErrorState(pageContext, lightName, error, retryFunc) {
     align_h: align.CENTER_H,
     align_v: align.CENTER_V
   })
-  
+
   // Error icon
   pageContext.createTrackedWidget(widget.CIRCLE, {
     center_x: DEVICE_WIDTH / 2,
@@ -116,7 +116,7 @@ function renderErrorState(pageContext, lightName, error, retryFunc) {
     color: COLORS.error,
     alpha: 100
   })
-  
+
   pageContext.createTrackedWidget(widget.TEXT, {
     x: 0,
     y: DEVICE_HEIGHT / 2 - px(130),
@@ -128,7 +128,7 @@ function renderErrorState(pageContext, lightName, error, retryFunc) {
     align_h: align.CENTER_H,
     align_v: align.CENTER_V
   })
-  
+
   // Error message
   pageContext.createTrackedWidget(widget.TEXT, {
     x: px(30),
@@ -141,7 +141,7 @@ function renderErrorState(pageContext, lightName, error, retryFunc) {
     align_h: align.CENTER_H,
     align_v: align.CENTER_V
   })
-  
+
   // Retry button
   if (retryFunc) {
     pageContext.createTrackedWidget(widget.BUTTON, {
@@ -166,7 +166,7 @@ function renderNoDataState(pageContext, lightName, retryFunc) {
     h: DEVICE_HEIGHT,
     color: COLORS.background
   })
-  
+
   pageContext.createTrackedWidget(widget.TEXT, {
     x: 0,
     y: px(10),
@@ -178,7 +178,7 @@ function renderNoDataState(pageContext, lightName, retryFunc) {
     align_h: align.CENTER_H,
     align_v: align.CENTER_V
   })
-  
+
   pageContext.createTrackedWidget(widget.TEXT, {
     x: px(30),
     y: DEVICE_HEIGHT / 2 - px(40),
@@ -190,7 +190,7 @@ function renderNoDataState(pageContext, lightName, retryFunc) {
     align_h: align.CENTER_H,
     align_v: align.CENTER_V
   })
-  
+
   if (retryFunc) {
     pageContext.createTrackedWidget(widget.BUTTON, {
       x: DEVICE_WIDTH / 2 - px(80),
@@ -217,10 +217,10 @@ function renderNormalState(pageContext, state, callbacks) {
     deleteFavoriteFunc,
     getLightBgColor
   } = callbacks
-  
+
   const lightOn = !!light.ison
   let bgColor = COLORS.background
-  
+
   if (lightOn) {
     if (light.colormode === 'hs' && light.hex) {
       bgColor = getLightBgColor(light.hex)
@@ -228,7 +228,7 @@ function renderNormalState(pageContext, state, callbacks) {
       bgColor = ((ct2hex(light.ct) >> 3) & 0x1f1f1f) + 0x0a0a0a
     }
   }
-  
+
   // Sfondo
   pageContext.createTrackedWidget(widget.FILL_RECT, {
     x: 0,
@@ -237,7 +237,7 @@ function renderNormalState(pageContext, state, callbacks) {
     h: DEVICE_HEIGHT,
     color: bgColor
   })
-  
+
   // Header
   pageContext.createTrackedWidget(widget.TEXT, {
     x: 0,
@@ -250,9 +250,9 @@ function renderNormalState(pageContext, state, callbacks) {
     align_h: align.CENTER_H,
     align_v: align.CENTER_V
   })
-  
+
   let currentY = px(90)
-  
+
   // Toggle Button
   const toggleColor = lightOn ? COLORS.success : COLORS.error
   pageContext.createTrackedWidget(widget.BUTTON, {
@@ -266,27 +266,27 @@ function renderNormalState(pageContext, state, callbacks) {
     radius: 12,
     click_func: toggleLightFunc
   })
-  
+
   currentY += px(80)
-  
+
   const caps = callbacks.capabilities || ['brightness']
-  
+
   // Brightness Slider (solo brightness-only)
   const showBrightnessSlider = lightOn && caps.includes('brightness') && !caps.includes('color') && !caps.includes('ct')
   if (showBrightnessSlider) {
     currentY = renderBrightnessSlider(pageContext, state, currentY, setBrightnessDrag)
   }
-  
+
   // Color Button
   if (lightOn && (caps.includes('color') || caps.includes('ct'))) {
     currentY = renderColorButton(pageContext, state, currentY, openColorPickerFunc)
   }
-  
+
   // Presets
   if (lightOn && favoriteColors) {
     currentY = renderPresets(pageContext, state, currentY, applyPresetFunc, addFavoriteFunc, deleteFavoriteFunc, callbacks)
   }
-  
+
   return currentY
 }
 
@@ -297,9 +297,9 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
   const brightness = isDraggingBrightness ? tempBrightness : light.bri
   const brightnessPercent = Math.round(brightness / 254 * 100)
   const { sliderX, sliderW, sliderH } = LAYOUT_CONFIG
-  
+
   const sliderY = yPos
-  
+
   // Track
   pageContext.createTrackedWidget(widget.FILL_RECT, {
     x: sliderX,
@@ -309,7 +309,7 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
     radius: sliderH / 2,
     color: COLORS.sliderBg
   })
-  
+
   // Fill
   const fillWidth = Math.max(px(5), (brightness / 254) * sliderW)
   const fillWidget = pageContext.createTrackedWidget(widget.FILL_RECT, {
@@ -321,7 +321,7 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
     color: COLORS.sliderFill
   })
   pageContext.state.brightnessSliderFillWidget = fillWidget
-  
+
   // Label
   const labelWidget = pageContext.createTrackedWidget(widget.TEXT, {
     x: sliderX,
@@ -335,20 +335,20 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
     align_v: align.CENTER_V
   })
   pageContext.state.brightnessLabel = labelWidget
-  
+
   // Icons
   pageContext.createTrackedWidget(widget.IMG, {
     x: sliderX + px(20),
     y: sliderY + sliderH / 2 - px(12),
     src: 'bri-low.png'
   })
-  
+
   pageContext.createTrackedWidget(widget.IMG, {
     x: sliderX + sliderW - px(52),
     y: sliderY + sliderH / 2 - px(16),
     src: 'bri-hi.png'
   })
-  
+
   // Hitbox
   const HITBOX_PADDING = px(20)
   const hitbox = pageContext.createTrackedWidget(widget.FILL_RECT, {
@@ -359,20 +359,20 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
     color: 0,
     alpha: 0
   })
-  
+
   if (dragCallback) {
     hitbox.addEventListener(event.CLICK_DOWN, (info) => dragCallback('DOWN', info))
     hitbox.addEventListener(event.MOVE, (info) => dragCallback('MOVE', info))
     hitbox.addEventListener(event.CLICK_UP, (info) => dragCallback('UP', info))
   }
-  
+
   return sliderY + sliderH + px(30)
 }
 
 function renderColorButton(pageContext, state, yPos, openCallback) {
   const { colorBtnX, colorBtnW, colorBtnH } = LAYOUT_CONFIG
   const { light } = state
-  
+
   let btnColor
   if (light.colormode === 'hs' && light.hex) {
     btnColor = parseInt(light.hex.replace('#', '0x'), 16)
@@ -381,7 +381,7 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
   } else {
     btnColor = 0xFFFFFF
   }
-  
+
   // Border
   pageContext.createTrackedWidget(widget.STROKE_RECT, {
     x: colorBtnX,
@@ -392,7 +392,7 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
     line_width: 2,
     color: 0xFFFFFF
   })
-  
+
   // Button
   pageContext.createTrackedWidget(widget.BUTTON, {
     x: colorBtnX + 2,
@@ -407,14 +407,14 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
     radius: 12,
     click_func: openCallback
   })
-  
+
   return yPos + colorBtnH + px(30)
 }
 
 function renderPresets(pageContext, state, yPos, applyCallback, addCallback, deleteCallback, callbacks) {
   const { presetsW, presetsX } = LAYOUT_CONFIG
   const { favoriteColors } = state
-  
+
   // Header
   pageContext.createTrackedWidget(widget.TEXT, {
     x: presetsX,
@@ -426,7 +426,7 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
     color: COLORS.text,
     align_h: align.LEFT
   })
-  
+
   // Add button
   pageContext.createTrackedWidget(widget.BUTTON, {
     x: DEVICE_WIDTH - px(60),
@@ -439,18 +439,18 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
     radius: 6,
     click_func: addCallback
   })
-  
+
   let currentY = yPos + px(40)
   const ITEM_SIZE = px(60)
   const ITEM_MARGIN = px(10)
   const ROW_WIDTH = presetsW
   const COLS = Math.floor(ROW_WIDTH / (ITEM_SIZE + ITEM_MARGIN))
   const startX = presetsX + (ROW_WIDTH - (COLS * (ITEM_SIZE + ITEM_MARGIN) - ITEM_MARGIN)) / 2
-  
+
   const caps = callbacks.capabilities || []
   const isColorLight = caps.includes('color')
   const isCtLight = caps.includes('ct')
-  
+
   // Filtra preset compatibili
   const compatiblePresets = favoriteColors.filter(fav => {
     switch (fav.type) {
@@ -464,7 +464,7 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
         return false
     }
   })
-  
+
   if (compatiblePresets.length === 0) {
     pageContext.createTrackedWidget(widget.TEXT, {
       x: presetsX,
@@ -479,18 +479,18 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
     currentY += px(60)
     return currentY
   }
-  
+
   // Render presets
   compatiblePresets.forEach((fav, i) => {
     const col = i % COLS
     const row = Math.floor(i / COLS)
-    
+
     let buttonText = ''
     if (fav.type === PRESET_TYPES.WHITE) {
       const briPercent = Math.round((fav.bri / 254) * 100)
       buttonText = `${briPercent}%`
     }
-    
+
     pageContext.createTrackedWidget(widget.BUTTON, {
       x: startX + col * (ITEM_SIZE + ITEM_MARGIN),
       y: currentY + row * (ITEM_SIZE + ITEM_MARGIN),
@@ -506,7 +506,7 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
       longpress_func: () => deleteCallback(fav)
     })
   })
-  
+
   const numRows = Math.ceil(compatiblePresets.length / COLS)
   return currentY + (numRows * (ITEM_SIZE + ITEM_MARGIN)) + px(20)
 }

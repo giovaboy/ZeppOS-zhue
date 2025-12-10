@@ -2,7 +2,7 @@ import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
 import { widget, align, text_style, prop, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
-import { COLORS, hsb2hex, ct2hex } from '../utils/constants.js'
+import { COLORS, hsb2hex, ct2hex, btnPressColor } from '../utils/constants.js'
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
@@ -18,8 +18,6 @@ export const LAYOUT_CONFIG = {
   pickerY: px(70),     // Spazio per i tab sopra
   sliderW: px(300),
   sliderH: px(50),
-  //sliderX: px(40),
-  //sliderW: DEVICE_WIDTH - px(80),
   sliderX: (DEVICE_WIDTH - px(300)) / 2,
   sliderY: DEVICE_HEIGHT - px(90) // In basso
 }
@@ -63,7 +61,7 @@ function renderTabs(pageContext, currentMode, onTabSwitch) {
         text: getText('COLOR'),
         radius: 20,
         normal_color: currentMode === 'color' ? COLORS.activeTab : COLORS.inactiveTab,
-        press_color: COLORS.activeTab,
+        press_color: btnPressColor(COLORS.activeTab, 0.8),
         click_func: () => onTabSwitch('color')
     });
 
@@ -73,7 +71,7 @@ function renderTabs(pageContext, currentMode, onTabSwitch) {
         text: getText('WHITE'),
         radius: 20,
         normal_color: currentMode === 'ct' ? COLORS.activeTab : COLORS.inactiveTab,
-        press_color: COLORS.activeTab,
+        press_color: btnPressColor(COLORS.activeTab, 0.8),
         click_func: () => onTabSwitch('ct')
     });
 }

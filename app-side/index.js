@@ -1,12 +1,6 @@
 import { BaseSideService, settingsLib } from '@zeppos/zml/base-side'
 import { DEFAULT_PRESETS, PRESET_TYPES } from '../utils/constants.js'
 
-// ============================================
-// 1. CONFIGURAZIONE DEMO
-// Imposta a 'true' per ignorare le chiamate di rete e usare i dati fittizi.
-// const DEMO = true
-// ============================================
-
 const BRIDGE_IP_KEY = 'hue_bridge_ip'
 const USERNAME_KEY = 'hue_username'
 const API_VERSION_KEY = 'hue_api_version'
@@ -229,7 +223,11 @@ class HueBridgeManager {
 
     const newColors = [...currentColors, newColor]
     console.log(newColors)
-    return this.saveFavoriteColors(newColors)
+    if (this.saveFavoriteColors(newColors) ) {
+      return { success: true, added: true };
+    } else {
+      return { success: false, added: false };
+    }
   }
 
   // Funzione di rimozione - FILTRA PER ID

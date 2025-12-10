@@ -160,9 +160,15 @@ Page(
       const caps = this.getLightCapabilities(light)
 
       let initialMode = 'color'
-      if (light.colormode === 'ct' || !caps.includes('color')) {
+      if (((light.colormode === 'ct' || light.colormode === 'bri') && light.ct > 0) || !caps.includes('color')) {
         initialMode = 'ct'
       }
+/*
+      if (light.colormode === 'hs' && (light.sat > 0 || light.hue > 0)) {
+        initialMode = 'color'
+      } else if ((light.colormode === 'ct' || light.colormode === 'bri') && light.ct > 0) {
+        initialMode = 'ct'
+      }*/
 
       push({
         url: 'page/color-picker',
@@ -388,11 +394,11 @@ Page(
         newFavorite.hue = light.hue || 0
         newFavorite.sat = light.sat || 0
         newFavorite.hex = normalizeHex(light.hex) || '#FF0000'
-      } else if (light.colormode === 'ct' && light.ct > 0) {
+      } else if ((light.colormode === 'ct' || light.colormode === 'bri') && light.ct > 0) {
         newFavorite.type = PRESET_TYPES.CT
         newFavorite.ct = light.ct
         newFavorite.hex = ct2hexString(light.ct) || '#FFFFFF'
-      } else {
+      } else if (light.colormode === 'bri' && light.bri > 0) {
         newFavorite.type = PRESET_TYPES.WHITE
         newFavorite.hex = '#FFFFFF'
       }
@@ -403,14 +409,15 @@ Page(
         params: { colorData: newFavorite }
       })
         .then(result => {
-          if (result.success || result.added) {
+          logger.debug('Add favorite color result:', result)
+          if (result.success && result.added) {
             this.loadFavoriteColors()
-          } else if (result.success || !result.added) {
-            showToast({text:'Duplicate'})
+          } else if (result.success && !result.added) {
+            showToast({text:getText('DUPLICATE_FAVORITE_COLOR')})
           }
         })
         .catch(err => {
-          showToast({text:'Failed'})
+          showToast({text:getText('FAILED_TO_ADD_FAVORITE')})
           logger.error('Failed to add favorite color:', err)
         })
     },
@@ -469,7 +476,9 @@ Page(
       if (this.currentModal) {
         try {
           this.currentModal.show(false)
-        } catch (e) {}
+        } catch (e) {
+          logger.error('Error destroying modal', e)
+        }
         this.currentModal = null
       }
       this.clearAllWidgets()

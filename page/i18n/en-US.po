@@ -114,3 +114,15 @@ msgstr "Turn off"
 
 msgid "LIGHT_OFF"
 msgstr "Turn on"
+
+msgid "ADD_FAVORITE_COLOR"
+msgstr "Add favorite color"
+
+msgid "NO_FAVORITE_COLOR"
+msgstr "No favorite colors added"
+
+msgid "FAVORITE_COLORS"
+msgstr "Favorite Colors"
+
+msgid "DUPLICATE_FAVORITE_COLOR"
+msgstr "Preset already exists"

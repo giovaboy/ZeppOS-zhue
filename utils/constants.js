@@ -5,7 +5,7 @@ export const COLORS = {
   textSubtitle: 0xaaaaaa,
   highlight: 0x0055ff,
   cardBg: 0x222222,
-  activeTab: 0x0055ff,
+  activeTab: 0x984ce5,//0x0055ff,
   activeTabText: 0xffffff,
   inactiveTab: 0x1a1a1a,
   inactiveTabText: 0xAAAAAA,
@@ -13,7 +13,7 @@ export const COLORS = {
   highlightText: 0xffffff,
   warning: 0xff6600,
   warningText: 0xffffff,
-  success: 0x00aa00,
+  success: 0x39935a,//0x2ecd6e,//0x00aa00,
   error: 0xff0000,
   inactive: 0x666666,
   loading: 0x666666,
@@ -181,4 +181,37 @@ export const normalizeHex = (hex) => {
   if (!hex) return '#FFFFFF'; // Fallback se è nullo
   if (hex.startsWith('#')) return hex;
   return `#${hex}`;
-};
+}
+
+export function multiplyHexColor(hex_color, multiplier) {
+  hex_color = Math.floor(hex_color).toString(16).padStart(6, "0"); // @fix 1.0.6
+
+  let r = parseInt(hex_color.substring(0, 2), 16);
+  let g = parseInt(hex_color.substring(2, 4), 16);
+  let b = parseInt(hex_color.substring(4, 6), 16);
+
+  r = Math.min(Math.round(r * multiplier), 255);
+  g = Math.min(Math.round(g * multiplier), 255);
+  b = Math.min(Math.round(b * multiplier), 255);
+
+  const result = "0x" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, "0");
+  return result;
+}
+
+export function btnPressColor(hex_color, multiplier) { // @add 1.0.6
+  hex_color = Math.floor(hex_color).toString(16).padStart(6, "0");
+
+  let r = parseInt(hex_color.substring(0, 2), 16);
+  let g = parseInt(hex_color.substring(2, 4), 16);
+  let b = parseInt(hex_color.substring(4, 6), 16);
+
+  // check if any of the color components are at their maximum value
+  if (r === 255 || g === 255 || b === 255) {
+    // and if so + the multiplier is greater than 1, divide the color
+    if (multiplier > 1) {
+      return multiplyHexColor("0x" + hex_color, 1 / multiplier); // inverse
+    }
+  }
+  // otherwise usual multiplication
+  return multiplyHexColor("0x" + hex_color, multiplier);
+}
