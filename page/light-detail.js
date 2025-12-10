@@ -2,7 +2,7 @@ import { BasePage } from '@zeppos/zml/base-page'
 import { setPageBrightTime } from '@zos/display'
 import { setScrollLock } from '@zos/page'
 import { getText } from '@zos/i18n'
-import { createWidget, deleteWidget, widget, prop, align } from '@zos/ui'
+import { createWidget, deleteWidget, widget, prop, align, showToast } from '@zos/ui'
 import { back, push } from '@zos/router'
 import { onGesture, GESTURE_RIGHT, createModal, MODAL_CONFIRM } from '@zos/interaction'
 import { px } from '@zos/utils'
@@ -403,11 +403,14 @@ Page(
         params: { colorData: newFavorite }
       })
         .then(result => {
-          if (result.success) {
+          if (result.success || result.added) {
             this.loadFavoriteColors()
+          } else if (result.success || !result.added) {
+            showToast('Duplicate')
           }
         })
         .catch(err => {
+          showToast('Failed')
           logger.error('Failed to add favorite color:', err)
         })
     },
@@ -438,6 +441,7 @@ Page(
               params: { index: favorite.id }
             })
               .then(result => {
+                //showToast(result)
                 if (result.success) {
                   this.loadFavoriteColors()
                 }

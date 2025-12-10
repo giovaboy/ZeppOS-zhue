@@ -1268,7 +1268,6 @@ AppSideService(
       try {
         const { index } = req.params
         console.log('Removing favorite color at index:', index)
-
         const result = hueBridge.removeFavoriteColor(index)
         res(null, result)
       } catch (error) {
