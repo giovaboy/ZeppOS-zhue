@@ -44,6 +44,7 @@ Page(
       tempBrightness: 0,
       brightnessSliderFillWidget: null,
       brightnessLabel: null,
+      error: null
     },
 
     widgets: [],
@@ -310,7 +311,10 @@ Page(
     },
 
     loadLightDetail() {
-      if (!this.state.light) this.state.isLoading = true;
+      this.state.error = null
+      //if (!this.state.light)
+      this.state.isLoading = true;
+      this.renderPage()
       this.request({ method: 'GET_LIGHT_DETAIL', params: { lightId: this.state.lightId } })
         .then(result => {
           if (result.success) {
@@ -321,7 +325,8 @@ Page(
           }
         })
         .catch(err => {
-          this.state.isLoading = false;
+          this.state.isLoading = false
+          this.state.error = 'Failed to load detail'
           logger.error(err)
         })
     },
