@@ -406,11 +406,11 @@ Page(
           if (result.success || result.added) {
             this.loadFavoriteColors()
           } else if (result.success || !result.added) {
-            showToast('Duplicate')
+            showToast({text:'Duplicate'})
           }
         })
         .catch(err => {
-          showToast('Failed')
+          showToast({text:'Failed'})
           logger.error('Failed to add favorite color:', err)
         })
     },
