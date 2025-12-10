@@ -23,27 +23,27 @@ export const LAYOUT_CONFIG = {
 export function renderLightDetail(pageContext, state, callbacks) {
   const { light, lightName, favoriteColors, isLoading, error } = state
   const { retryFunc } = callbacks
-
+  
   // === GESTIONE STATI PRIORITARIA ===
-
+  
   // 1. LOADING (priorità massima)
   if (isLoading) {
     renderLoadingState(pageContext, lightName)
     return
   }
-
+  
   // 2. ERROR
   if (error) {
     renderErrorState(pageContext, lightName, error, retryFunc)
     return
   }
-
+  
   // 3. NO DATA (sanity check)
   if (!light) {
     renderNoDataState(pageContext, lightName, retryFunc)
     return
   }
-
+  
   // === RENDERING NORMALE ===
   renderNormalState(pageContext, state, callbacks)
 }
@@ -52,35 +52,35 @@ export function renderLightDetail(pageContext, state, callbacks) {
 
 function renderLoadingState(pageContext, lightName) {
   pageContext.createTrackedWidget(widget.FILL_RECT, {
-    x: 0, y: 0, w: DEVICE_WIDTH, h: DEVICE_HEIGHT,
+    x: 0,
+    y: 0,
+    w: DEVICE_WIDTH,
+    h: DEVICE_HEIGHT,
     color: COLORS.background
   })
-
+  
   // Header
   pageContext.createTrackedWidget(widget.TEXT, {
-    x: 0, y: px(10), w: DEVICE_WIDTH, h: px(40),
-    text: lightName,
+    x: 0,
+    y: px(10),
+    w: DEVICE_WIDTH,
+    h: px(40),
+    text: lightName || getText('LIGHT_DETAIL'),
     text_size: px(34),
     color: COLORS.text,
     align_h: align.CENTER_H,
     align_v: align.CENTER_V
   })
-
-  // Spinner
-  pageContext.createTrackedWidget(widget.CIRCLE, {
-    center_x: DEVICE_WIDTH / 2,
-    center_y: DEVICE_HEIGHT / 2 - px(20),
-    radius: px(40),
-    color: COLORS.primary,
-    alpha: 200
-  })
-
+  
   // Loading text
   pageContext.createTrackedWidget(widget.TEXT, {
-    x: 0, y: DEVICE_HEIGHT / 2 + px(40), w: DEVICE_WIDTH, h: px(50),
-    text: getText('LOADING') || 'Loading...',
-    text_size: px(24),
-    color: COLORS.textSecondary,
+    x: 0,
+    y: DEVICE_HEIGHT / 2 - px(50),
+    w: DEVICE_WIDTH,
+    h: px(50),
+    text: getText('LOADING'),
+    text_size: px(28),
+    color: COLORS.loading,
     align_h: align.CENTER_H,
     align_v: align.CENTER_V
   })
@@ -88,20 +88,26 @@ function renderLoadingState(pageContext, lightName) {
 
 function renderErrorState(pageContext, lightName, error, retryFunc) {
   pageContext.createTrackedWidget(widget.FILL_RECT, {
-    x: 0, y: 0, w: DEVICE_WIDTH, h: DEVICE_HEIGHT,
+    x: 0,
+    y: 0,
+    w: DEVICE_WIDTH,
+    h: DEVICE_HEIGHT,
     color: COLORS.background
   })
-
+  
   // Header
   pageContext.createTrackedWidget(widget.TEXT, {
-    x: 0, y: px(10), w: DEVICE_WIDTH, h: px(40),
+    x: 0,
+    y: px(10),
+    w: DEVICE_WIDTH,
+    h: px(40),
     text: lightName,
     text_size: px(34),
     color: COLORS.text,
     align_h: align.CENTER_H,
     align_v: align.CENTER_V
   })
-
+  
   // Error icon
   pageContext.createTrackedWidget(widget.CIRCLE, {
     center_x: DEVICE_WIDTH / 2,
@@ -110,26 +116,32 @@ function renderErrorState(pageContext, lightName, error, retryFunc) {
     color: COLORS.error,
     alpha: 100
   })
-
+  
   pageContext.createTrackedWidget(widget.TEXT, {
-    x: 0, y: DEVICE_HEIGHT / 2 - px(130), w: DEVICE_WIDTH, h: px(60),
+    x: 0,
+    y: DEVICE_HEIGHT / 2 - px(130),
+    w: DEVICE_WIDTH,
+    h: px(60),
     text: '✕',
     text_size: px(60),
     color: COLORS.error,
     align_h: align.CENTER_H,
     align_v: align.CENTER_V
   })
-
+  
   // Error message
   pageContext.createTrackedWidget(widget.TEXT, {
-    x: px(30), y: DEVICE_HEIGHT / 2 - px(20), w: DEVICE_WIDTH - px(60), h: px(80),
+    x: px(30),
+    y: DEVICE_HEIGHT / 2 - px(20),
+    w: DEVICE_WIDTH - px(60),
+    h: px(80),
     text: error || getText('ERROR') || 'Error loading light',
     text_size: px(22),
     color: COLORS.textSecondary,
     align_h: align.CENTER_H,
     align_v: align.CENTER_V
   })
-
+  
   // Retry button
   if (retryFunc) {
     pageContext.createTrackedWidget(widget.BUTTON, {
@@ -148,28 +160,37 @@ function renderErrorState(pageContext, lightName, error, retryFunc) {
 
 function renderNoDataState(pageContext, lightName, retryFunc) {
   pageContext.createTrackedWidget(widget.FILL_RECT, {
-    x: 0, y: 0, w: DEVICE_WIDTH, h: DEVICE_HEIGHT,
+    x: 0,
+    y: 0,
+    w: DEVICE_WIDTH,
+    h: DEVICE_HEIGHT,
     color: COLORS.background
   })
-
+  
   pageContext.createTrackedWidget(widget.TEXT, {
-    x: 0, y: px(10), w: DEVICE_WIDTH, h: px(40),
+    x: 0,
+    y: px(10),
+    w: DEVICE_WIDTH,
+    h: px(40),
     text: lightName,
     text_size: px(34),
     color: COLORS.text,
     align_h: align.CENTER_H,
     align_v: align.CENTER_V
   })
-
+  
   pageContext.createTrackedWidget(widget.TEXT, {
-    x: px(30), y: DEVICE_HEIGHT / 2 - px(40), w: DEVICE_WIDTH - px(60), h: px(80),
+    x: px(30),
+    y: DEVICE_HEIGHT / 2 - px(40),
+    w: DEVICE_WIDTH - px(60),
+    h: px(80),
     text: getText('NO_DATA') || 'No light data available',
     text_size: px(22),
     color: COLORS.textSecondary,
     align_h: align.CENTER_H,
     align_v: align.CENTER_V
   })
-
+  
   if (retryFunc) {
     pageContext.createTrackedWidget(widget.BUTTON, {
       x: DEVICE_WIDTH / 2 - px(80),
@@ -188,13 +209,18 @@ function renderNoDataState(pageContext, lightName, retryFunc) {
 function renderNormalState(pageContext, state, callbacks) {
   const { light, lightName, favoriteColors } = state
   const {
-    toggleLightFunc, setBrightnessDrag, openColorPickerFunc,
-    applyPresetFunc, addFavoriteFunc, deleteFavoriteFunc, getLightBgColor
+    toggleLightFunc,
+    setBrightnessDrag,
+    openColorPickerFunc,
+    applyPresetFunc,
+    addFavoriteFunc,
+    deleteFavoriteFunc,
+    getLightBgColor
   } = callbacks
-
+  
   const lightOn = !!light.ison
   let bgColor = COLORS.background
-
+  
   if (lightOn) {
     if (light.colormode === 'hs' && light.hex) {
       bgColor = getLightBgColor(light.hex)
@@ -202,57 +228,65 @@ function renderNormalState(pageContext, state, callbacks) {
       bgColor = ((ct2hex(light.ct) >> 3) & 0x1f1f1f) + 0x0a0a0a
     }
   }
-
+  
   // Sfondo
   pageContext.createTrackedWidget(widget.FILL_RECT, {
-    x: 0, y: 0, w: DEVICE_WIDTH, h: DEVICE_HEIGHT,
+    x: 0,
+    y: 0,
+    w: DEVICE_WIDTH,
+    h: DEVICE_HEIGHT,
     color: bgColor
   })
-
+  
   // Header
   pageContext.createTrackedWidget(widget.TEXT, {
-    x: 0, y: px(10), w: DEVICE_WIDTH, h: px(40),
+    x: 0,
+    y: px(10),
+    w: DEVICE_WIDTH,
+    h: px(40),
     text: lightName,
     text_size: px(34),
     color: COLORS.text,
     align_h: align.CENTER_H,
     align_v: align.CENTER_V
   })
-
+  
   let currentY = px(90)
-
+  
   // Toggle Button
   const toggleColor = lightOn ? COLORS.success : COLORS.error
   pageContext.createTrackedWidget(widget.BUTTON, {
     x: (DEVICE_WIDTH - px(360)) / 2,
-    y: currentY, w: px(360), h: px(60),
+    y: currentY,
+    w: px(360),
+    h: px(60),
     text: lightOn ? getText('LIGHT_ON') : getText('LIGHT_OFF'),
     normal_color: toggleColor,
     press_color: 0x33ffffff,
     radius: 12,
     click_func: toggleLightFunc
   })
-
+  
   currentY += px(80)
-
+  
   const caps = callbacks.capabilities || ['brightness']
-
+  
   // Brightness Slider (solo brightness-only)
   const showBrightnessSlider = lightOn && caps.includes('brightness') && !caps.includes('color') && !caps.includes('ct')
   if (showBrightnessSlider) {
     currentY = renderBrightnessSlider(pageContext, state, currentY, setBrightnessDrag)
   }
-
+  
   // Color Button
   if (lightOn && (caps.includes('color') || caps.includes('ct'))) {
     currentY = renderColorButton(pageContext, state, currentY, openColorPickerFunc)
   }
-
+  
   // Presets
   if (lightOn && favoriteColors) {
     currentY = renderPresets(pageContext, state, currentY, applyPresetFunc, addFavoriteFunc, deleteFavoriteFunc, callbacks)
   }
-
+  
   return currentY
 }
 
@@ -263,26 +297,37 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
   const brightness = isDraggingBrightness ? tempBrightness : light.bri
   const brightnessPercent = Math.round(brightness / 254 * 100)
   const { sliderX, sliderW, sliderH } = LAYOUT_CONFIG
-
+  
   const sliderY = yPos
-
+  
   // Track
   pageContext.createTrackedWidget(widget.FILL_RECT, {
-    x: sliderX, y: sliderY, w: sliderW, h: sliderH,
-    radius: sliderH / 2, color: COLORS.sliderBg
+    x: sliderX,
+    y: sliderY,
+    w: sliderW,
+    h: sliderH,
+    radius: sliderH / 2,
+    color: COLORS.sliderBg
   })
-
+  
   // Fill
   const fillWidth = Math.max(px(5), (brightness / 254) * sliderW)
   const fillWidget = pageContext.createTrackedWidget(widget.FILL_RECT, {
-    x: sliderX, y: sliderY, w: fillWidth, h: sliderH,
-    radius: sliderH / 2, color: COLORS.sliderFill
+    x: sliderX,
+    y: sliderY,
+    w: fillWidth,
+    h: sliderH,
+    radius: sliderH / 2,
+    color: COLORS.sliderFill
   })
   pageContext.state.brightnessSliderFillWidget = fillWidget
-
+  
   // Label
   const labelWidget = pageContext.createTrackedWidget(widget.TEXT, {
-    x: sliderX, y: sliderY, w: sliderW, h: sliderH,
+    x: sliderX,
+    y: sliderY,
+    w: sliderW,
+    h: sliderH,
     text: `${brightnessPercent}%`,
     text_size: px(28),
     color: COLORS.briText || COLORS.text,
@@ -290,20 +335,20 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
     align_v: align.CENTER_V
   })
   pageContext.state.brightnessLabel = labelWidget
-
+  
   // Icons
   pageContext.createTrackedWidget(widget.IMG, {
     x: sliderX + px(20),
     y: sliderY + sliderH / 2 - px(12),
     src: 'bri-low.png'
   })
-
+  
   pageContext.createTrackedWidget(widget.IMG, {
     x: sliderX + sliderW - px(52),
     y: sliderY + sliderH / 2 - px(16),
     src: 'bri-hi.png'
   })
-
+  
   // Hitbox
   const HITBOX_PADDING = px(20)
   const hitbox = pageContext.createTrackedWidget(widget.FILL_RECT, {
@@ -311,22 +356,23 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
     y: sliderY - HITBOX_PADDING,
     w: sliderW + (HITBOX_PADDING * 2),
     h: sliderH + (HITBOX_PADDING * 2),
-    color: 0, alpha: 0
+    color: 0,
+    alpha: 0
   })
-
+  
   if (dragCallback) {
     hitbox.addEventListener(event.CLICK_DOWN, (info) => dragCallback('DOWN', info))
     hitbox.addEventListener(event.MOVE, (info) => dragCallback('MOVE', info))
     hitbox.addEventListener(event.CLICK_UP, (info) => dragCallback('UP', info))
   }
-
+  
   return sliderY + sliderH + px(30)
 }
 
 function renderColorButton(pageContext, state, yPos, openCallback) {
   const { colorBtnX, colorBtnW, colorBtnH } = LAYOUT_CONFIG
   const { light } = state
-
+  
   let btnColor
   if (light.colormode === 'hs' && light.hex) {
     btnColor = parseInt(light.hex.replace('#', '0x'), 16)
@@ -335,17 +381,24 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
   } else {
     btnColor = 0xFFFFFF
   }
-
+  
   // Border
   pageContext.createTrackedWidget(widget.STROKE_RECT, {
-    x: colorBtnX, y: yPos, w: colorBtnW, h: colorBtnH,
-    radius: 12, line_width: 2, color: 0xFFFFFF
+    x: colorBtnX,
+    y: yPos,
+    w: colorBtnW,
+    h: colorBtnH,
+    radius: 12,
+    line_width: 2,
+    color: 0xFFFFFF
   })
-
+  
   // Button
   pageContext.createTrackedWidget(widget.BUTTON, {
-    x: colorBtnX + 2, y: yPos + 2,
-    w: colorBtnW - 4, h: colorBtnH - 4,
+    x: colorBtnX + 2,
+    y: yPos + 2,
+    w: colorBtnW - 4,
+    h: colorBtnH - 4,
     text: getText('CHANGE'),
     text_size: px(22),
     color: 0x000000,
@@ -354,44 +407,50 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
     radius: 12,
     click_func: openCallback
   })
-
+  
   return yPos + colorBtnH + px(30)
 }
 
 function renderPresets(pageContext, state, yPos, applyCallback, addCallback, deleteCallback, callbacks) {
   const { presetsW, presetsX } = LAYOUT_CONFIG
   const { favoriteColors } = state
-
+  
   // Header
   pageContext.createTrackedWidget(widget.TEXT, {
-    x: presetsX, y: yPos, w: presetsW - px(40), h: px(35),
+    x: presetsX,
+    y: yPos,
+    w: presetsW - px(40),
+    h: px(35),
     text: getText('PRESETS_TITLE'),
     text_size: px(24),
     color: COLORS.text,
     align_h: align.LEFT
   })
-
+  
   // Add button
   pageContext.createTrackedWidget(widget.BUTTON, {
-    x: DEVICE_WIDTH - px(60), y: yPos, w: px(40), h: px(35),
+    x: DEVICE_WIDTH - px(60),
+    y: yPos,
+    w: px(40),
+    h: px(35),
     text: '+',
     normal_color: COLORS.highlight,
     press_color: COLORS.success,
     radius: 6,
     click_func: addCallback
   })
-
+  
   let currentY = yPos + px(40)
   const ITEM_SIZE = px(60)
   const ITEM_MARGIN = px(10)
   const ROW_WIDTH = presetsW
   const COLS = Math.floor(ROW_WIDTH / (ITEM_SIZE + ITEM_MARGIN))
   const startX = presetsX + (ROW_WIDTH - (COLS * (ITEM_SIZE + ITEM_MARGIN) - ITEM_MARGIN)) / 2
-
+  
   const caps = callbacks.capabilities || []
   const isColorLight = caps.includes('color')
   const isCtLight = caps.includes('ct')
-
+  
   // Filtra preset compatibili
   const compatiblePresets = favoriteColors.filter(fav => {
     switch (fav.type) {
@@ -405,10 +464,13 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
         return false
     }
   })
-
+  
   if (compatiblePresets.length === 0) {
     pageContext.createTrackedWidget(widget.TEXT, {
-      x: presetsX, y: currentY, w: presetsW, h: px(50),
+      x: presetsX,
+      y: currentY,
+      w: presetsW,
+      h: px(50),
       text: getText('NO_PRESETS') || 'No presets',
       text_size: px(22),
       color: COLORS.inactive,
@@ -417,22 +479,23 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
     currentY += px(60)
     return currentY
   }
-
+  
   // Render presets
   compatiblePresets.forEach((fav, i) => {
     const col = i % COLS
     const row = Math.floor(i / COLS)
-
+    
     let buttonText = ''
     if (fav.type === PRESET_TYPES.WHITE) {
       const briPercent = Math.round((fav.bri / 254) * 100)
       buttonText = `${briPercent}%`
     }
-
+    
     pageContext.createTrackedWidget(widget.BUTTON, {
       x: startX + col * (ITEM_SIZE + ITEM_MARGIN),
       y: currentY + row * (ITEM_SIZE + ITEM_MARGIN),
-      w: ITEM_SIZE, h: ITEM_SIZE,
+      w: ITEM_SIZE,
+      h: ITEM_SIZE,
       color: 0x000000,
       text: buttonText,
       text_size: px(18),
@@ -443,7 +506,7 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
       longpress_func: () => deleteCallback(fav)
     })
   })
-
+  
   const numRows = Math.ceil(compatiblePresets.length / COLS)
   return currentY + (numRows * (ITEM_SIZE + ITEM_MARGIN)) + px(20)
 }

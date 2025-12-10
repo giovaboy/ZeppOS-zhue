@@ -16,6 +16,7 @@ export const COLORS = {
   success: 0x00aa00,
   error: 0xff0000,
   inactive: 0x666666,
+  loading: 0x666666,
   roomIndicator: 0x0000cc,
   zoneIndicator: 0x009900,
   lightBg: 0x1a1a1a,

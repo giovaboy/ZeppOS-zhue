@@ -50,10 +50,11 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
     // 2. Loading State
     if (isLoading) {
         pageContext.createTrackedWidget(widget.TEXT, {
-            x: 0, y: px(200), w: DEVICE_WIDTH, h: px(50),
+            //x: 0, y: px(200), w: DEVICE_WIDTH, h: px(50),
+            x: 0, y: DEVICE_HEIGHT / 2 - px(50), w: DEVICE_WIDTH, h: px(50),
             text: getText('LOADING'),
             text_size: px(28),
-            color: COLORS.inactive,
+            color: COLORS.loading,
             align_h: align.CENTER_H,
             align_v: align.CENTER_V
         })
