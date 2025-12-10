@@ -30,6 +30,24 @@ export const COLORS = {
   defaultSwatchColor: 0xFFCC66
 }
 
+export const DEMO_DATA = {
+      lights: {
+        '1': { id: '1', name: 'Lampada Soggiorno', ison: true, bri: 200, hue: 46920, sat: 254, ct: 0, colormode: 'hs', reachable: true, capabilities: ['brightness', 'color'] },
+        '2': { id: '2', name: 'Striscia Cucina', ison: false, bri: 100, hue: 0, sat: 0, ct: 350, colormode: 'ct', reachable: true, capabilities: ['brightness', 'ct'], modelid: 'LST001' },
+        '3': { id: '3', name: 'Scrivania', ison: true, bri: 150, hue: 13000, sat: 254, ct: 0, colormode: 'hs', reachable: true, capabilities: ['brightness', 'color'], modelid: 'LCT010' },
+        '4': { id: '4', name: 'Giardino (No Segnale)', ison: true, bri: 254, hue: 0, sat: 0, ct: 0, colormode: 'bri', reachable: false, capabilities: ['brightness'] },
+      },
+      groups: {
+        '1': { id: '1', name: 'Soggiorno', type: 'Room', lights: ['1', '3'], state: { all_on: false, any_on: true } },
+        '2': { id: '2', name: 'Casa Intera', type: 'Zone', lights: ['1', '2', '3', '4'], state: { all_on: false, any_on: true } },
+        '3': { id: '3', name: 'Esterno', type: 'Zone', lights: ['4'], state: { all_on: false, any_on: true } }
+      },
+      scenes: {
+        's1': { id: 's1', name: 'Lettura', group: '1', color: '#6A5ACD' },
+        's2': { id: 's2', name: 'Relax', group: '1', color: '#ADD8E6' }
+      }
+    }
+
 // Mappatura completa dei Model ID di Philips Hue
 // Lo slug icona viene usato per costruire i percorsi: [icon]_on.png, [icon]_off.png, [icon]_color.png
 export const LIGHT_MODELS = {
@@ -64,7 +82,7 @@ export const LIGHT_MODELS = {
   // LightStrip
   'LST001': { name: 'LightStrip', icon: 'lightstrip' },
   'LST002': { name: 'LightStrip Plus', icon: 'lightstrip' },
-  'LCS001': { name: 'LightStrip Plus', icon: 'lightstrip' }, // Altro ID striscia
+  'LCS001': { name: 'LightStrip Plus', icon: 'lightstrip' },
 
   // Candela / Luster (Attacco E14)
   'LCT012': { name: 'Candle', icon: 'candle_color' },
@@ -82,7 +100,7 @@ export const LIGHT_MODELS = {
   'LLC007': { name: 'Aura', icon: 'aura' },
   'LLC006': { name: 'Iris', icon: 'iris' },
   'LLC010': { name: 'Iris', icon: 'iris' },
-  'LLC013': { name: 'StoryLight', icon: 'storylight' }, // Lavoro con i riflettori fissi
+  'LLC013': { name: 'StoryLight', icon: 'storylight' },
 
   // Default - per tutti gli ID sconosciuti
   'default': { name: 'Light', icon: 'a19_white' }

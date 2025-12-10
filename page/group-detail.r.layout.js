@@ -5,6 +5,11 @@ import { getText } from '@zos/i18n'
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
+export const LAYOUT_CONFIG = {
+  headerY: px(20),
+  headerH: px(40)
+}
+
 // Funzione principale di rendering chiamata da group_detail.js
 export function renderGroupDetailPage(pageContext, state, viewData, callbacks, COLORS) {
     const { toggleGroup, retry } = callbacks
@@ -17,7 +22,7 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
 
     // Header: Nome del Gruppo
     pageContext.createTrackedWidget(widget.TEXT, {
-        x: 0, y: px(10), w: DEVICE_WIDTH, h: px(40),
+        x: 0, y: LAYOUT_CONFIG.headerY, w: DEVICE_WIDTH, h: LAYOUT_CONFIG.headerH,
         text: groupName || getText('GROUP_DETAIL'),
         text_size: px(34),
         color: COLORS.text,

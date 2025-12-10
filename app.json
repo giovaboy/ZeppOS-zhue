@@ -12,7 +12,9 @@
     "vender": "giova",
     "description": "Control your Philips Hue lights from your smartwatch"
   },
-  "permissions": ["data:os.device.info"],
+  "permissions": [
+    "data:os.device.info"
+  ],
   "runtime": {
     "apiVersion": {
       "compatible": "3.0.0",
@@ -30,7 +32,6 @@
             "page/group-detail",
             "page/light-detail",
             "page/color-picker"
-
           ]
         },
         "app-side": {
@@ -38,6 +39,30 @@
         },
         "setting": {
           "path": "setting/index"
+        },
+        "secondary-widget": {
+          "widgets": [
+            {
+              "path": "secondary-widget/index",
+              "icon": "icon.png",
+              "name": "widget-demo",
+              "runtime": {
+                "type": "js"
+              }
+            }
+          ]
+        },
+        "app-widget": {
+          "widgets": [
+            {
+              "path": "app-widget/index",
+              "icon": "icon.png",
+              "name": "widget-demo",
+              "runtime": {
+                "type": "js"
+              }
+            }
+          ]
         }
       },
       "platforms": [

@@ -1,5 +1,5 @@
 import { BaseSideService, settingsLib } from '@zeppos/zml/base-side'
-import { DEFAULT_PRESETS, PRESET_TYPES } from '../utils/constants.js'
+import { DEFAULT_PRESETS, PRESET_TYPES, DEMO_DATA } from '../utils/constants.js'
 
 const BRIDGE_IP_KEY = 'hue_bridge_ip'
 const USERNAME_KEY = 'hue_username'
@@ -253,23 +253,7 @@ class HueBridgeManager {
 
   // --- Funzioni per lo stato DEMO ---
   _initDemoState() {
-    this.DEMO_STATE = {
-      lights: {
-        '1': { id: '1', name: 'Lampada Soggiorno', ison: true, bri: 200, hue: 46920, sat: 254, ct: 0, colormode: 'hs', reachable: true, capabilities: ['brightness', 'color'] }, // Blu
-        '2': { id: '2', name: 'Striscia Cucina', ison: false, bri: 100, hue: 0, sat: 0, ct: 350, colormode: 'ct', reachable: true, capabilities: ['brightness', 'ct'] }, // Spenta, bianca calda
-        '3': { id: '3', name: 'Scrivania', ison: true, bri: 150, hue: 13000, sat: 254, ct: 0, colormode: 'hs', reachable: true, capabilities: ['brightness', 'color'] }, // Verde/Giallo
-        '4': { id: '4', name: 'Giardino (No Segnale)', ison: true, bri: 254, hue: 0, sat: 0, ct: 0, colormode: 'bri', reachable: false, capabilities: ['brightness'] }, // Non raggiungibile
-      },
-      groups: {
-        '1': { id: '1', name: 'Soggiorno', type: 'Room', lights: ['1', '3'], state: { all_on: false, any_on: true } },
-        '2': { id: '2', name: 'Casa Intera', type: 'Zone', lights: ['1', '2', '3', '4'], state: { all_on: false, any_on: true } },
-        '3': { id: '3', name: 'Esterno', type: 'Zone', lights: ['4'], state: { all_on: false, any_on: true } }
-      },
-      scenes: {
-        's1': { id: 's1', name: 'Lettura', group: '1', color: '#6A5ACD' },
-        's2': { id: 's2', name: 'Relax', group: '1', color: '#ADD8E6' }
-      }
-    }
+    this.DEMO_STATE = DEMO_DATA
     this._updateGroupState()
   }
 
@@ -706,7 +690,9 @@ class HueBridgeManager {
       hue: l.hue,
       sat: l.sat,
       ct: l.ct,
-      colormode: l.colormode
+      colormode: l.colormode,
+      modelid: l.modelid,
+      reachable: l.reachable
     }
     return {
       id: l.id,
@@ -715,6 +701,7 @@ class HueBridgeManager {
       bri: l.bri,
       ct: l.ct,
       colormode: l.colormode,
+      modelid: l.modelid,
       reachable: l.reachable,
       hex: this.stateToHex(state)
     }
@@ -728,6 +715,7 @@ class HueBridgeManager {
       bri: l.state.bri,
       ct: l.state.ct,
       colormode: l.state.colormode,
+      modelid: l.modelid,
       reachable: l.state.reachable,
       hex: this.stateToHex(l.state)
     }))

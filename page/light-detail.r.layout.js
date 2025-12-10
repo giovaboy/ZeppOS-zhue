@@ -2,7 +2,7 @@ import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
 import { widget, align, text_style, prop, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
-import { COLORS, PRESET_TYPES, ct2hex } from '../utils/constants'
+import { COLORS, PRESET_TYPES, btnPressColor, ct2hex } from '../utils/constants'
 import { getLogger } from '../utils/logger'
 
 const logger = getLogger('zhue-light-detail-layout')
@@ -10,18 +10,22 @@ const logger = getLogger('zhue-light-detail-layout')
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
 export const LAYOUT_CONFIG = {
+  headerY: px(20),
+  headerH: px(40),
   sliderX: px(40),
   sliderW: DEVICE_WIDTH - px(80),
   sliderH: px(60),
   colorBtnX: px(60),
   colorBtnW: DEVICE_WIDTH - px(120),
   colorBtnH: px(50),
+  presetsTitleH: px(35),
   presetsX: px(60),
-  presetsW: DEVICE_WIDTH - px(120)
+  presetsW: DEVICE_WIDTH - px(120),
+  presetItemSize: px(60)
 }
 
 export function renderLightDetail(pageContext, state, callbacks) {
-  const { light, lightName, favoriteColors, isLoading, error } = state
+  const { light, lightName, isLoading, error } = state
   const { retryFunc } = callbacks
 
   // === GESTIONE STATI PRIORITARIA ===
@@ -62,9 +66,9 @@ function renderLoadingState(pageContext, lightName) {
   // Header
   pageContext.createTrackedWidget(widget.TEXT, {
     x: 0,
-    y: px(10),
+    y: LAYOUT_CONFIG.headerY,
     w: DEVICE_WIDTH,
-    h: px(40),
+    h: LAYOUT_CONFIG.headerH,
     text: lightName || getText('LIGHT_DETAIL'),
     text_size: px(34),
     color: COLORS.text,
@@ -98,9 +102,9 @@ function renderErrorState(pageContext, lightName, error, retryFunc) {
   // Header
   pageContext.createTrackedWidget(widget.TEXT, {
     x: 0,
-    y: px(10),
+    y: LAYOUT_CONFIG.headerY,
     w: DEVICE_WIDTH,
-    h: px(40),
+    h: LAYOUT_CONFIG.headerH,
     text: lightName,
     text_size: px(34),
     color: COLORS.text,
@@ -151,7 +155,7 @@ function renderErrorState(pageContext, lightName, error, retryFunc) {
       h: px(50),
       text: getText('RETRY') || 'Retry',
       normal_color: COLORS.primary,
-      press_color: COLORS.success,
+      press_color: btnPressColor(COLORS.primary, 0.8),
       radius: px(25),
       click_func: retryFunc
     })
@@ -199,7 +203,7 @@ function renderNoDataState(pageContext, lightName, retryFunc) {
       h: px(50),
       text: getText('RELOAD') || 'Reload',
       normal_color: COLORS.primary,
-      press_color: COLORS.success,
+      press_color: btnPressColor(COLORS.primary, 0.8),
       radius: px(25),
       click_func: retryFunc
     })
@@ -230,7 +234,7 @@ function renderNormalState(pageContext, state, callbacks) {
   }
 
   // Sfondo
-  pageContext.createTrackedWidget(widget.FILL_RECT, {
+  const background = pageContext.createTrackedWidget(widget.FILL_RECT, {
     x: 0,
     y: 0,
     w: DEVICE_WIDTH,
@@ -241,9 +245,9 @@ function renderNormalState(pageContext, state, callbacks) {
   // Header
   pageContext.createTrackedWidget(widget.TEXT, {
     x: 0,
-    y: px(10),
+    y: LAYOUT_CONFIG.headerY,
     w: DEVICE_WIDTH,
-    h: px(40),
+    h: LAYOUT_CONFIG.headerH,
     text: lightName,
     text_size: px(34),
     color: COLORS.text,
@@ -251,18 +255,19 @@ function renderNormalState(pageContext, state, callbacks) {
     align_v: align.CENTER_V
   })
 
-  let currentY = px(90)
+  let currentY = px(80)
 
   // Toggle Button
   const toggleColor = lightOn ? COLORS.success : COLORS.error
   pageContext.createTrackedWidget(widget.BUTTON, {
-    x: (DEVICE_WIDTH - px(360)) / 2,
+    x: (DEVICE_WIDTH - px(200)) / 2,
     y: currentY,
-    w: px(360),
+    w: px(200),
     h: px(60),
     text: lightOn ? getText('LIGHT_ON') : getText('LIGHT_OFF'),
+    text_size: px(28),
     normal_color: toggleColor,
-    press_color: 0x33ffffff,
+    press_color: btnPressColor(toggleColor, 0.8),
     radius: 12,
     click_func: toggleLightFunc
   })
@@ -286,6 +291,8 @@ function renderNormalState(pageContext, state, callbacks) {
   if (lightOn && favoriteColors) {
     currentY = renderPresets(pageContext, state, currentY, applyPresetFunc, addFavoriteFunc, deleteFavoriteFunc, callbacks)
   }
+
+  background.setProperty(prop.H, currentY > DEVICE_HEIGHT ? currentY : DEVICE_HEIGHT)
 
   return currentY
 }
@@ -403,7 +410,7 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
     text_size: px(22),
     color: 0x000000,
     normal_color: btnColor,
-    press_color: 0xFFFFFF,
+    press_color: btnPressColor(btnColor, 0.8),
     radius: 12,
     click_func: openCallback
   })
@@ -412,7 +419,7 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
 }
 
 function renderPresets(pageContext, state, yPos, applyCallback, addCallback, deleteCallback, callbacks) {
-  const { presetsW, presetsX } = LAYOUT_CONFIG
+  const { presetsW, presetsX, presetsTitleH, presetItemSize } = LAYOUT_CONFIG
   const { favoriteColors } = state
 
   // Header
@@ -420,7 +427,7 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
     x: presetsX,
     y: yPos,
     w: presetsW - px(40),
-    h: px(35),
+    h: presetsTitleH,
     text: getText('PRESETS_TITLE'),
     text_size: px(24),
     color: COLORS.text,
@@ -432,16 +439,16 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
     x: DEVICE_WIDTH - px(60),
     y: yPos,
     w: px(40),
-    h: px(35),
+    h: presetsTitleH,
     text: '+',
     normal_color: COLORS.highlight,
-    press_color: COLORS.success,
+    press_color: btnPressColor(COLORS.highlight, 0.8),
     radius: 6,
     click_func: addCallback
   })
 
   let currentY = yPos + px(40)
-  const ITEM_SIZE = px(60)
+  const ITEM_SIZE = presetItemSize//px(60)
   const ITEM_MARGIN = px(10)
   const ROW_WIDTH = presetsW
   const COLS = Math.floor(ROW_WIDTH / (ITEM_SIZE + ITEM_MARGIN))
@@ -500,7 +507,7 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
       text: buttonText,
       text_size: px(18),
       normal_color: parseInt(fav.hex.replace('#', '0x'), 16),
-      press_color: 0x33ffffff,
+      press_color: btnPressColor(parseInt(fav.hex.replace('#', '0x'), 16), 0.8),
       radius: fav.type === PRESET_TYPES.COLOR ? ITEM_SIZE / 2 : 8,
       click_func: () => applyCallback(fav),
       longpress_func: () => deleteCallback(fav)

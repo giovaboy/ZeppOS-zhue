@@ -6,6 +6,11 @@ import { COLORS, btnPressColor } from '../utils/constants.js'
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
+export const LAYOUT_CONFIG = {
+  headerY: px(20),
+  headerH: px(40)
+}
+
 export function renderGroupsPage(pageContext, state, listData, callbacks) {
     const { switchTab, refresh, handleListItemClick } = callbacks
     const { currentTab, isLoading, error } = state
@@ -50,9 +55,9 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
     // 3. Header: Titolo
     pageContext.createTrackedWidget(widget.TEXT, {
         x: 0,
-        y: px(10),
+        y: LAYOUT_CONFIG.headerY,
         w: DEVICE_WIDTH,
-        h: px(40),
+        h: LAYOUT_CONFIG.headerH,
         text: getText('GROUPS'),
         text_size: px(36),
         color: COLORS.text,
@@ -61,7 +66,7 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
     })
 
     // 4. Tabs
-    const tabY = px(60)
+    const tabY = LAYOUT_CONFIG.headerY + LAYOUT_CONFIG.headerH + px(10)
     const tabH = px(40)
     const tabW = px(180)
     const gap = px(10)

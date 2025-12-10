@@ -264,6 +264,7 @@ Page(
 
           // Light items
           this.state.lights.forEach(light => {
+            logger.debug('Processing light for list:', light)
             const isOn = !!light.ison
             const modelInfo = LIGHT_MODELS[light.modelid] || LIGHT_MODELS.default
 

@@ -45,6 +45,7 @@ module.exports = {
         Page: 'readonly',
         AppSideService: 'readonly',
         AppSettingsPage: 'readonly',
+        SecondaryWidget: 'readonly',
         getApp: 'readonly',
         // Oggetti e API comuni
         console: 'readonly',

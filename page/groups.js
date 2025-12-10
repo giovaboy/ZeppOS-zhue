@@ -144,7 +144,7 @@ Page(
 
       const viewData = rawList.map(item => ({
         name: item.name,
-        status: `${item.lights?.length || 0} luci`,
+        status: `${item.lights?.length || 0} ${item.lights?.length === 1 ? getText('LIGHT') : getText('LIGHTS')}`,
         // Logica visuale: se anyOn è true scrivi ON, altrimenti OFF
         on_off: (item.anyOn === true || item.on_off === true) ? getText('ON') : getText('OFF'),
         raw: item // Manteniamo il riferimento all'oggetto originale per le azioni

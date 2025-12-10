@@ -106,6 +106,9 @@ msgstr "Error: "
 msgid "LIGHT"
 msgstr "Light"
 
+msgid "LIGHTS"
+msgstr "Lights"
+
 msgid "LIGHT_DETAIL"
 msgstr "Light detail"
 
