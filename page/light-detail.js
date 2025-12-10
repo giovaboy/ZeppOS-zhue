@@ -58,7 +58,7 @@ Page(
       }
       this.state.lightId = params?.lightId
       this.state.lightName = params?.lightName || getText('LIGHT')
-      this.loadFavoriteColors()
+      //this.loadFavoriteColors()
     },
 
     build() {
@@ -70,14 +70,13 @@ Page(
 
       // Inizializza la gestione gesture (SBLOCCATA di default)
       this.unlockExitGesture();
-
       this.loadLightDetail()
     },
 
     onResume() {
       logger.log('Resuming Light Detail');
       if (this.state.lightId) {
-        this.loadFavoriteColors()
+        //this.loadFavoriteColors()
         this.loadLightDetail();
       }
     },
@@ -277,18 +276,6 @@ Page(
       }).catch(e => logger.error(e))
     },
 
-    // ... (rest of methods: getLightCapabilities, getLightBgColor, loadLightDetail, toggleLight, deletePreset, applyPreset, loadFavoriteColors, addCurrentColorToFavorites, goBack, onDestroy)
-    // Assicurati che onDestroy chiami this.unlockExitGesture() o pulisca il listener!
-
-    /*getLightCapabilities(light) {
-        if (!light) return [];
-        const type = light.type || '';
-        let caps = ['brightness'];
-        if (type.toLowerCase().includes('color') || light.state?.hasOwnProperty('hue')) caps.push('color');
-        if (type.toLowerCase().includes('color') || type.toLowerCase().includes('ambiance') || light.state?.hasOwnProperty('ct')) caps.push('ct');
-        return caps;
-    },*/
-
     getLightCapabilities(light) {
       if (!light) return [];
       const type = light.type || '';
@@ -312,14 +299,14 @@ Page(
 
     loadLightDetail() {
       this.state.error = null
-      //if (!this.state.light)
-      this.state.isLoading = true;
+      if (!this.state.light)this.state.isLoading = true;
       this.renderPage()
       this.request({ method: 'GET_LIGHT_DETAIL', params: { lightId: this.state.lightId } })
         .then(result => {
           if (result.success) {
             this.state.light = result.data.light
             this.state.tempBrightness = this.state.light.bri || 0
+            if(!this.state.favoriteColors)this.loadFavoriteColors()
             this.state.isLoading = false
             this.renderPage()
           }
@@ -409,13 +396,13 @@ Page(
         .then(result => {
           if (result.success) {
             this.state.favoriteColors = result.colors || DEFAULT_PRESETS
-            this.renderPage()
+            //this.renderPage()
           }
         })
         .catch(err => {
           logger.error('Failed to load favorite colors:', err)
           this.state.favoriteColors = DEFAULT_PRESETS
-          this.renderPage()
+          //this.renderPage()
         })
     },
 
@@ -445,6 +432,7 @@ Page(
         .then(result => {
           if (result.success) {
             this.loadFavoriteColors()
+            this.renderPage()
           }
         })
         .catch(err => {
