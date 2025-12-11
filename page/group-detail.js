@@ -268,12 +268,7 @@ Page(
             const isOn = !!light.ison
             const modelInfo = LIGHT_MODELS[light.modelid] || LIGHT_MODELS.default
 
-            let stateSuffix = '_off'
-            if (isOn) {
-              const isColorModeActive = light.colormode === 'hs' || light.colormode === 'xy'
-              stateSuffix = isColorModeActive ? '_color' : '_on'
-            }
-            const finalIconPath = `icons/${modelInfo.icon}${stateSuffix}.png`
+            const finalIconPath = `icons/${modelInfo.icon}.png`
 
             logger.debug(`Prepared light item: ${modelInfo} (Name: ${light.name}, On: ${isOn}, Icon: ${finalIconPath})`)
 
@@ -282,10 +277,10 @@ Page(
               : getText('OFF')
 
             data.push({
-              raw: light,      // Oggetto light originale per callbacks
+              raw: light,
               type: 'light',
               name: light.name,
-              icon: finalIconPath,
+              icon: finalIconPath,//70*70 mask icons with #666666 background
               status_text: statusText,
               swatch_bg_color: this.getLightSwatchColor(light)
             })

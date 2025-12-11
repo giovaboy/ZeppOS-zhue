@@ -346,14 +346,14 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
   // Icons
   pageContext.createTrackedWidget(widget.IMG, {
     x: sliderX + px(20),
-    y: sliderY + sliderH / 2 - px(12),
-    src: 'bri-low.png'
+    y: sliderY + sliderH / 2 - px(32 / 2),
+    src: 'bri-low.png'//32*32
   })
 
   pageContext.createTrackedWidget(widget.IMG, {
-    x: sliderX + sliderW - px(52),
-    y: sliderY + sliderH / 2 - px(16),
-    src: 'bri-hi.png'
+    x: sliderX + sliderW - px(20 + 32),
+    y: sliderY + sliderH / 2 - px(32 / 2),
+    src: 'bri-hi.png'//32*32
   })
 
   // Hitbox

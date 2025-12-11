@@ -13,13 +13,13 @@ const BRI_RANGE = 254;
 
 // Configurazione Layout
 export const LAYOUT_CONFIG = {
-  pickerSize: px(300), // Area grande centrale
-  pickerX: (DEVICE_WIDTH - px(300)) / 2,
-  pickerY: px(70),     // Spazio per i tab sopra
-  sliderW: px(300),
-  sliderH: px(50),
-  sliderX: (DEVICE_WIDTH - px(300)) / 2,
-  sliderY: DEVICE_HEIGHT - px(90) // In basso
+    pickerSize: px(300), // Area grande centrale
+    pickerX: (DEVICE_WIDTH - px(300)) / 2,
+    pickerY: px(70),     // Spazio per i tab sopra
+    sliderW: px(300),
+    sliderH: px(50),
+    sliderX: (DEVICE_WIDTH - px(300)) / 2,
+    sliderY: DEVICE_HEIGHT - px(90) // In basso
 }
 
 export function renderColorPickerPage(pageContext, state, callbacks) {
@@ -82,12 +82,12 @@ function renderHueSatPicker(pageContext, state, callbacks) {
     const { onDragColor } = callbacks;
 
     pageContext.createTrackedWidget(widget.IMG, {
-      x: pickerX,
-      y: pickerY,
-      w: pickerSize,
-      h: pickerSize,
-      auto_scale: true,
-      src: 'color-picker.png'
+        x: pickerX,
+        y: pickerY,
+        w: pickerSize,
+        h: pickerSize,
+        auto_scale: true,
+        src: 'color-picker.png'
     })
 
     // B. Cursore
@@ -107,16 +107,16 @@ function renderHueSatPicker(pageContext, state, callbacks) {
 
     // Il cursore mostra il colore ATTUALE della luce (H, S, B)
     const currentHex = hsb2hex(
-      (hue / HUE_RANGE) * 360,
-      (sat / SAT_RANGE) * 100,
-      90//(bri / BRI_RANGE) * 100
+        (hue / HUE_RANGE) * 360,
+        (sat / SAT_RANGE) * 100,
+        90//(bri / BRI_RANGE) * 100
     );
 
     const cursor = pageContext.createTrackedWidget(widget.CIRCLE, {
         center_x: posX,
         center_y: posY,
-        color:  currentHex,//0xffffff,
-        radius: cursorSize/2
+        color: currentHex,//0xffffff,
+        radius: cursorSize / 2
     });
     pageContext.state.cursorWidget = cursor;
 
@@ -144,7 +144,7 @@ function renderCTPicker(pageContext, state, callbacks) {
     const stripCount = 20;
     const stripH = pickerSize / stripCount;
 
-    for(let i=0; i<stripCount; i++) {
+    for (let i = 0; i < stripCount; i++) {
         // i=0 -> Freddo (153), i=max -> Caldo (500)
         const mired = 153 + (i / stripCount) * (500 - 153);
         pageContext.createTrackedWidget(widget.FILL_RECT, {
@@ -165,9 +165,9 @@ function renderCTPicker(pageContext, state, callbacks) {
     const posX = pickerX + (pickerSize / 2); // Centrato orizzontalmente
 
     const cursor = pageContext.createTrackedWidget(widget.FILL_RECT, {
-        x: posX - cursorSize/2, y: posY - cursorSize/2,
+        x: posX - cursorSize / 2, y: posY - cursorSize / 2,
         w: cursorSize, h: cursorSize,
-        color: 0xffffff, radius: cursorSize/2,
+        color: 0xffffff, radius: cursorSize / 2,
         line_width: 4, line_color: 0x000000
     });
     pageContext.state.ctCursorWidget = cursor;
@@ -188,25 +188,25 @@ function renderBrightnessSlider(pageContext, state, callbacks) {
     const { bri } = state;
     const { onDragBri } = callbacks;
     const brightnessPercent = Math.round(bri / 254 * 100)
-    
+
     // Track
     pageContext.createTrackedWidget(widget.FILL_RECT, {
         x: sliderX, y: sliderY, w: sliderW, h: sliderH,
-        radius: sliderH/2, color: COLORS.sliderBg
+        radius: sliderH / 2, color: COLORS.sliderBg
     });
 
     // Fill
     const fillW = Math.max(px(20), (bri / 254) * sliderW);
     const fill = pageContext.createTrackedWidget(widget.FILL_RECT, {
         x: sliderX, y: sliderY, w: fillW, h: sliderH,
-        radius: sliderH/2, color: COLORS.sliderFill
+        radius: sliderH / 2, color: COLORS.sliderFill
     });
     pageContext.state.briFillWidget = fill;
-    
+
     const labelWidget = pageContext.createTrackedWidget(widget.TEXT, {
-        x: sliderX, 
-        y: sliderY, 
-        w: sliderW, 
+        x: sliderX,
+        y: sliderY,
+        w: sliderW,
         h: sliderH,
         text: `${brightnessPercent}%`,
         text_size: px(28),
@@ -215,16 +215,16 @@ function renderBrightnessSlider(pageContext, state, callbacks) {
         align_v: align.CENTER_V
     })
     pageContext.state.brightnessLabel = labelWidget
-    
+
     pageContext.createTrackedWidget(widget.IMG, {
         x: sliderX + px(20),
-        y: sliderY + sliderH/2 - px(24/2),
-        src: 'bri-low.png'//24*24
+        y: sliderY + sliderH / 2 - px(32 / 2),
+        src: 'bri-low.png'//32*32
     })
-    
+
     pageContext.createTrackedWidget(widget.IMG, {
         x: sliderX + sliderW - px(20 + 32),
-        y: sliderY + sliderH/2 - px(32/2),
+        y: sliderY + sliderH / 2 - px(32 / 2),
         src: 'bri-hi.png'//32*32
     })
 

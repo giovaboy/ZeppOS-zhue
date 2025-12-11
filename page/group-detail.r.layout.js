@@ -6,8 +6,8 @@ import { getText } from '@zos/i18n'
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
 export const LAYOUT_CONFIG = {
-  headerY: px(20),
-  headerH: px(40)
+    headerY: px(20),
+    headerH: px(40)
 }
 
 // Funzione principale di rendering chiamata da group_detail.js
@@ -241,48 +241,47 @@ function renderLightItem(container, light, yPos, COLORS, onToggle, onNavigate) {
         y: yPos,
         w: px(440),
         h: itemHeight,
-        color: COLORS.lightBg,
+        color: COLORS.color_sys_item_bg,
         radius: px(10)
-    })
-
-    // Color swatch (left indicator)
-    container.createWidget(widget.FILL_RECT, {
-        x: px(30),
-        y: yPos + px(20),
-        w: px(16),
-        h: px(16),
-        color: light.swatch_bg_color || COLORS.inactive,
-        radius: px(4)
     })
 
     // Light name
     container.createWidget(widget.TEXT, {
-        x: px(55),
+        x: px(45),
         y: yPos + px(15),
-        w: px(300),
+        w: px(305),
         h: px(30),
         text: light.name,
         text_size: px(28),
-        color: isOn ? 0xFFFFFF : COLORS.inactive,
+        color: isOn ? COLORS.color_text_title : COLORS.inactive,
         align_h: align.LEFT,
         align_v: align.CENTER_V
     })
 
     // Status text
     container.createWidget(widget.TEXT, {
-        x: px(55),
+        x: px(45),
         y: yPos + px(45),
-        w: px(300),
+        w: px(305),
         h: px(25),
         text: light.status_text,
         text_size: px(20),
-        color: COLORS.inactive,
+        color: COLORS.color_text_subtitle,
         align_h: align.LEFT,
         align_v: align.CENTER_V
     })
 
     // Light icon/toggle button (right side)
     if (light.icon) {
+        // light background
+        container.createWidget(widget.FILL_RECT, {
+            x: px(380),
+            y: yPos + px(10),
+            w: px(70),
+            h: px(70),
+            color: light.swatch_bg_color || COLORS.inactive
+        })
+        // light mask
         container.createWidget(widget.IMG, {
             x: px(380),
             y: yPos + px(10),

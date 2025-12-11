@@ -15,11 +15,11 @@ export const COLORS = {
   warningText: 0xffffff,
   success: 0x39935a,//0x2ecd6e,//0x00aa00,
   error: 0xff0000,
-  inactive: 0x666666,
+  inactive: 0xb3b3b3,//0x666666,
   loading: 0x666666,
   roomIndicator: 0x0000cc,
   zoneIndicator: 0x009900,
-  lightBg: 0x1a1a1a,
+  lightBg: 0x333333, //light background, same color as the light icons mask (#FFFFFF opacity 20%) color_sys_item_bg per zeppos doc
   sceneBg: 0x0a2540,
   toggleOn: 0x00aa00,
   toggleOff: 0x444444,
@@ -27,84 +27,194 @@ export const COLORS = {
   sliderBg: 0x2a2a2a,
   sliderFill: 0xffffff,
   briText: 0xcccccc,
-  defaultSwatchColor: 0xFFCC66
+  defaultSwatchColor: 0xFFCC66,
+
+  color_sys_key: 0x0986d4,
+  color_sys_warning: 0xad3c23,
+  color_sys_item_bg: 0x333333,
+  color_sys_empty_status_graphic: 0x666666,
+
+  color_text_warning: 0xd14221,
+  color_text_link: 0x059af7,
+  color_text_title: 0xffffff,
+  color_text_subtitle: 0xb3b3b3,
+  color_text_secondary_info: 0x808080,
+  color_text_button: 0xffffff
+
 }
 
 export const DEMO_DATA = {
-      lights: {
-        '1': { id: '1', name: 'Lampada Soggiorno', ison: true, bri: 200, hue: 46920, sat: 254, ct: 0, colormode: 'hs', reachable: true, capabilities: ['brightness', 'color'] },
-        '2': { id: '2', name: 'Striscia Cucina', ison: false, bri: 100, hue: 0, sat: 0, ct: 350, colormode: 'ct', reachable: true, capabilities: ['brightness', 'ct'], modelid: 'LST001' },
-        '3': { id: '3', name: 'Scrivania', ison: true, bri: 150, hue: 13000, sat: 254, ct: 0, colormode: 'hs', reachable: true, capabilities: ['brightness', 'color'], modelid: 'LCT010' },
-        '4': { id: '4', name: 'Giardino (No Segnale)', ison: true, bri: 254, hue: 0, sat: 0, ct: 0, colormode: 'bri', reachable: false, capabilities: ['brightness'] },
-      },
-      groups: {
-        '1': { id: '1', name: 'Soggiorno', type: 'Room', lights: ['1', '3'], state: { all_on: false, any_on: true } },
-        '2': { id: '2', name: 'Casa Intera', type: 'Zone', lights: ['1', '2', '3', '4'], state: { all_on: false, any_on: true } },
-        '3': { id: '3', name: 'Esterno', type: 'Zone', lights: ['4'], state: { all_on: false, any_on: true } }
-      },
-      scenes: {
-        's1': { id: 's1', name: 'Lettura', group: '1', color: '#6A5ACD' },
-        's2': { id: 's2', name: 'Relax', group: '1', color: '#ADD8E6' }
-      }
-    }
+  lights: {
+    '1': { id: '1', name: 'Lampada Soggiorno', ison: true, bri: 200, hue: 46920, sat: 254, ct: 0, colormode: 'hs', reachable: true, capabilities: ['brightness', 'color'] },
+    '2': { id: '2', name: 'Striscia Cucina', ison: false, bri: 100, hue: 0, sat: 0, ct: 350, colormode: 'ct', reachable: true, capabilities: ['brightness', 'ct'], modelid: 'LST001' },
+    '3': { id: '3', name: 'Scrivania', ison: true, bri: 150, hue: 13000, sat: 254, ct: 0, colormode: 'hs', reachable: true, capabilities: ['brightness', 'color'], modelid: 'LCT010' },
+    '4': { id: '4', name: 'Giardino (No Segnale)', ison: true, bri: 254, hue: 0, sat: 0, ct: 0, colormode: 'bri', reachable: false, capabilities: ['brightness'] },
+  },
+  groups: {
+    '1': { id: '1', name: 'Soggiorno', type: 'Room', lights: ['1', '3'], state: { all_on: false, any_on: true } },
+    '2': { id: '2', name: 'Casa Intera', type: 'Zone', lights: ['1', '2', '3', '4'], state: { all_on: false, any_on: true } },
+    '3': { id: '3', name: 'Esterno', type: 'Zone', lights: ['4'], state: { all_on: false, any_on: true } }
+  },
+  scenes: {
+    's1': { id: 's1', name: 'Lettura', group: '1', color: '#6A5ACD' },
+    's2': { id: 's2', name: 'Relax', group: '1', color: '#ADD8E6' }
+  }
+}
 
 // Mappatura completa dei Model ID di Philips Hue
-// Lo slug icona viene usato per costruire i percorsi: [icon]_on.png, [icon]_off.png, [icon]_color.png
 export const LIGHT_MODELS = {
-  // A19 / E27 (Lampadine Standard)
-  'LCT001': { name: 'Hue Bulb A19', icon: 'a19_color' }, // Colore Gen 1
-  'LCT007': { name: 'Hue Bulb A19', icon: 'a19_color' },
-  'LCT015': { name: 'Hue Bulb A19', icon: 'a19_color' }, // Colore Gen 3
-  'LCT016': { name: 'Hue Bulb A19', icon: 'a19_color' },
-  'LCT024': { name: 'Hue Bulb A19', icon: 'a19_color' }, // Colore Gen 4 (Bluetooth)
+  // --------------------------------------------------------------------------------
+  // 🟢 A19 / E27 (Lampadine Standard)
+  // --------------------------------------------------------------------------------
+  'LCT001': { name: 'Hue Bulb A19 C&W Gen 1', icon: 'a19' },
+  'LCT007': { name: 'Hue Bulb A19 C&W Gen 2', icon: 'a19' },
+  'LCT015': { name: 'Hue Bulb A19 C&W Gen 3', icon: 'a19' },
+  'LCT016': { name: 'Hue Bulb A19 C&W Gen 3 (BT)', icon: 'a19' },
+  'LCT024': { name: 'Hue Bulb A19 C&W Gen 4 (BT)', icon: 'a19' },
+  'LCT026': { name: 'Hue Bulb A19 C&W (Filament Color BT)', icon: 'a19' },
+  'LCT027': { name: 'Hue Bulb E27 C&W', icon: 'a19' },
+  'LCT029': { name: 'Hue Bulb A19 C&W (Matter)', icon: 'a19' },
+  'LCA005': { name: 'Hue A19 Color (Matter)', icon: 'a19' },
 
-  // White Ambiance (Bianco caldo/freddo)
-  'LTW001': { name: 'White Ambiance', icon: 'a19_white' },
-  'LTW004': { name: 'White Ambiance', icon: 'a19_white' },
-  'LWA001': { name: 'White Ambiance', icon: 'a19_white' },
+  // White Ambiance
+  'LTW001': { name: 'White Ambiance A19', icon: 'a19' },
+  'LTW004': { name: 'White Ambiance A19', icon: 'a19' },
+  'LWA001': { name: 'White Ambiance A19 (BT)', icon: 'a19' },
+  'LWA002': { name: 'White Ambiance A19 (BT)', icon: 'a19' },
+  'LWE002': { name: 'White Ambiance E27', icon: 'a19' },
 
-  // White Only (Solo Bianco)
-  'LWB001': { name: 'Hue White', icon: 'a19_white' },
-  'LWB006': { name: 'E27/B22 White', icon: 'a19_white' },
-  'LWB007': { name: 'E27 White', icon: 'a19_white' },
-  'LWB010': { name: 'E27 White', icon: 'a19_white' },
+  // White Only
+  'LWB001': { name: 'Hue White A19', icon: 'a19' },
+  'LWB006': { name: 'E27/B22 White', icon: 'a19' },
+  'LWB007': { name: 'E27 White', icon: 'a19' },
+  'LWB010': { name: 'E27 White', icon: 'a19' },
+  'LWB014': { name: 'Hue White A19 (BT)', icon: 'a19' },
+  'LHB001': { name: 'High Lumen E27 White', icon: 'a19' },
 
-  // GU10 (Spot/Faretto)
-  'LCT003': { name: 'GU10 Color', icon: 'gu10_color' },
-  'LCT010': { name: 'GU10 Color', icon: 'gu10_color' },
-  'LCT011': { name: 'GU10 White Amb.', icon: 'gu10_white' },
-  'LTW013': { name: 'GU10 White Amb.', icon: 'gu10_white' },
+  // --------------------------------------------------------------------------------
+  // 🟡 GU10
+  // --------------------------------------------------------------------------------
+  'LCT003': { name: 'GU10 Color Gen 1', icon: 'gu10' },
+  'LCT010': { name: 'GU10 Color Gen 2', icon: 'gu10' },
+  'LCT011': { name: 'GU10 White Amb.', icon: 'gu10' },
+  'LCT025': { name: 'GU10 Color Gen 3 (BT)', icon: 'gu10' },
+  'LTW013': { name: 'GU10 White Amb.', icon: 'gu10' },
+  'LTP001': { name: 'GU10 White Amb. (BT)', icon: 'gu10' },
+  'LTP002': { name: 'GU10 Color (BT)', icon: 'gu10' },
+  'LCA004': { name: 'GU10 Color (Matter)', icon: 'gu10' },
+  'LTA003': { name: 'GU10 White Ambience (Matter)', icon: 'gu10' },
 
-  // BR30 (Spot per incasso)
-  'LCT002': { name: 'BR30 Color', icon: 'br30_color' },
-  'LCT014': { name: 'BR30 Color', icon: 'br30_color' },
+  // --------------------------------------------------------------------------------
+  // 🟣 BR30
+  // --------------------------------------------------------------------------------
+  'LCT002': { name: 'BR30 Color Gen 1', icon: 'br30' },
+  'LCT014': { name: 'BR30 Color Gen 2', icon: 'br30' },
+  'LCT021': { name: 'BR30 Color (BT)', icon: 'br30' },
 
-  // LightStrip
-  'LST001': { name: 'LightStrip', icon: 'lightstrip' },
-  'LST002': { name: 'LightStrip Plus', icon: 'lightstrip' },
-  'LCS001': { name: 'LightStrip Plus', icon: 'lightstrip' },
+  // --------------------------------------------------------------------------------
+  // 🟠 E14 / Candela
+  // --------------------------------------------------------------------------------
+  'LCT012': { name: 'Candle Color Gen 2', icon: 'candle' },
+  'LCT020': { name: 'Candle Color Gen 3', icon: 'candle' },
+  'LCT022': { name: 'Luster Color', icon: 'candle' },
+  'LCT023': { name: 'Candle Color (BT)', icon: 'candle' },
+  'LWE001': { name: 'Candle White', icon: 'candle' },
+  'LCA001': { name: 'Candle White Amb. (BT)', icon: 'candle' },
+  'LCE001': { name: 'Candle Color Ambience (Matter)', icon: 'candle' },
+  'LCE002': { name: 'Candle Filament White', icon: 'filament_candle' },
 
-  // Candela / Luster (Attacco E14)
-  'LCT012': { name: 'Candle', icon: 'candle_color' },
-  'LCT020': { name: 'Candle', icon: 'candle_color' },
-  'LCT022': { name: 'Luster', icon: 'candle_color' },
-  'LWE001': { name: 'Candle White', icon: 'candle_white_only' },
+  // --------------------------------------------------------------------------------
+  // ⚪ Filamento
+  // --------------------------------------------------------------------------------
+  'LWF001': { name: 'Filament Std A19', icon: 'filament_a19' },
+  'LWF002': { name: 'Filament Candle E14', icon: 'filament_candle' },
+  'LWF003': { name: 'Filament G93/G125', icon: 'filament_globe' },
+  'LWF004': { name: 'Filament ST64', icon: 'filament_st64' },
+  'LWF005': { name: 'Filament ST64', icon: 'filament_st64' },
+  'LWF006': { name: 'Filament G93', icon: 'filament_globe' },
+  'LWA003': { name: 'Filament A19 White (BT/Matter)', icon: 'filament_a19' },
+  'LWA004': { name: 'Filament ST72 Edison White', icon: 'filament_st64' },
+  'LWA005': { name: 'Filament G125 Globe White', icon: 'filament_globe' },
 
-  // Filamento (Bulbs decorative)
-  'LWF001': { name: 'Filament Bulb', icon: 'filament_a19' },
-  'LWF002': { name: 'Filament Candle', icon: 'filament_candle' },
+  // --------------------------------------------------------------------------------
+  // 🌈 Strisce LED
+  // --------------------------------------------------------------------------------
+  'LST001': { name: 'LightStrip Gen 1', icon: 'lightstrip' },
+  'LST002': { name: 'LightStrip Plus Gen 2', icon: 'lightstrip' },
+  'LCS001': { name: 'LightStrip Plus Gen 3', icon: 'lightstrip' },
+  'LCS002': { name: 'LightStrip Plus Gen 4 (BT)', icon: 'lightstrip' },
+  'LCG002': { name: 'LightStrip Gradient', icon: 'lightstrip_gradient' },
+  'LCG001': { name: 'Gradient LightStrip Indoor (Matter)', icon: 'lightstrip_gradient' },
+  'LCL001': { name: 'LightStrip Ambience (BT/Matter)', icon: 'lightstrip' },
+  'LCL002': { name: 'LightStrip Ambience Plus', icon: 'lightstrip' },
 
-  // Prodotti fissi / da tavolo
-  'LLC011': { name: 'Bloom', icon: 'bloom' },
-  'LLC012': { name: 'Bloom', icon: 'bloom' },
-  'LLC007': { name: 'Aura', icon: 'aura' },
-  'LLC006': { name: 'Iris', icon: 'iris' },
-  'LLC010': { name: 'Iris', icon: 'iris' },
-  'LLC013': { name: 'StoryLight', icon: 'storylight' },
+  // --------------------------------------------------------------------------------
+  // 🛋️ Lampade Fisse / Tavolo / Pavimento
+  // --------------------------------------------------------------------------------
+  'LLC011': { name: 'Bloom C&W Gen 1', icon: 'bloom' },
+  'LLC012': { name: 'Bloom C&W Gen 2', icon: 'bloom' },
+  'LLC007': { name: 'Aura C&W', icon: 'aura' },
+  'LLC006': { name: 'Iris C&W Gen 1', icon: 'iris' },
+  'LLC010': { name: 'Iris C&W Gen 2', icon: 'iris' },
+  'LLC013': { name: 'StoryLight C&W', icon: 'storylight' },
+  'LLC020': { name: 'Hue Go', icon: 'hue_go' },
+  'LLC021': { name: 'Hue Go (BT)', icon: 'hue_go' },
+  'LCX001': { name: 'Iris (Matter)', icon: 'iris' },
+  'LTV001': { name: 'Bloom (Matter)', icon: 'bloom' },
+  'LTF001': { name: 'Signe Floor (Matter)', icon: 'signe_floor' },
+  'LTF002': { name: 'Signe Table (Matter)', icon: 'signe_table' },
 
+  // play / gradient
+  'LJL001': { name: 'Play Bar', icon: 'play_bar' },
+  'LCA002': { name: 'Play Gradient Light Tube', icon: 'play_tube' },
+  'LCA003': { name: 'Play Gradient Light Strip', icon: 'play_strip' },
+  'LCA010': { name: 'Play Gradient Bar (2024)', icon: 'play_bar' },
+  'LCA011': { name: 'Play Gradient Compact', icon: 'play_bar' },
+
+  // Signe
+  'LSL001': { name: 'Signe Floor', icon: 'signe_floor' },
+  'LSL002': { name: 'Signe Table', icon: 'signe_table' },
+  'LSL003': { name: 'Signe Floor Gradient', icon: 'signe_floor' },
+  'LSL004': { name: 'Signe Table Gradient', icon: 'signe_table' },
+
+  // --------------------------------------------------------------------------------
+  // 🏡 Lampadari / Plafoniere / Ceiling
+  // --------------------------------------------------------------------------------
+  'LCA006': { name: 'Ceiling Round White Ambience', icon: 'ceiling' },
+  'LCA008': { name: 'Ceiling Round Color Ambience', icon: 'ceiling' },
+  'LTC001': { name: 'Ceiling Panel Color', icon: 'ceiling_panel' },
+  'LTC002': { name: 'Ceiling Panel Ambience', icon: 'ceiling_panel' },
+
+  // --------------------------------------------------------------------------------
+  // 🌳 Outdoor
+  // --------------------------------------------------------------------------------
+  'LWO001': { name: 'LightStrip Outdoor', icon: 'lightstrip_outdoor' },
+  'LCA007': { name: 'Calla (Color/Ambience)', icon: 'calla' },
+  'LCA009': { name: 'Lily Spot (Color/Ambience)', icon: 'lily' },
+  'LCC001': { name: 'Impress Wall Lantern', icon: 'impress_wall' },
+  'LCC002': { name: 'Impress Pedestal', icon: 'impress_pedestal' },
+  'LCC003': { name: 'Impress Large Wall', icon: 'impress_wall' },
+  'LWL001': { name: 'Econic Wall', icon: 'econic_wall' },
+  'LWL002': { name: 'Econic Pedestal', icon: 'econic_pedestal' },
+  'LWL003': { name: 'Econic Ceiling', icon: 'econic_ceiling' },
+  'LWW001': { name: 'Resonate Wall', icon: 'resonate' },
+  'LWW002': { name: 'Appear Wall', icon: 'appear' },
+  'LWW003': { name: 'Nyro Wall', icon: 'nyro_wall' },
+  'LWW004': { name: 'Nyro Pedestal', icon: 'nyro_pedestal' },
+  'LWA010': { name: 'Turaco Wall', icon: 'turaco_wall' },
+  'LWA011': { name: 'Fuzo Wall', icon: 'fuzo_wall' },
+  'LWA012': { name: 'Fuzo Pedestal', icon: 'fuzo_pedestal' },
+  'LWA013': { name: 'Daylo Wall', icon: 'daylo_wall' },
+  'LWA014': { name: 'Inara Filament Wall', icon: 'inara' },
+  'LLA001': { name: 'Amarant Linear Flood', icon: 'amarant' },
+  'LPA001': { name: 'Outdoor Spotlight', icon: 'outdoor_spot' },
+
+  // --------------------------------------------------------------------------------
   // Default - per tutti gli ID sconosciuti
-  'default': { name: 'Light', icon: 'a19_white' }
+  // --------------------------------------------------------------------------------
+  'default': { name: 'Light', icon: 'classic' }
 }
+
 
 export const PRESET_TYPES = {
   COLOR: 'COLOR',    // Preset che usano HUE e SAT (per luci colorate)
