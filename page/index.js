@@ -30,34 +30,34 @@ Page(
       },
       bridgeInfo: null
     },
-    
+
     widgets: [],
     progressInterval: null,
     btCheckInterval: null, // ← Nuovo: per controllare periodicamente il BT
-    
+
     onInit() {
       logger.debug('index page onInit')
     },
-    
+
     build() {
       logger.log('Building index page')
       setPageBrightTime({ brightTime: 60000 })
-      
+
       // Prima controlla il Bluetooth
       this.checkBluetoothConnection()
     },
-    
+
     // --- BLUETOOTH CHECK ---
-    
+
     checkBluetoothConnection() {
       logger.log('Checking Bluetooth connection...')
-      
+
       if (!connectStatus()) {
         logger.warn('Bluetooth not connected')
         this.setState(STATES.BT_ERROR, {
           error: getText('BT_NOT_CONNECTED')
         })
-        
+
         // Avvia un controllo periodico per vedere se il BT si riconnette
         this.startBluetoothMonitoring()
       } else {
@@ -66,13 +66,13 @@ Page(
         this.checkInitialConnection()
       }
     },
-    
+
     startBluetoothMonitoring() {
       // Controlla ogni 5 secondi se il BT si è riconnesso
       if (this.btCheckInterval) {
         clearInterval(this.btCheckInterval)
       }
-      
+
       this.btCheckInterval = setInterval(() => {
         if (connectStatus()) {
           logger.log('Bluetooth reconnected!')
@@ -82,33 +82,33 @@ Page(
         }
       }, 5000)
     },
-    
+
     stopBluetoothMonitoring() {
       if (this.btCheckInterval) {
         clearInterval(this.btCheckInterval)
         this.btCheckInterval = null
       }
     },
-    
+
     // --- STATE MANAGEMENT ---
-    
+
     setState(newState, data = {}) {
       logger.log(`State transition: ${this.state.currentState} -> ${newState}`)
       this.state.currentState = newState
-      
+
       if (data.error) this.state.error = data.error
       if (data.progress) this.state.progress = { ...this.state.progress, ...data.progress }
       if (data.bridgeInfo) this.state.bridgeInfo = data.bridgeInfo
-      
+
       this.renderPage()
     },
-    
+
     clearAllWidgets() {
       if (this.progressInterval) {
         clearInterval(this.progressInterval)
         this.progressInterval = null
       }
-      
+
       this.widgets.forEach(w => {
         try { deleteWidget(w) } catch (e) {
           logger.error('Delete widget:', e)
@@ -116,15 +116,15 @@ Page(
       })
       this.widgets = []
     },
-    
+
     createTrackedWidget(type, props) {
       const w = createWidget(type, props)
       this.widgets.push(w)
       return w
     },
-    
+
     // --- API/NETWORK LOGIC ---
-    
+
     checkInitialConnection() {
       // Verifica nuovamente il BT prima di procedere
       if (!connectStatus()) {
@@ -134,7 +134,7 @@ Page(
         this.startBluetoothMonitoring()
         return
       }
-      
+
       logger.log('Checking initial connection...')
       this.request({ method: 'CHECK_CONNECTION' })
         .then(result => {
@@ -152,7 +152,7 @@ Page(
           this.startBridgeSearch()
         })
     },
-    
+
     startBridgeSearch() {
       // Verifica BT prima di cercare il bridge
       if (!connectStatus()) {
@@ -162,7 +162,7 @@ Page(
         this.startBluetoothMonitoring()
         return
       }
-      
+
       this.request({ method: 'DISCOVER_BRIDGES' })
         .then(result => {
           if (result.success && result.bridges?.length > 0) {
@@ -177,7 +177,7 @@ Page(
           this.setState(STATES.ERROR, { error: err.message || getText('DISCOVERY_FAILED') })
         })
     },
-    
+
     startPairing() {
       this.request({ method: 'PAIR' })
         .then(result => {
@@ -192,7 +192,7 @@ Page(
           this.setState(STATES.ERROR, { error: err.message || getText('PAIRING_FAILED') })
         })
     },
-    
+
     fetchAllData() {
       this.request({ method: 'GET_LIGHTS' })
         .then(result => {
@@ -207,7 +207,7 @@ Page(
           this.setState(STATES.ERROR, { error: err.message || getText('FAILED_TO_FETCH_LIGHTS_DATA') })
         })
     },
-    
+
     retry() {
       // Controlla prima il BT prima di ritentare
       if (!connectStatus()) {
@@ -217,30 +217,30 @@ Page(
         this.startBluetoothMonitoring()
         return
       }
-      
+
       this.state.error = null
       this.state.progress = { lights: 0 }
       this.setState(STATES.SEARCHING_BRIDGE)
       this.startBridgeSearch()
     },
-    
+
     navigateToGroups() {
       logger.log('Navigating to groups page')
       this.stopBluetoothMonitoring() // Ferma il monitoring quando si esce
       push({ url: 'page/groups', params: {} })
     },
-    
+
     // --- UI RENDERING (DELEGATO) ---
-    
+
     renderPage() {
       this.clearAllWidgets()
-      
+
       // L'unica vera logica qui è decidere quale UI disegnare.
       if (this.state.currentState === STATES.SUCCESS) {
         this.navigateToGroups()
         return
       }
-      
+
       // Chiama la funzione di layout importata, passando il contesto e lo stato.
       renderMainWidgets(this, this.state, {
         retryFunc: () => this.retry(),
@@ -248,15 +248,15 @@ Page(
         animateProgressBar: (w) => this.animateProgressBar(w)
       })
     },
-    
+
     // --- ANIMATIONS (MANIPOLAZIONE WIDGET) ---
-    
+
     animateSpinner(spinner) {
       let alpha = 255
       let direction = -1
-      
+
       if (this.progressInterval) clearInterval(this.progressInterval)
-      
+
       this.progressInterval = setInterval(() => {
         alpha += direction * 15
         if (alpha < 100) {
@@ -269,9 +269,9 @@ Page(
         } catch {
           logger.error('spinner.setProperty')
         }
-      }, 100)
+      }, 150)
     },
-    
+
     animateProgressBar(progressBar) {
       let progress = 0
       this.progressInterval = setInterval(() => {
@@ -288,7 +288,7 @@ Page(
         }
       }, 150)
     },
-    
+
     onDestroy() {
       logger.debug('index page onDestroy')
       this.stopBluetoothMonitoring() // ← Importante: ferma il monitoring

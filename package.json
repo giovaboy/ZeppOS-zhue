@@ -13,6 +13,6 @@
   },
   "dependencies": {
     "@zeppos/zml": "^0.0.41",
-    "@zeppos/zpm": "^3.2.8"
+    "@zeppos/zpm": "^3.3.0"
   }
 }

@@ -21,7 +21,7 @@ setStatusBarVisible(false)
 export function renderMainWidgets(pageContext, state, callbacks = {}) {
     const { animateSpinner, animateProgressBar, retryFunc } = callbacks
     const { currentState, error, progress } = state
-    
+
     // Sfondo universale
     pageContext.createTrackedWidget(widget.FILL_RECT, {
         x: 0,
@@ -30,7 +30,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
         h: DEVICE_HEIGHT,
         color: COLORS.background
     })
-    
+
     switch (currentState) {
         case STATES.LOADING:
             // --- GESTIONE STATO LOADING ---
@@ -47,7 +47,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
                 text_style: text_style.WRAP,
                 text: getText('LOADING')
             });
-            
+
             // 2. Animazione (IMG_ANIM è nativa, parte da sola con anim_status.START)
             pageContext.createTrackedWidget(widget.IMG_ANIM, {
                 anim_path: 'anim',
@@ -61,7 +61,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
                 y: DEVICE_HEIGHT / 2
             });
             break;
-            
+
         case STATES.SEARCHING_BRIDGE: {
             // Titolo
             pageContext.createTrackedWidget(widget.TEXT, {
@@ -84,7 +84,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
                 alpha: 150
             })
             if (animateSpinner) animateSpinner(spinner) // Chiamata al metodo di index.js
-            
+
             // Testo principale
             pageContext.createTrackedWidget(widget.TEXT, {
                 x: px(40),
@@ -122,7 +122,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
             if (animateProgressBar) animateProgressBar(progressBar)
             break
         }
-        
+
         case STATES.WAITING_FOR_PRESS: {
             // Sfondo diventa warning
             pageContext.createTrackedWidget(widget.FILL_RECT, {
@@ -150,7 +150,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
                 //center_x: DEVICE_WIDTH / 2, center_y: px(180),
                 src: 'icons/push-linkv2.png' //100*96
             })
-            
+
             pageContext.createTrackedWidget(widget.TEXT, {
                 x: px(40),
                 y: px(270),
@@ -163,7 +163,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
                 align_v: align.CENTER_V,
                 text_style: text_style.WRAP
             })
-            
+
             pageContext.createTrackedWidget(widget.TEXT, {
                 x: 0,
                 y: px(390),
@@ -175,7 +175,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
                 align_h: align.CENTER_H,
                 align_v: align.CENTER_V
             })
-            
+
             const waitProgressBar = pageContext.createTrackedWidget(widget.FILL_RECT, {
                 x: px(140),
                 y: px(440),
@@ -187,7 +187,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
             if (animateProgressBar) animateProgressBar(waitProgressBar)
             break
         }
-        
+
         case STATES.FETCHING_DATA:
             // Sfondo successo
             pageContext.createTrackedWidget(widget.FILL_RECT, {
@@ -208,7 +208,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
                 align_h: align.CENTER_H,
                 align_v: align.CENTER_V
             })
-            
+
             pageContext.createTrackedWidget(widget.TEXT, {
                 x: 0,
                 y: px(210),
@@ -220,7 +220,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
                 align_h: align.CENTER_H,
                 align_v: align.CENTER_V
             })
-            
+
             // Indicatori di progresso
             pageContext.createTrackedWidget(widget.TEXT, {
                 x: px(60),
@@ -234,7 +234,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
                 align_v: align.CENTER_V
             })
             break
-            
+
         case STATES.ERROR:
             // Titolo errore
             pageContext.createTrackedWidget(widget.TEXT, {
@@ -282,7 +282,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
                 click_func: retryFunc // Usa la funzione passata da index.js
             })
             break
-            
+
         case 'BT_ERROR':
             //renderBluetoothError(pageContext, error, retryFunc)
             pageContext.createTrackedWidget(widget.CIRCLE, {
@@ -292,7 +292,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
                 color: COLORS.error,
                 alpha: 100
             })
-            
+
             // Simbolo Bluetooth (approssimato con testo)
             pageContext.createTrackedWidget(widget.TEXT, {
                 x: 0,
@@ -305,7 +305,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
                 align_h: align.CENTER_H,
                 align_v: align.CENTER_V
             })
-            
+
             // Titolo errore
             pageContext.createTrackedWidget(widget.TEXT, {
                 x: px(20),
@@ -318,7 +318,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
                 align_h: align.CENTER_H,
                 align_v: align.CENTER_V
             })
-            
+
             // Messaggio
             pageContext.createTrackedWidget(widget.TEXT, {
                 x: px(30),
@@ -331,7 +331,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
                 align_h: align.CENTER_H,
                 align_v: align.CENTER_V
             })
-            
+
             // Info di auto-retry
             pageContext.createTrackedWidget(widget.TEXT, {
                 x: px(30),
@@ -344,7 +344,7 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
                 align_h: align.CENTER_H,
                 align_v: align.CENTER_V
             })
-            
+
             // Bottone Retry (opzionale, visto che c'è l'auto-retry)
             pageContext.createTrackedWidget(widget.BUTTON, {
                 x: DEVICE_WIDTH / 2 - px(80),
@@ -358,6 +358,6 @@ export function renderMainWidgets(pageContext, state, callbacks = {}) {
                 click_func: retryFunc
             })
             break
-            
+
     }
 }
