@@ -198,6 +198,8 @@ Page(
     
     onDestroy() {
       this.clearAllWidgets()
+      this.state.rooms = []
+      this.state.zones = []
     }
   })
 )
