@@ -100,7 +100,7 @@ Page(
             if (result.data.userSettings) {
               getApp()._options.globalData.userSettings = result.data.userSettings
               //this.state.userSettings = result.data.userSettings
-              logger.log('User settings loaded:', this.state.userSettings)
+              logger.log('User settings loaded:', result.data.userSettings)
             } else {
               logger.warn('No user settings in response, using defaults')
               getApp()._options.globalData.userSettings = DEFAULT_USER_SETTINGS

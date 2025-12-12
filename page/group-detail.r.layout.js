@@ -13,8 +13,8 @@ export const LAYOUT_CONFIG = {
 // Funzione principale di rendering chiamata da group_detail.js
 export function renderGroupDetailPage(pageContext, state, viewData, callbacks, COLORS) {
     const { toggleGroup, retry } = callbacks
-    const { groupName, isLoading, error, userSettings } = state
-
+    const { groupName, isLoading, error } = state
+    const userSettings = getApp()._options.globalData.userSettings
     // Background
     pageContext.createTrackedWidget(widget.FILL_RECT, {
         x: 0, y: 0, w: DEVICE_WIDTH, h: DEVICE_HEIGHT, color: COLORS.background
