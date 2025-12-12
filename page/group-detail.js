@@ -6,21 +6,14 @@ import { createWidget, deleteWidget } from '@zos/ui'
 import { onGesture, onKey, GESTURE_RIGHT, KEY_BACK, KEY_EVENT_CLICK } from '@zos/interaction'
 import { push } from '@zos/router'
 import { renderGroupDetailPage } from 'zosLoader:./group-detail.[pf].layout.js'
-import { COLORS, LIGHT_MODELS } from '../utils/constants.js'
+import { DEFAULT_USER_SETTINGS, COLORS, LIGHT_MODELS } from '../utils/constants.js'
 
 const logger = getLogger('zhue-group-detail-page')
-
-// Default settings fallback
-const DEFAULT_USER_SETTINGS = {
-  show_global_toggle: true,
-  show_scenes: true,
-  display_order: 'LIGHTS_FIRST'
-}
 
 Page(
   BasePage({
     state: {
-      userSettings: DEFAULT_USER_SETTINGS,
+      //userSettings: DEFAULT_USER_SETTINGS,
       groupId: null,
       groupType: null,
       groupName: '',
@@ -58,31 +51,6 @@ Page(
     
     build() {
       setPageBrightTime({ brightTime: 60000 })
-      
-      // Setup interazioni fisiche
-     /* onGesture({
-        callback: (event) => {
-          if (event === GESTURE_RIGHT) {
-            push({
-              url: 'page/groups',
-              params: null
-            })
-          }
-          return true
-        }
-      })
-      
-      onKey({
-        callback: (key, keyEvent) => {
-          if (key === KEY_BACK && keyEvent === KEY_EVENT_CLICK) {
-            push({
-              url: 'page/groups',
-              params: null
-            })
-          }
-          return true
-        }
-      })*/
       
       if (this.state.groupId) {
         this.loadGroupDetail()
@@ -130,11 +98,13 @@ Page(
             const rawLights = result.data.lights || []
             
             if (result.data.userSettings) {
-              this.state.userSettings = result.data.userSettings
+              getApp()._options.globalData.userSettings = result.data.userSettings
+              //this.state.userSettings = result.data.userSettings
               logger.log('User settings loaded:', this.state.userSettings)
             } else {
               logger.warn('No user settings in response, using defaults')
-              this.state.userSettings = DEFAULT_USER_SETTINGS
+              getApp()._options.globalData.userSettings = DEFAULT_USER_SETTINGS
+              //this.state.userSettings = DEFAULT_USER_SETTINGS
             }
             
             logger.log('Raw lights received:', rawLights.length)
@@ -265,7 +235,7 @@ Page(
       
       // Helper function per aggiungere le scene
       const addScenes = () => {
-        if (this.state.userSettings.show_scenes && this.state.scenes.length > 0) {
+        if (getApp()._options.globalData.userSettings.show_scenes && this.state.scenes.length > 0) {
           logger.log(`Adding ${this.state.scenes.length} scenes to list`)
           
           // Header scene
@@ -314,7 +284,7 @@ Page(
       }
       
       // DISPLAY_ORDER
-      const displayOrder = this.state.userSettings.display_order || 'LIGHTS_FIRST'
+      const displayOrder = getApp()._options.globalData.userSettings.display_order || 'LIGHTS_FIRST'
       logger.log(`Display order: ${displayOrder}`)
       
       if (displayOrder === 'SCENES_FIRST') {

@@ -43,7 +43,13 @@ export const COLORS = {
 
 }
 
-export const DEMO_DATA = {
+const DEFAULT_USER_SETTINGS = {
+  show_global_toggle: true,
+  show_scenes: true,
+  display_order: 'LIGHTS_FIRST'
+}
+
+export const DEMO_DATA_old = {
   lights: {
     '1': { id: '1', name: 'Lampada Soggiorno', ison: true, bri: 200, hue: 46920, sat: 254, ct: 0, colormode: 'hs', reachable: true, capabilities: ['brightness', 'color'] },
     '2': { id: '2', name: 'Striscia Cucina', ison: false, bri: 100, hue: 0, sat: 0, ct: 350, colormode: 'ct', reachable: true, capabilities: ['brightness', 'ct'], modelid: 'LST001' },
@@ -58,6 +64,127 @@ export const DEMO_DATA = {
   scenes: {
     's1': { id: 's1', name: 'Lettura', group: '1', color: '#6A5ACD' },
     's2': { id: 's2', name: 'Relax', group: '1', color: '#ADD8E6' }
+  }
+}
+
+export const DEMO_DATA = {
+  lights: {
+    '1': {
+      id: '1',
+      name: 'Lampada Soggiorno',
+      ison: true,
+      bri: 200,
+      hue: 46920,
+      sat: 254,
+      ct: 0,
+      colormode: 'hs',
+      reachable: true,
+      capabilities: ['brightness', 'color'],
+      modelid: 'LCT015' // A19 Color Gen 3
+    },
+    
+    '2': {
+      id: '2',
+      name: 'Striscia Cucina',
+      ison: false,
+      bri: 100,
+      hue: 0,
+      sat: 0,
+      ct: 350,
+      colormode: 'ct',
+      reachable: true,
+      capabilities: ['brightness', 'ct'],
+      modelid: 'LST001' // LightStrip Gen1
+    },
+    
+    '3': {
+      id: '3',
+      name: 'Scrivania',
+      ison: true,
+      bri: 150,
+      hue: 13000,
+      sat: 254,
+      ct: 0,
+      colormode: 'hs',
+      reachable: true,
+      capabilities: ['brightness', 'color'],
+      modelid: 'LCT010' // GU10 Color
+    },
+    
+    '4': {
+      id: '4',
+      name: 'Giardino (No Segnale)',
+      ison: true,
+      bri: 254,
+      hue: 0,
+      sat: 0,
+      ct: 0,
+      colormode: 'bri',
+      reachable: false,
+      capabilities: ['brightness'],
+      modelid: 'LWA014' // Inara Outdoor Filament
+    },
+    
+    '5': {
+      id: '5',
+      name: 'Calla Pathway',
+      ison: true,
+      bri: 180,
+      hue: 50000,
+      sat: 200,
+      colormode: 'hs',
+      reachable: true,
+      capabilities: ['brightness', 'color'],
+      modelid: 'LCA007' // Calla Outdoor
+    },
+    
+    '6': {
+      id: '6',
+      name: 'Econic Porta',
+      ison: false,
+      bri: 120,
+      ct: 400,
+      hue: 0,
+      sat: 0,
+      colormode: 'ct',
+      reachable: true,
+      capabilities: ['brightness', 'ct'],
+      modelid: 'LWL001' // Econic Wall
+    }
+  },
+  
+  groups: {
+    '1': {
+      id: '1',
+      name: 'Soggiorno',
+      type: 'Room',
+      lights: ['1', '3'],
+      state: { all_on: false, any_on: true }
+    },
+    
+    '2': {
+      id: '2',
+      name: 'Casa Intera',
+      type: 'Zone',
+      lights: ['1', '2', '3', '4', '5', '6'],
+      state: { all_on: false, any_on: true }
+    },
+    
+    '3': {
+      id: '3',
+      name: 'Esterno',
+      type: 'Zone',
+      lights: ['4', '5', '6'],
+      state: { all_on: false, any_on: true }
+    }
+  },
+  
+  scenes: {
+    's1': { id: 's1', name: 'Lettura', group: '1', color: '#6A5ACD' },
+    's2': { id: 's2', name: 'Relax', group: '1', color: '#ADD8E6' },
+    's3': { id: 's3', name: 'Alba', group: '2', color: '#FFD5A1' },
+    's4': { id: 's4', name: 'Notte Giardino', group: '3', color: '#0040FF' },
+    's5': { id: 's5', name: 'Accoglienza Porta', group: '3', color: '#FFA500' }
   }
 }
 
