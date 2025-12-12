@@ -64,7 +64,7 @@ Page(
         callback: (event) => {
           if (event === GESTURE_RIGHT) {
             push({
-              url: 'page/group-detail',
+              url: 'page/groups',
               params: null
             })
           }
@@ -76,7 +76,7 @@ Page(
         callback: (key, keyEvent) => {
           if (key === KEY_BACK && keyEvent === KEY_EVENT_CLICK) {
             push({
-              url: 'page/group-detail',
+              url: 'page/groups',
               params: null
             })
           }
