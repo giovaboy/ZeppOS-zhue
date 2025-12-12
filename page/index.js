@@ -26,14 +26,16 @@ Page(
       currentState: STATES.LOADING,
       error: null,
       progress: {
-        lights: 0
+        rooms: 0,
+        zones: 0
       },
-      bridgeInfo: null
+      bridgeInfo: null,
+      groupsData: null // ← Nuovo: per salvare i dati da passare
     },
 
     widgets: [],
     progressInterval: null,
-    btCheckInterval: null, // ← Nuovo: per controllare periodicamente il BT
+    btCheckInterval: null,
 
     onInit() {
       logger.debug('index page onInit')
@@ -42,8 +44,6 @@ Page(
     build() {
       logger.log('Building index page')
       setPageBrightTime({ brightTime: 60000 })
-
-      // Prima controlla il Bluetooth
       this.checkBluetoothConnection()
     },
 
@@ -57,8 +57,6 @@ Page(
         this.setState(STATES.BT_ERROR, {
           error: getText('BT_NOT_CONNECTED')
         })
-
-        // Avvia un controllo periodico per vedere se il BT si riconnette
         this.startBluetoothMonitoring()
       } else {
         logger.log('Bluetooth connected')
@@ -68,7 +66,6 @@ Page(
     },
 
     startBluetoothMonitoring() {
-      // Controlla ogni 5 secondi se il BT si è riconnesso
       if (this.btCheckInterval) {
         clearInterval(this.btCheckInterval)
       }
@@ -126,7 +123,6 @@ Page(
     // --- API/NETWORK LOGIC ---
 
     checkInitialConnection() {
-      // Verifica nuovamente il BT prima di procedere
       if (!connectStatus()) {
         this.setState(STATES.BT_ERROR, {
           error: getText('BT_NOT_CONNECTED') || 'Bluetooth connection lost'
@@ -154,7 +150,6 @@ Page(
     },
 
     startBridgeSearch() {
-      // Verifica BT prima di cercare il bridge
       if (!connectStatus()) {
         this.setState(STATES.BT_ERROR, {
           error: getText('BT_NOT_CONNECTED') || 'Bluetooth connection required'
@@ -194,22 +189,35 @@ Page(
     },
 
     fetchAllData() {
-      this.request({ method: 'GET_LIGHTS' })
+      // ✅ CAMBIATO: Ora chiamiamo GET_GROUPS invece di GET_LIGHTS
+      this.request({ method: 'GET_GROUPS' })
         .then(result => {
-          if (result.success && result.lights) {
-            this.setState(STATES.FETCHING_DATA, { progress: { lights: result.lights.length } })
+          if (result.success && result.data) {
+            // Salva i dati per passarli alla pagina groups
+            this.state.groupsData = result.data
+            
+            const totalGroups = (result.data.rooms?.length || 0) + (result.data.zones?.length || 0)
+            
+            logger.log(`Loaded ${totalGroups} groups (${result.data.rooms?.length || 0} rooms, ${result.data.zones?.length || 0} zones)`)
+            
+            this.setState(STATES.FETCHING_DATA, { 
+              progress: { 
+                rooms: result.data.rooms?.length || 0,
+                zones: result.data.zones?.length || 0
+              } 
+            })
+            
             this.setState(STATES.SUCCESS)
           } else {
-            this.setState(STATES.ERROR, { error: getText('FAILED_TO_FETCH_LIGHTS_DATA') })
+            this.setState(STATES.ERROR, { error: getText('FAILED_TO_FETCH_DATA') || 'Failed to load groups' })
           }
         })
         .catch(err => {
-          this.setState(STATES.ERROR, { error: err.message || getText('FAILED_TO_FETCH_LIGHTS_DATA') })
+          this.setState(STATES.ERROR, { error: err.message || getText('FAILED_TO_FETCH_DATA') })
         })
     },
 
     retry() {
-      // Controlla prima il BT prima di ritentare
       if (!connectStatus()) {
         this.setState(STATES.BT_ERROR, {
           error: getText('BT_NOT_CONNECTED') || 'Please connect Bluetooth first'
@@ -219,29 +227,37 @@ Page(
       }
 
       this.state.error = null
-      this.state.progress = { lights: 0 }
+      this.state.progress = { rooms: 0, zones: 0 }
+      this.state.groupsData = null
       this.setState(STATES.SEARCHING_BRIDGE)
       this.startBridgeSearch()
     },
 
     navigateToGroups() {
-      logger.log('Navigating to groups page')
-      this.stopBluetoothMonitoring() // Ferma il monitoring quando si esce
-      push({ url: 'page/groups', params: {} })
+      logger.log('Navigating to groups page with preloaded data')
+      this.stopBluetoothMonitoring()
+      
+      // ✅ Passa i dati come parametro
+      const params = this.state.groupsData ? JSON.stringify({
+        preloadedData: this.state.groupsData
+      }) : '{}'
+      
+      push({ 
+        url: 'page/groups', 
+        params: params
+      })
     },
 
-    // --- UI RENDERING (DELEGATO) ---
+    // --- UI RENDERING ---
 
     renderPage() {
       this.clearAllWidgets()
 
-      // L'unica vera logica qui è decidere quale UI disegnare.
       if (this.state.currentState === STATES.SUCCESS) {
         this.navigateToGroups()
         return
       }
 
-      // Chiama la funzione di layout importata, passando il contesto e lo stato.
       renderMainWidgets(this, this.state, {
         retryFunc: () => this.retry(),
         animateSpinner: (w) => this.animateSpinner(w),
@@ -249,7 +265,7 @@ Page(
       })
     },
 
-    // --- ANIMATIONS (MANIPOLAZIONE WIDGET) ---
+    // --- ANIMATIONS ---
 
     animateSpinner(spinner) {
       let alpha = 255
@@ -269,7 +285,7 @@ Page(
         } catch {
           logger.error('spinner.setProperty')
         }
-      }, 150)
+      }, 100)
     },
 
     animateProgressBar(progressBar) {
@@ -291,7 +307,7 @@ Page(
 
     onDestroy() {
       logger.debug('index page onDestroy')
-      this.stopBluetoothMonitoring() // ← Importante: ferma il monitoring
+      this.stopBluetoothMonitoring()
       this.clearAllWidgets()
     }
   })
