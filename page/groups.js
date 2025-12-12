@@ -8,6 +8,7 @@ import { renderGroupsPage } from 'zosLoader:./groups.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
 
 const logger = getLogger('zhue-groups-page')
+let isComingBack = false
 
 Page(
   BasePage({
@@ -16,8 +17,8 @@ Page(
       zones: [],
       currentTab: 'ROOMS',
       isLoading: false,
-      error: null,
-      isComingBack: false
+      error: null
+      
     },
     
     widgets: [],
@@ -27,7 +28,7 @@ Page(
       
       // ✅ Controlla se abbiamo dati precaricati
       let params = {}
-      if (!this.state.isComingBack) {
+      if (!isComingBack) {
         try {
           params = typeof p === 'string' ? JSON.parse(p) : (p || {})
         } catch (e) {
@@ -185,7 +186,7 @@ Page(
             this.toggleGroup(item.raw)
           } else {
             // Naviga al dettaglio
-            this.state.isComingBack = true
+            isComingBack = true
             const paramsString = JSON.stringify({
               groupId: item.raw.id,
               groupType: item.raw.type,
@@ -202,8 +203,6 @@ Page(
     
     onDestroy() {
       this.clearAllWidgets()
-      this.state.rooms = []
-      this.state.zones = []
     }
   })
 )
