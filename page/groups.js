@@ -16,7 +16,8 @@ Page(
       zones: [],
       currentTab: 'ROOMS',
       isLoading: false,
-      error: null
+      error: null,
+      isComingBack: false
     },
     
     widgets: [],
@@ -26,10 +27,12 @@ Page(
       
       // ✅ Controlla se abbiamo dati precaricati
       let params = {}
-      try {
-        params = typeof p === 'string' ? JSON.parse(p) : (p || {})
-      } catch (e) {
-        logger.error('Error parsing params:', e)
+      if (!this.state.isComingBack) {
+        try {
+          params = typeof p === 'string' ? JSON.parse(p) : (p || {})
+        } catch (e) {
+          logger.error('Error parsing params:', e)
+        }
       }
       
       // Se abbiamo dati precaricati, usali subito
@@ -182,6 +185,7 @@ Page(
             this.toggleGroup(item.raw)
           } else {
             // Naviga al dettaglio
+            this.state.isComingBack = true
             const paramsString = JSON.stringify({
               groupId: item.raw.id,
               groupType: item.raw.type,
