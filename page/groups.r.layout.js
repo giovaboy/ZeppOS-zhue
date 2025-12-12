@@ -140,7 +140,7 @@ function renderGroupsList(pageContext, listData, startY, onItemClick) {
         x: 0,
         y: startY,
         w: DEVICE_WIDTH,
-        h: containerHeight,
+        h: totalContainerHeight,
         scroll_enable: true,
         //scroll_max_height: totalContentHeight
     })
@@ -155,15 +155,15 @@ function renderGroupsList(pageContext, listData, startY, onItemClick) {
 
 // ✅ Render singolo gruppo
 function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick) {
-    const grpNavigate = container.createWidget(widget.GROUP, {
+    /*const grp = container.createWidget(widget.GROUP, {
         x: px(20),
         y: yPos,
         w: px(310),
         h: itemHeight
-    })
+    })*/
     
     // Background card
-    grpNavigate.createWidget(widget.FILL_RECT, {
+    container.createWidget(widget.FILL_RECT, {
         x: px(20),
         y: yPos,
         w: px(440),
@@ -174,7 +174,7 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
     
     // Icon/Indicator (colored circle per tipo gruppo)
     const iconColor = group.raw?.type === 'room' ? COLORS.roomIndicator : COLORS.zoneIndicator
-    grpNavigate.createWidget(widget.CIRCLE, {
+    container.createWidget(widget.CIRCLE, {
         center_x: px(50),
         center_y: yPos + itemHeight / 2,
         radius: px(12),
@@ -182,7 +182,7 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
     })
     
     // Nome gruppo
-    grpNavigate.createWidget(widget.TEXT, {
+    container.createWidget(widget.TEXT, {
         x: px(75),
         y: yPos + px(20),
         w: px(250),
@@ -195,7 +195,7 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
     })
     
     // Status (numero luci)
-    grpNavigate.createWidget(widget.TEXT, {
+    container.createWidget(widget.TEXT, {
         x: px(75),
         y: yPos + px(55),
         w: px(200),
@@ -207,24 +207,24 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
         align_v: align.CENTER_V
     })
     
-    grpNavigate.addEventListener(event.CLICK_DOWN, function(info) {
+    container.addEventListener(event.CLICK_DOWN, function(info) {
         onItemClick(index, 'navigate')
     })
     
     // Navigate overlay (left side - nome e status)
-    /* const overlay1 = container.createWidget(widget.BUTTON, {
-         x: px(20),
-         y: yPos,
-         w: px(310),
-         h: itemHeight,
-         text: '',
-         normal_color: 0x000000,
-         press_color: 0xffffff,
-         radius: px(10),
-         click_func: () => onItemClick(index, 'navigate')
-     })
-
-     overlay1.setAlpha(0)*/
+    let overlay1 = container.createWidget(widget.BUTTON, {
+        x: px(20),
+        y: yPos,
+        w: px(310),
+        h: itemHeight,
+        text: '',
+        normal_color: 0x000000,
+        press_color: 0xffffff,
+        radius: px(10),
+        click_func: () => onItemClick(index, 'navigate')
+    })
+    
+    overlay1.setAlpha(0)
     
     // ON/OFF badge (right side)
     const isOn = group.on_off === 'ON'
