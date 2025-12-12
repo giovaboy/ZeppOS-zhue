@@ -4,6 +4,7 @@ App(
   BaseApp({
     globalData: {
       lights: [],
+      isComingBack: false,
       bridgeConnected: false
     },
     onCreate(options) {

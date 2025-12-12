@@ -8,7 +8,6 @@ import { renderGroupsPage } from 'zosLoader:./groups.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
 
 const logger = getLogger('zhue-groups-page')
-let isComingBack = false
 
 Page(
   BasePage({
@@ -28,7 +27,7 @@ Page(
       
       // ✅ Controlla se abbiamo dati precaricati
       let params = {}
-      if (!isComingBack) {
+      if (!getApp()._options.globalData.isComingBack) {
         try {
           params = typeof p === 'string' ? JSON.parse(p) : (p || {})
         } catch (e) {
@@ -186,7 +185,7 @@ Page(
             this.toggleGroup(item.raw)
           } else {
             // Naviga al dettaglio
-            isComingBack = true
+            getApp()._options.globalData.isComingBack = true
             const paramsString = JSON.stringify({
               groupId: item.raw.id,
               groupType: item.raw.type,
