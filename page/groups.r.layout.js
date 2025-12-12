@@ -1,6 +1,6 @@
 import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
-import { widget, align, text_style } from '@zos/ui'
+import { widget, align, text_style, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { COLORS, btnPressColor } from '../utils/constants.js'
 
