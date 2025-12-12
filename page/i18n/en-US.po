@@ -45,8 +45,8 @@ msgstr "Press the link button on the bridge and try again"
 msgid "INITIAL_CONNECTION_FAILED"
 msgstr "Initial connection check failed"
 
-msgid "FAILED_TO_FETCH_LIGHTS_DATA"
-msgstr "Failed to fetch lights data"
+msgid "FAILED_TO_FETCH_DATA"
+msgstr "Failed to fetch data"
 
 msgid "LOADING_HUE_SETUP"
 msgstr "Loading your Hue setup..."

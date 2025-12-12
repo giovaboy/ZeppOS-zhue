@@ -200,16 +200,16 @@ Page(
             
             logger.log(`Loaded ${totalGroups} groups (${result.data.rooms?.length || 0} rooms, ${result.data.zones?.length || 0} zones)`)
             
-            this.setState(STATES.FETCHING_DATA, { 
+            /*this.setState(STATES.FETCHING_DATA, { 
               progress: { 
                 rooms: result.data.rooms?.length || 0,
                 zones: result.data.zones?.length || 0
               } 
-            })
+            })*/
             
             this.setState(STATES.SUCCESS)
           } else {
-            this.setState(STATES.ERROR, { error: getText('FAILED_TO_FETCH_DATA') || 'Failed to load groups' })
+            this.setState(STATES.ERROR, { error: getText('FAILED_TO_FETCH_DATA')})
           }
         })
         .catch(err => {
@@ -220,7 +220,7 @@ Page(
     retry() {
       if (!connectStatus()) {
         this.setState(STATES.BT_ERROR, {
-          error: getText('BT_NOT_CONNECTED') || 'Please connect Bluetooth first'
+          error: getText('BT_NOT_CONNECTED')
         })
         this.startBluetoothMonitoring()
         return

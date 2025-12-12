@@ -45,8 +45,8 @@ msgstr "Premi il pulsante link sul bridge e riprova"
 msgid "INITIAL_CONNECTION_FAILED"
 msgstr "Verifica connessione iniziale fallita"
 
-msgid "FAILED_TO_FETCH_LIGHTS_DATA"
-msgstr "Impossibile recuperare i dati delle luci"
+msgid "FAILED_TO_FETCH_DATA"
+msgstr "Impossibile recuperare i dati"
 
 msgid "LOADING_HUE_SETUP"
 msgstr "Caricamento della tua configurazione Hue..."
