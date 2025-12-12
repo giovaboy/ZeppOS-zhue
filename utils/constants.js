@@ -43,7 +43,7 @@ export const COLORS = {
 
 }
 
-const DEFAULT_USER_SETTINGS = {
+export const DEFAULT_USER_SETTINGS = {
   show_global_toggle: true,
   show_scenes: true,
   display_order: 'LIGHTS_FIRST'
