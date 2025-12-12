@@ -45,7 +45,7 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
             h: px(60),
             text: getText('RETRY'),
             normal_color: COLORS.highlight,
-            press_color: 0x333333,
+            press_color: btnPressColor(COLORS.highlight, 0.8),
             radius: px(10),
             click_func: refresh
         })
@@ -84,7 +84,7 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
         color: isRooms ? COLORS.activeTabText : COLORS.inactiveTabText,
         normal_color: isRooms ? COLORS.activeTab : COLORS.inactiveTab,
         press_color: btnPressColor(COLORS.activeTab, 0.8),
-        radius: 20,
+        radius: tabH/2,
         click_func: () => switchTab('ROOMS')
     })
 
@@ -99,7 +99,7 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
         color: isZones ? COLORS.activeTabText : COLORS.inactiveTabText,
         normal_color: isZones ? COLORS.activeTab : COLORS.inactiveTab,
         press_color: btnPressColor(COLORS.activeTab, 0.8),
-        radius: 20,
+        radius: tabH/2,
         click_func: () => switchTab('ZONES')
     })
 
@@ -142,7 +142,7 @@ function renderGroupsList(pageContext, listData, startY, onItemClick) {
         w: DEVICE_WIDTH,
         h: containerHeight,
         scroll_enable: true,
-        scroll_max_height: totalContentHeight
+        //scroll_max_height: totalContentHeight
     })
 
     // Renderizza ogni gruppo
@@ -207,8 +207,8 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
         w: px(310),
         h: itemHeight,
         text: '',
-        normal_color: 0x00000000,
-        press_color: 0x22ffffff,
+        normal_color: 0x000000,
+        press_color: 0xffffff,
         radius: px(10),
         click_func: () => onItemClick(index, 'navigate')
     })
