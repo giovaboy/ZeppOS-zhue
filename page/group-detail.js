@@ -60,7 +60,7 @@ Page(
       setPageBrightTime({ brightTime: 60000 })
       
       // Setup interazioni fisiche
-      onGesture({
+     /* onGesture({
         callback: (event) => {
           if (event === GESTURE_RIGHT) {
             push({
@@ -82,7 +82,7 @@ Page(
           }
           return true
         }
-      })
+      })*/
       
       if (this.state.groupId) {
         this.loadGroupDetail()
