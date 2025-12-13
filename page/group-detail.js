@@ -145,7 +145,7 @@ Page(
       this.listWidget = null
     },
     
-    loadGroupDetail() {
+    loadGroupDetail_old() {
       this.state.isLoading = true
       this.state.error = null
       this.renderPage()
