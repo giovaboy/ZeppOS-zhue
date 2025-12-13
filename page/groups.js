@@ -9,6 +9,17 @@ import { getLogger } from '../utils/logger.js'
 
 const logger = getLogger('zhue-groups-page')
 
+Pageimport { BasePage } from '@zeppos/zml/base-page'
+import { createWidget, deleteWidget } from '@zos/ui'
+import { exit, push } from '@zos/router'
+import { getText } from '@zos/i18n'
+import { onGesture, onKey, GESTURE_RIGHT, KEY_BACK, KEY_EVENT_CLICK } from '@zos/interaction'
+import { setPageBrightTime } from '@zos/display'
+import { renderGroupsPage } from 'zosLoader:./groups.[pf].layout.js'
+import { getLogger } from '../utils/logger.js'
+
+const logger = getLogger('zhue-groups-page')
+
 Page(
   BasePage({
     state: {
@@ -17,93 +28,42 @@ Page(
       currentTab: 'ROOMS',
       isLoading: false,
       error: null
-      
     },
     
     widgets: [],
     
-    onInit_old(p) {
-      logger.debug('Groups page onInit')
-      
-      // ✅ Controlla se abbiamo dati precaricati
-      let params = {}
-      if (!getApp()._options.globalData.isComingBack) {
-        try {
-          params = typeof p === 'string' ? JSON.parse(p) : (p || {})
-        } catch (e) {
-          logger.error('Error parsing params:', e)
-        }
-      }
-      
-      // Se abbiamo dati precaricati, usali subito
-      if (params.preloadedData) {
-        logger.log('Using preloaded data from index page')
-        this.state.rooms = params.preloadedData.rooms || []
-        this.state.zones = params.preloadedData.zones || []
-        this.state.isLoading = false
-      }
-    },
-    
-    // page/groups.js
     onInit(p) {
       logger.debug('Groups page onInit')
       const app = getApp()
       
-      // 1. Controllo Bandiera di Refresh Globale
+      // 1. Controlla se dobbiamo ricaricare
       const needsRefresh = app.globalData.needsGroupsRefresh
       
-      // 2. Controllo Bandiera di Navigazione (Back)
-      const isBackNavigation = app.globalData.isComingBackFromDetail
-      
-      let params = {}
-      
-      // Condizione di Ricaricamento: 
-      // SE stiamo tornando indietro (isBackNavigation) 
-      // OPPURE Page B ci ha detto di aggiornare (needsRefresh)
-      if (isBackNavigation || needsRefresh) {
-        logger.log('Navigated back or refresh flag set. Forcing API reload.')
-        
-        // 3. Reset delle Bandiere
-        app.globalData.isComingBackFromDetail = false
+      if (needsRefresh) {
+        logger.log('Refresh flag set, will reload from API')
         app.globalData.needsGroupsRefresh = false
-        
-        // Non usiamo i parametri passati: forziamo il caricamento API
-        this.loadGroupsData()
-        
+        // Non carichiamo qui, lo farà build()
         return
       }
       
-      // Condizione di PRIMO PUSH (Da Index)
+      // 2. Prova a usare dati dal global store
+      const globalData = app.getGroupsData()
       
-      // Se non stiamo tornando indietro e non c'è refresh flag, 
-      // allora siamo al primo push e dobbiamo usare i params (preloadedData)
-      try {
-        params = typeof p === 'string' ? JSON.parse(p) : (p || {})
-      } catch (e) {
-        logger.error('Error parsing params:', e)
-      }
-      
-      // Se abbiamo dati precaricati, usali subito
-      if (params.preloadedData) {
-        logger.log('Using preloaded data from index page')
-        
-        // Se stai usando la cache globale (come ti ho suggerito), potresti fare:
-        // app.setGroupsData(params.preloadedData) 
-        
-        this.state.rooms = params.preloadedData.rooms || []
-        this.state.zones = params.preloadedData.zones || []
+      if (globalData.hasLoadedOnce) {
+        logger.log('Using global store data')
+        this.state.rooms = globalData.rooms
+        this.state.zones = globalData.zones
         this.state.isLoading = false
+      } else {
+        logger.log('No global data available')
+        // build() caricherà i dati
       }
-      
-      // Se non avevi preloadedData e non c'è cache globale, carichiamo API nel build
-      
     },
-    
     
     build() {
       setPageBrightTime({ brightTime: 60000 })
       
-      // Setup interazioni fisiche
+      // Setup gesture di uscita
       onGesture({
         callback: (event) => {
           if (event === GESTURE_RIGHT) {
@@ -122,12 +82,12 @@ Page(
         }
       })
       
-      // ✅ Se NON abbiamo dati, caricali
+      // Carica SOLO se non abbiamo dati
       if (this.state.rooms.length === 0 && this.state.zones.length === 0) {
-        logger.log('No preloaded data, loading from API...')
+        logger.log('No data in state, loading from API...')
         this.loadGroupsData()
       } else {
-        logger.log('Rendering with preloaded data')
+        logger.log('Rendering with existing data')
         this.renderPage()
       }
     },
@@ -161,8 +121,14 @@ Page(
         .then(result => {
           this.state.isLoading = false
           if (result.success && result.data) {
+            // ✅ Salva nel global store
+            const app = getApp()
+            app.setGroupsData(result.data)
+            
+            // ✅ Aggiorna anche lo stato locale per il render
             this.state.rooms = result.data.rooms || []
             this.state.zones = result.data.zones || []
+            
             logger.log(`Loaded ${this.state.rooms.length} rooms, ${this.state.zones.length} zones`)
             this.renderPage()
           } else {
@@ -193,11 +159,24 @@ Page(
         })
         .then(result => {
           if (result.success) {
-            // Aggiorna lo stato
+            // ✅ Aggiorna stato locale
             groupRaw.on_off = newState
             if (groupRaw.hasOwnProperty('anyOn')) {
               groupRaw.anyOn = newState
             }
+            
+            // ✅ Aggiorna anche global store
+            const app = getApp()
+            const globalData = app.getGroupsData()
+            
+            // Trova e aggiorna nel global store
+            const list = groupRaw.type === 'room' ? globalData.rooms : globalData.zones
+            const item = list.find(g => g.id === groupRaw.id)
+            if (item) {
+              item.anyOn = newState
+              item.on_off = newState
+            }
+            
             this.renderPage()
           }
         })
@@ -215,7 +194,6 @@ Page(
     renderPage() {
       this.clearAllWidgets()
       
-      // Prepara i dati per la lista
       const rawList = this.state.currentTab === 'ROOMS' ? this.state.rooms : this.state.zones
       
       const viewData = rawList.map(item => ({
@@ -225,7 +203,6 @@ Page(
         raw: item
       }))
       
-      // Chiama il layout
       renderGroupsPage(this, this.state, viewData, {
         switchTab: (tab) => this.switchTab(tab),
         refresh: () => this.loadGroupsData(),
@@ -237,18 +214,18 @@ Page(
           logger.debug('List click:', item.raw.name, 'key:', data_key)
           
           if (data_key === 'on_off') {
-            // Toggle
             this.toggleGroup(item.raw)
           } else {
-            // Naviga al dettaglio
-            //getApp()._options.globalData.isComingBack = true
+            // ✅ Setta flag per invalidare cache detail se necessario
             const app = getApp()
             app.globalData.isComingBackFromDetail = true
+            
             const paramsString = JSON.stringify({
               groupId: item.raw.id,
               groupType: item.raw.type,
               groupName: item.raw.name
             })
+            
             push({
               url: 'page/group-detail',
               params: paramsString

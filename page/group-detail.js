@@ -3,7 +3,6 @@ import { setPageBrightTime } from '@zos/display'
 import { getLogger } from '../utils/logger.js'
 import { getText } from '@zos/i18n'
 import { createWidget, deleteWidget } from '@zos/ui'
-import { onGesture, onKey, GESTURE_RIGHT, KEY_BACK, KEY_EVENT_CLICK } from '@zos/interaction'
 import { push } from '@zos/router'
 import { renderGroupDetailPage } from 'zosLoader:./group-detail.[pf].layout.js'
 import { DEFAULT_USER_SETTINGS, COLORS, LIGHT_MODELS } from '../utils/constants.js'
@@ -13,7 +12,6 @@ const logger = getLogger('zhue-group-detail-page')
 Page(
   BasePage({
     state: {
-      //userSettings: DEFAULT_USER_SETTINGS,
       groupId: null,
       groupType: null,
       groupName: '',
@@ -22,13 +20,14 @@ Page(
       isLoading: false,
       error: null
     },
-    
+
     widgets: [],
     listWidget: null,
-    
+
     onInit(p) {
       logger.debug('Group detail page onInit')
-      
+
+      // Parse parametri
       let params = {}
       if (typeof p === 'string' && p.startsWith('{')) {
         try {
@@ -39,100 +38,106 @@ Page(
       } else if (typeof p === 'object' && p !== null) {
         params = p
       }
-      
+
       if (params) {
         this.state.groupId = params.groupId
         this.state.groupType = params.groupType
         this.state.groupName = params.groupName
       }
-      
-      const cachedData = getApp().getGroupDetailCache(this.state.groupId)
-      
+
+      // ✅ Prova a usare la cache
+      const app = getApp()
+      const cachedData = app.getGroupDetailCache(this.state.groupId)
+
       if (cachedData) {
-        logger.log('Hit cache! Rendering immediately.')
+        logger.log('Using cached detail data')
         this.processDataAndRender(cachedData)
-        // Opzionale: vuoi aggiornare comunque in background? 
-        // Se sì, scommenta la riga sotto. Se no, risparmi batteria.
-        // this.loadGroupDetail(true) // true = "silent update"
       } else {
-        // 2. Se non c'è cache, mostriamo spinner e carichiamo
-        this.loadGroupDetail(false)
+        logger.log('No cache, will load from API')
+        // build() caricherà i dati
       }
     },
-    
-    // logger.log(`Initialized with Group ID: ${this.state.groupId}`)
-    // },
-    
+
     build() {
       setPageBrightTime({ brightTime: 60000 })
-      // Nota: Ho spostato la logica di load in onInit per anticipare i tempi,
-      // ma se non abbiamo dati, dobbiamo gestire l'errore qui o rendering vuoto.
-      if (!this.state.lights.length && !this.state.isLoading && !this.state.error) {
-        // Se siamo qui e non c'è nulla, forse la cache ha fallito o è la prima build lenta
+
+      // Se non abbiamo dati, carica
+      if (this.state.lights.length === 0 && !this.state.isLoading && !this.state.error) {
+        this.loadGroupDetail()
+      } else if (this.state.lights.length > 0) {
+        // Abbiamo già i dati (da cache)
         this.renderPage()
       }
     },
-    
+
     processDataAndRender(data) {
-        const rawLights = data.lights || []
-        
-        // Gestione Settings (Corretta senza _options)
-        const app = getApp()
-        if (data.userSettings) {
-          app.globalData.settings = { ...app.globalData.settings, ...data.userSettings }
-        }
-        
-        // Filtro luci
-        this.state.lights = rawLights.filter(l => l && l.id && typeof l.ison !== 'undefined')
-        this.state.scenes = data.scenes || []
-        
-        this.state.isLoading = false
-        this.renderPage()
+      const rawLights = data.lights || []
+
+      // ✅ Gestione Settings (CORRETTO)
+      const app = getApp()
+      if (data.userSettings) {
+        app.globalData.settings = { ...app.globalData.settings, ...data.userSettings }
+        logger.log('User settings updated in global store')
+      }
+
+      // Filtro luci valide
+      this.state.lights = rawLights.filter(l => 
+        l && l.id && typeof l.ison !== 'undefined'
+      )
+      this.state.scenes = data.scenes || []
+
+      logger.log(`Processed ${this.state.lights.length} lights, ${this.state.scenes.length} scenes`)
+
+      this.state.isLoading = false
+      this.renderPage()
     },
-    
+
     loadGroupDetail(isSilent = false) {
       if (!isSilent) {
-          this.state.isLoading = true
-          this.state.error = null
-          this.renderPage()
+        this.state.isLoading = true
+        this.state.error = null
+        this.renderPage()
       }
-      
+
+      logger.log('Loading group detail for:', this.state.groupId)
+
       this.request({
-          method: 'GET_GROUP_DETAIL',
-          params: { groupId: this.state.groupId }
-        })
+        method: 'GET_GROUP_DETAIL',
+        params: { groupId: this.state.groupId }
+      })
         .then(result => {
           if (result.success && result.data) {
-            // 🔥 SALVIAMO IN CACHE GLOBALE
-            getApp().setGroupDetailCache(this.state.groupId, result.data)
-            
+            // ✅ Salva in cache globale
+            const app = getApp()
+            app.setGroupDetailCache(this.state.groupId, result.data)
+            logger.log('Detail data cached globally')
+
             this.processDataAndRender(result.data)
           } else {
-             // Gestione errore...
-             if (!isSilent) {
-                this.state.isLoading = false
-                this.state.error = 'Failed'
-                this.renderPage()
-             }
+            if (!isSilent) {
+              this.state.isLoading = false
+              this.state.error = result.message || 'Failed to load detail'
+              this.renderPage()
+            }
           }
         })
         .catch(err => {
-           // ... errori ...
-           if (!isSilent) {
-             this.state.isLoading = false; 
-             this.state.error = err.message; 
-             this.renderPage() 
-           }
+          logger.error('Load group detail error:', err)
+          if (!isSilent) {
+            this.state.isLoading = false
+            this.state.error = err.message || getText('NETWORK_ERROR')
+            this.renderPage()
+          }
         })
     },
-    
+
     createTrackedWidget(type, props) {
       const w = createWidget(type, props)
       if (!this.widgets) this.widgets = []
       this.widgets.push(w)
       return w
     },
-    
+
     clearAllWidgets() {
       if (this.widgets) {
         this.widgets.forEach(w => {
@@ -144,145 +149,108 @@ Page(
       this.widgets = []
       this.listWidget = null
     },
-    
-    loadGroupDetail_old() {
-      this.state.isLoading = true
-      this.state.error = null
-      this.renderPage()
-      
-      logger.log('Requesting GET_GROUP_DETAIL for Group ID:', this.state.groupId)
-      
-      this.request({
-          method: 'GET_GROUP_DETAIL',
-          params: { groupId: this.state.groupId }
-        })
-        .then(result => {
-          logger.log('Response received:', result)
-          this.state.isLoading = false
-          
-          if (result.success && result.data) {
-            const rawLights = result.data.lights || []
-            
-            if (result.data.userSettings) {
-              getApp()._options.globalData.userSettings = result.data.userSettings
-              //this.state.userSettings = result.data.userSettings
-              logger.log('User settings loaded:', result.data.userSettings)
-            } else {
-              logger.warn('No user settings in response, using defaults')
-              getApp()._options.globalData.userSettings = DEFAULT_USER_SETTINGS
-              //this.state.userSettings = DEFAULT_USER_SETTINGS
-            }
-            
-            logger.log('Raw lights received:', rawLights.length)
-            
-            // Filtra luci valide
-            this.state.lights = rawLights.filter(light =>
-              light &&
-              light.id &&
-              typeof light.ison !== 'undefined'
-            )
-            
-            logger.log('Filtered lights:', this.state.lights.length)
-            
-            this.state.scenes = result.data.scenes || []
-            this.renderPage()
-          } else {
-            logger.error('Response failed:', result.message || 'No error message')
-            this.state.isLoading = false
-            this.state.error = 'Failed to load detail'
-            this.renderPage()
-          }
-        })
-        .catch(err => {
-          const errorMessage = (err && err.message) ? err.message : getText('NETWORK_ERROR')
-          logger.error('Load group detail error:', errorMessage, err)
-          
-          this.state.isLoading = false
-          this.state.error = errorMessage
-          this.renderPage()
-        })
-    },
-    
+
     toggleGroup() {
       const anyOn = this.state.lights.some(light => !!light.ison)
       const newState = !anyOn
-      
+
       this.request({
-          method: 'TOGGLE_GROUP',
-          params: {
-            groupId: this.state.groupId,
-            groupType: this.state.groupType,
-            state: newState
-          }
-        })
+        method: 'TOGGLE_GROUP',
+        params: {
+          groupId: this.state.groupId,
+          groupType: this.state.groupType,
+          state: newState
+        }
+      })
         .then(result => {
           if (result.success) {
+            // ✅ Aggiorna stato locale
             this.state.lights.forEach(light => {
               light.ison = newState
             })
-            getApp().globalData.needsGroupsRefresh = true 
+
+            // ✅ Invalida cache detail
+            const app = getApp()
+            app.setGroupDetailCache(this.state.groupId, null)
+
+            // ✅ Flag per ricaricare groups
+            app.globalData.needsGroupsRefresh = true
+
             this.renderPage()
           }
         })
         .catch(err => logger.error('Toggle group error:', err))
     },
-    
+
     toggleLight(light) {
       const currentOnState = light.ison
       const newState = !currentOnState
-      
+
       this.request({
-          method: 'TOGGLE_LIGHT',
-          params: {
-            lightId: light.id,
-            state: newState
-          }
-        })
+        method: 'TOGGLE_LIGHT',
+        params: {
+          lightId: light.id,
+          state: newState
+        }
+      })
         .then(result => {
           if (result.success) {
+            // ✅ Aggiorna stato locale
             light.ison = newState
-            getApp().globalData.needsGroupsRefresh = true 
+
+            // ✅ Invalida cache detail
+            const app = getApp()
+            app.setGroupDetailCache(this.state.groupId, null)
+
+            // ✅ Flag per ricaricare groups
+            app.globalData.needsGroupsRefresh = true
+
             this.renderPage()
           }
         })
         .catch(err => logger.error('Toggle light error:', err))
     },
-    
+
     applyScene(scene) {
       this.request({
-          method: 'APPLY_SCENE',
-          params: {
-            sceneId: scene.id,
-            groupId: this.state.groupId
-          }
-        })
+        method: 'APPLY_SCENE',
+        params: {
+          sceneId: scene.id,
+          groupId: this.state.groupId
+        }
+      })
         .then(result => {
           if (result.success) {
+            // ✅ Invalida cache e ricarica
+            const app = getApp()
+            app.setGroupDetailCache(this.state.groupId, null)
+            app.globalData.needsGroupsRefresh = true
+
             setTimeout(() => this.loadGroupDetail(), 200)
           }
         })
         .catch(err => logger.error('Apply scene error:', err))
     },
-    
+
     navigateToLightDetail(light) {
       const paramsString = JSON.stringify({
         lightId: light.id,
         lightName: light.name
       })
-      
+
       push({
         url: 'page/light-detail',
         params: paramsString
       })
     },
-    
+
     getLightSwatchColor(light) {
       if (!light.ison) {
         return COLORS.inactive
       }
-      
+
       const isColorModeActive = light.colormode === 'hs' || light.colormode === 'xy'
-      
+
       if (isColorModeActive && light.hex) {
         try {
           if (typeof light.hex === 'string') {
@@ -296,25 +264,21 @@ Page(
       }
       return COLORS.defaultSwatchColor
     },
-    
+
     renderPage() {
       this.clearAllWidgets()
       const data = []
-      
-      const settings = getApp().globalData.settings || DEFAULT_USER_SETTINGS
+
+      // ✅ Usa settings dal global store (CORRETTO)
+      const app = getApp()
+      const settings = app.globalData.settings || DEFAULT_USER_SETTINGS
 
       const addScenes = () => {
         if (settings.show_scenes && this.state.scenes.length > 0) {
-      
-      // Helper function per aggiungere le scene
-      //const addScenes = () => {
-        //if (getApp()._options.globalData.userSettings.show_scenes && this.state.scenes.length > 0) {
           logger.log(`Adding ${this.state.scenes.length} scenes to list`)
-          
-          // Header scene
+
           data.push({ type: 'header', name: getText('SCENES') })
-          
-          // Scene items
+
           this.state.scenes.forEach(scene => {
             data.push({
               ...scene,
@@ -323,45 +287,36 @@ Page(
           })
         }
       }
-      
-      // Helper function per aggiungere le luci
+
       const addLights = () => {
         if (this.state.lights.length > 0) {
-          // Header luci
           data.push({ type: 'header', name: getText('LIGHTS') })
-          
-          // Light items
+
           this.state.lights.forEach(light => {
-            logger.debug('Processing light for list:', light)
             const isOn = !!light.ison
             const modelInfo = LIGHT_MODELS[light.modelid] || LIGHT_MODELS.default
-            
+
             const finalIconPath = `icons/${modelInfo.icon}.png`
-            
-            logger.debug(`Prepared light item: ${modelInfo} (Name: ${light.name}, On: ${isOn}, Icon: ${finalIconPath})`)
-            
-            const statusText = isOn ?
-              `${getText('BRIGHTNESS')} ${Math.round(light.bri / 254 * 100)}%` :
-              getText('OFF')
-            
+
+            const statusText = isOn
+              ? `${getText('BRIGHTNESS')} ${Math.round(light.bri / 254 * 100)}%`
+              : getText('OFF')
+
             data.push({
               raw: light,
               type: 'light',
               name: light.name,
-              icon: finalIconPath, //70*70 mask icons with #666666 background
+              icon: finalIconPath,
               status_text: statusText,
               swatch_bg_color: this.getLightSwatchColor(light)
             })
           })
         }
       }
-      
-      // DISPLAY_ORDER
-      //const displayOrder = getApp()._options.globalData.userSettings.display_order || 'LIGHTS_FIRST'
+
       const displayOrder = settings.display_order || 'LIGHTS_FIRST'
-      
       logger.log(`Display order: ${displayOrder}`)
-      
+
       if (displayOrder === 'SCENES_FIRST') {
         addScenes()
         addLights()
@@ -369,19 +324,19 @@ Page(
         addLights()
         addScenes()
       }
-      
+
       logger.log(`Data prepared: ${data.length} total items`)
       const viewData = { data }
-      
+
       renderGroupDetailPage(this, this.state, viewData, {
         toggleGroup: () => this.toggleGroup(),
-        retry: () => this.build(),
+        retry: () => this.loadGroupDetail(),
         applyScene: (item) => this.applyScene(item),
         toggleLight: (light) => this.toggleLight(light),
         navigateToLightDetail: (light) => this.navigateToLightDetail(light)
       }, COLORS)
     },
-    
+
     onDestroy() {
       this.clearAllWidgets()
     }
