@@ -9,16 +9,6 @@ import { getLogger } from '../utils/logger.js'
 
 const logger = getLogger('zhue-groups-page')
 
-Pageimport { BasePage } from '@zeppos/zml/base-page'
-import { createWidget, deleteWidget } from '@zos/ui'
-import { exit, push } from '@zos/router'
-import { getText } from '@zos/i18n'
-import { onGesture, onKey, GESTURE_RIGHT, KEY_BACK, KEY_EVENT_CLICK } from '@zos/interaction'
-import { setPageBrightTime } from '@zos/display'
-import { renderGroupsPage } from 'zosLoader:./groups.[pf].layout.js'
-import { getLogger } from '../utils/logger.js'
-
-const logger = getLogger('zhue-groups-page')
 
 Page(
   BasePage({
