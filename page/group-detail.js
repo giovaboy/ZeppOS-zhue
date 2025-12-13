@@ -220,6 +220,7 @@ Page(
             this.state.lights.forEach(light => {
               light.ison = newState
             })
+            getApp().globalData.needsGroupsRefresh = true 
             this.renderPage()
           }
         })
@@ -240,6 +241,7 @@ Page(
         .then(result => {
           if (result.success) {
             light.ison = newState
+            getApp().globalData.needsGroupsRefresh = true 
             this.renderPage()
           }
         })

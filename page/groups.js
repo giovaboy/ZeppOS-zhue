@@ -45,19 +45,58 @@ Page(
     },
     
     // page/groups.js
-    onInit() {
+    onInit(p) {
+      logger.debug('Groups page onInit')
       const app = getApp()
-      const globalData = app.getGroupsData()
       
-      if (globalData.hasLoadedOnce) {
-        this.state.rooms = globalData.rooms
-        this.state.zones = globalData.zones
-        this.renderPage()
-      } else {
-        // Caso limite: se l'utente arriva qui per magia senza passare dall'index
-        // (raro, ma possibile in sviluppo), rimandalo indietro o ricarica.
+      // 1. Controllo Bandiera di Refresh Globale
+      const needsRefresh = app.globalData.needsGroupsRefresh
+      
+      // 2. Controllo Bandiera di Navigazione (Back)
+      const isBackNavigation = app.globalData.isComingBackFromDetail
+      
+      let params = {}
+      
+      // Condizione di Ricaricamento: 
+      // SE stiamo tornando indietro (isBackNavigation) 
+      // OPPURE Page B ci ha detto di aggiornare (needsRefresh)
+      if (isBackNavigation || needsRefresh) {
+        logger.log('Navigated back or refresh flag set. Forcing API reload.')
+        
+        // 3. Reset delle Bandiere
+        app.globalData.isComingBackFromDetail = false
+        app.globalData.needsGroupsRefresh = false
+        
+        // Non usiamo i parametri passati: forziamo il caricamento API
         this.loadGroupsData()
+        
+        return
       }
+      
+      // Condizione di PRIMO PUSH (Da Index)
+      
+      // Se non stiamo tornando indietro e non c'è refresh flag, 
+      // allora siamo al primo push e dobbiamo usare i params (preloadedData)
+      try {
+        params = typeof p === 'string' ? JSON.parse(p) : (p || {})
+      } catch (e) {
+        logger.error('Error parsing params:', e)
+      }
+      
+      // Se abbiamo dati precaricati, usali subito
+      if (params.preloadedData) {
+        logger.log('Using preloaded data from index page')
+        
+        // Se stai usando la cache globale (come ti ho suggerito), potresti fare:
+        // app.setGroupsData(params.preloadedData) 
+        
+        this.state.rooms = params.preloadedData.rooms || []
+        this.state.zones = params.preloadedData.zones || []
+        this.state.isLoading = false
+      }
+      
+      // Se non avevi preloadedData e non c'è cache globale, carichiamo API nel build
+      
     },
     
     
@@ -203,6 +242,8 @@ Page(
           } else {
             // Naviga al dettaglio
             //getApp()._options.globalData.isComingBack = true
+            const app = getApp()
+            app.globalData.isComingBackFromDetail = true
             const paramsString = JSON.stringify({
               groupId: item.raw.id,
               groupType: item.raw.type,

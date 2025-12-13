@@ -11,7 +11,8 @@ App(
         hasLoadedOnce: false // Flag per sapere se abbiamo dati validi
       },
       detailCache: {},
-      
+      isComingBackFromDetail: false,
+      needsGroupsRefresh: false,
       // Impostazioni Utente (Persistenti)
       settings: {
         bridgeIp: null,
