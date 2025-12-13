@@ -22,7 +22,7 @@ Page(
     
     widgets: [],
     
-    onInit(p) {
+    onInit_old(p) {
       logger.debug('Groups page onInit')
       
       // ✅ Controlla se abbiamo dati precaricati
@@ -43,6 +43,23 @@ Page(
         this.state.isLoading = false
       }
     },
+    
+    // page/groups.js
+    onInit() {
+      const app = getApp()
+      const globalData = app.getGroupsData()
+      
+      if (globalData.hasLoadedOnce) {
+        this.state.rooms = globalData.rooms
+        this.state.zones = globalData.zones
+        this.renderPage()
+      } else {
+        // Caso limite: se l'utente arriva qui per magia senza passare dall'index
+        // (raro, ma possibile in sviluppo), rimandalo indietro o ricarica.
+        this.loadGroupsData()
+      }
+    },
+    
     
     build() {
       setPageBrightTime({ brightTime: 60000 })
@@ -185,7 +202,7 @@ Page(
             this.toggleGroup(item.raw)
           } else {
             // Naviga al dettaglio
-            getApp()._options.globalData.isComingBack = true
+            //getApp()._options.globalData.isComingBack = true
             const paramsString = JSON.stringify({
               groupId: item.raw.id,
               groupType: item.raw.type,

@@ -188,7 +188,7 @@ Page(
         })
     },
 
-    fetchAllData() {
+    fetchAllData_old() {
       // ✅ CAMBIATO: Ora chiamiamo GET_GROUPS invece di GET_LIGHTS
       this.request({ method: 'GET_GROUPS' })
         .then(result => {
@@ -216,6 +216,28 @@ Page(
           this.setState(STATES.ERROR, { error: err.message || getText('FAILED_TO_FETCH_DATA') })
         })
     },
+    
+    fetchAllData() {
+      this.request({ method: 'GET_GROUPS' })
+        .then(result => {
+          if (result.success && result.data) {
+            
+            // 🔥 MODIFICA QUI: Salviamo nel Global Store invece che nello stato locale
+            const app = getApp()
+            app.setGroupsData(result.data)
+            
+            const totalGroups = (result.data.rooms?.length || 0) + (result.data.zones?.length || 0)
+            logger.log(`Loaded and stored ${totalGroups} groups globally`)
+            
+            this.setState(STATES.SUCCESS)
+          } else {
+            this.setState(STATES.ERROR, { error: getText('FAILED_TO_FETCH_DATA')})
+          }
+        })
+        .catch(err => {
+          this.setState(STATES.ERROR, { error: err.message || getText('FAILED_TO_FETCH_DATA') })
+        })
+    },
 
     retry() {
       if (!connectStatus()) {
@@ -233,7 +255,7 @@ Page(
       this.startBridgeSearch()
     },
 
-    navigateToGroups() {
+    navigateToGroups_old() {
       logger.log('Navigating to groups page with preloaded data')
       this.stopBluetoothMonitoring()
       
@@ -245,6 +267,17 @@ Page(
       push({ 
         url: 'page/groups', 
         params: params
+      })
+    },
+    
+    navigateToGroups() {
+      logger.log('Navigating to groups page')
+      this.stopBluetoothMonitoring()
+      
+      // 🔥 MODIFICA QUI: Nessun parametro pesante!
+      // Il router ringrazia.
+      push({ 
+        url: 'page/groups'
       })
     },
 
