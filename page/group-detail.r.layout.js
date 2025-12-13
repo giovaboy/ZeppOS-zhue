@@ -14,7 +14,7 @@ export const LAYOUT_CONFIG = {
 export function renderGroupDetailPage(pageContext, state, viewData, callbacks, COLORS) {
     const { toggleGroup, retry } = callbacks
     const { groupName, isLoading, error } = state
-    const userSettings = getApp()._options.globalData.userSettings
+    const userSettings = getApp().globalData.settings
     // Background
     pageContext.createTrackedWidget(widget.FILL_RECT, {
         x: 0, y: 0, w: DEVICE_WIDTH, h: DEVICE_HEIGHT, color: COLORS.background

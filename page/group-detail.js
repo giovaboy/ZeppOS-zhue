@@ -46,18 +46,84 @@ Page(
         this.state.groupName = params.groupName
       }
       
-      logger.log(`Initialized with Group ID: ${this.state.groupId}`)
+      const cachedData = getApp().getGroupDetailCache(this.state.groupId)
+      
+      if (cachedData) {
+        logger.log('Hit cache! Rendering immediately.')
+        this.processDataAndRender(cachedData)
+        // Opzionale: vuoi aggiornare comunque in background? 
+        // Se sì, scommenta la riga sotto. Se no, risparmi batteria.
+        // this.loadGroupDetail(true) // true = "silent update"
+      } else {
+        // 2. Se non c'è cache, mostriamo spinner e carichiamo
+        this.loadGroupDetail(false)
+      }
     },
+    
+    // logger.log(`Initialized with Group ID: ${this.state.groupId}`)
+    // },
     
     build() {
       setPageBrightTime({ brightTime: 60000 })
-      
-      if (this.state.groupId) {
-        this.loadGroupDetail()
-      } else {
-        this.state.error = "ID Gruppo Mancante. Torna Indietro."
+      // Nota: Ho spostato la logica di load in onInit per anticipare i tempi,
+      // ma se non abbiamo dati, dobbiamo gestire l'errore qui o rendering vuoto.
+      if (!this.state.lights.length && !this.state.isLoading && !this.state.error) {
+        // Se siamo qui e non c'è nulla, forse la cache ha fallito o è la prima build lenta
         this.renderPage()
       }
+    },
+    
+    processDataAndRender(data) {
+        const rawLights = data.lights || []
+        
+        // Gestione Settings (Corretta senza _options)
+        const app = getApp()
+        if (data.userSettings) {
+          app.globalData.settings = { ...app.globalData.settings, ...data.userSettings }
+        }
+        
+        // Filtro luci
+        this.state.lights = rawLights.filter(l => l && l.id && typeof l.ison !== 'undefined')
+        this.state.scenes = data.scenes || []
+        
+        this.state.isLoading = false
+        this.renderPage()
+    },
+    
+    loadGroupDetail(isSilent = false) {
+      if (!isSilent) {
+          this.state.isLoading = true
+          this.state.error = null
+          this.renderPage()
+      }
+      
+      this.request({
+          method: 'GET_GROUP_DETAIL',
+          params: { groupId: this.state.groupId }
+        })
+        .then(result => {
+          if (result.success && result.data) {
+            // 🔥 SALVIAMO IN CACHE GLOBALE
+            getApp().setGroupDetailCache(this.state.groupId, result.data)
+            
+            this.processDataAndRender(result.data)
+          } else {
+             // Gestione errore...
+             if (!isSilent) {
+                this.state.isLoading = false
+                this.state.error = 'Failed'
+                this.renderPage()
+             }
+          }
+        })
+        .catch(err => {
+           // ... errori ...
+           if (!isSilent) {
+             this.state.isLoading = false; 
+             this.state.error = err.message; 
+             this.renderPage() 
+           }
+        })
     },
     
     createTrackedWidget(type, props) {
@@ -233,9 +299,14 @@ Page(
       this.clearAllWidgets()
       const data = []
       
-      // Helper function per aggiungere le scene
+      const settings = getApp().globalData.settings || DEFAULT_USER_SETTINGS
+
       const addScenes = () => {
-        if (getApp()._options.globalData.userSettings.show_scenes && this.state.scenes.length > 0) {
+        if (settings.show_scenes && this.state.scenes.length > 0) {
+      
+      // Helper function per aggiungere le scene
+      //const addScenes = () => {
+        //if (getApp()._options.globalData.userSettings.show_scenes && this.state.scenes.length > 0) {
           logger.log(`Adding ${this.state.scenes.length} scenes to list`)
           
           // Header scene
@@ -284,7 +355,9 @@ Page(
       }
       
       // DISPLAY_ORDER
-      const displayOrder = getApp()._options.globalData.userSettings.display_order || 'LIGHTS_FIRST'
+      //const displayOrder = getApp()._options.globalData.userSettings.display_order || 'LIGHTS_FIRST'
+      const displayOrder = settings.display_order || 'LIGHTS_FIRST'
+      
       logger.log(`Display order: ${displayOrder}`)
       
       if (displayOrder === 'SCENES_FIRST') {

@@ -10,6 +10,7 @@ App(
         zones: [],
         hasLoadedOnce: false // Flag per sapere se abbiamo dati validi
       },
+      detailCache: {},
       
       // Impostazioni Utente (Persistenti)
       settings: {
@@ -20,12 +21,12 @@ App(
         display_order: 'LIGHTS_FIRST'
       }
     },
-
+    
     onCreate(options) {
       console.log('Hue On-Off App Created')
       // Qui in futuro caricherai i settings dal file system
     },
-
+    
     // --- HELPER METHODS ---
     // Usiamo questi metodi invece di toccare globalData direttamente
     // così se domani cambi struttura, modifichi solo qui.
@@ -36,11 +37,20 @@ App(
       this.globalData.data.zones = apiData.zones || []
       this.globalData.data.hasLoadedOnce = true
     },
-
+    
     getGroupsData() {
       return this.globalData.data
     },
-
+    
+    setGroupDetailCache(groupId, data) {
+      // Salviamo i dati associandoli all'ID
+      this.globalData.detailCache[groupId] = data
+    },
+    
+    getGroupDetailCache(groupId) {
+      return this.globalData.detailCache[groupId] || null
+    },
+    
     onDestroy(options) {
       console.log('Hue On-Off App Destroyed')
     }
