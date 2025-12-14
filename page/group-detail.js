@@ -4,6 +4,7 @@ import { getLogger } from '../utils/logger.js'
 import { getText } from '@zos/i18n'
 import { createWidget, deleteWidget } from '@zos/ui'
 import { push } from '@zos/router'
+import { getScrollTop, scrollTo } from '@zos/page'
 import { renderGroupDetailPage } from 'zosLoader:./group-detail.[pf].layout.js'
 import { DEFAULT_USER_SETTINGS, COLORS, LIGHT_MODELS, ct2hex } from '../utils/constants.js'
 
@@ -18,7 +19,8 @@ Page(
       lights: [],
       scenes: [],
       isLoading: false,
-      error: null
+      error: null,
+      scrollTop: null
     },
     
     widgets: [],
@@ -176,6 +178,8 @@ Page(
             // ✅ Flag per ricaricare groups
             app.globalData.needsGroupsRefresh = true
             
+            this.state.scrollTop = getScrollTop()
+            
             this.renderPage()
           }
         })
@@ -204,7 +208,7 @@ Page(
             
             // ✅ Flag per ricaricare groups
             app.globalData.needsGroupsRefresh = true
-            
+            this.state.scrollTop = getScrollTop()
             this.renderPage()
           }
         })
@@ -225,7 +229,7 @@ Page(
             const app = getApp()
             app.setGroupDetailCache(this.state.groupId, null)
             app.globalData.needsGroupsRefresh = true
-            
+            this.state.scrollTop = getScrollTop()
             setTimeout(() => this.loadGroupDetail(), 200)
           }
         })
@@ -346,6 +350,12 @@ Page(
         toggleLight: (light) => this.toggleLight(light),
         navigateToLightDetail: (light) => this.navigateToLightDetail(light)
       }, COLORS)
+      
+      if (this.state.scrollTop) {
+        scrollTo({
+          y: this.state.scrollTop,
+        })
+      }
     },
     
     onDestroy() {

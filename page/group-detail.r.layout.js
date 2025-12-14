@@ -288,7 +288,7 @@ function renderLightItem(container, light, yPos, COLORS, onToggle, onNavigate) {
             w: px(70),
             h: px(70),
             src: light.icon,
-            auto_scale: false
+            auto_scale: true
         })
 
         // Clickable overlay for toggle
