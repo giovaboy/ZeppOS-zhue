@@ -11,6 +11,7 @@ App(
         hasLoadedOnce: false // Flag per sapere se abbiamo dati validi
       },
       detailCache: {},
+      currentTab: 'ROOMS',
       isComingBackFromDetail: false,
       needsGroupsRefresh: false,
       // Impostazioni Utente (Persistenti)
@@ -41,6 +42,15 @@ App(
     
     getGroupsData() {
       return this.globalData.data
+    },
+    
+    setCurrentTab(tabName) {
+      console.log('Global Store: Setting current tab to', tabName)
+      this.globalData.currentTab = tabName
+    },
+    
+    getCurrentTab() {
+      return this.globalData.currentTab || 'ROOMS'
     },
     
     setGroupDetailCache(groupId, data) {

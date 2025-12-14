@@ -125,7 +125,7 @@ Page(
     checkInitialConnection() {
       if (!connectStatus()) {
         this.setState(STATES.BT_ERROR, {
-          error: getText('BT_NOT_CONNECTED') || 'Bluetooth connection lost'
+          error: getText('BT_NOT_CONNECTED')
         })
         this.startBluetoothMonitoring()
         return
@@ -185,35 +185,6 @@ Page(
         })
         .catch(err => {
           this.setState(STATES.ERROR, { error: err.message || getText('PAIRING_FAILED') })
-        })
-    },
-
-    fetchAllData_old() {
-      // ✅ CAMBIATO: Ora chiamiamo GET_GROUPS invece di GET_LIGHTS
-      this.request({ method: 'GET_GROUPS' })
-        .then(result => {
-          if (result.success && result.data) {
-            // Salva i dati per passarli alla pagina groups
-            this.state.groupsData = result.data
-            
-            const totalGroups = (result.data.rooms?.length || 0) + (result.data.zones?.length || 0)
-            
-            logger.log(`Loaded ${totalGroups} groups (${result.data.rooms?.length || 0} rooms, ${result.data.zones?.length || 0} zones)`)
-            
-            /*this.setState(STATES.FETCHING_DATA, { 
-              progress: { 
-                rooms: result.data.rooms?.length || 0,
-                zones: result.data.zones?.length || 0
-              } 
-            })*/
-            
-            this.setState(STATES.SUCCESS)
-          } else {
-            this.setState(STATES.ERROR, { error: getText('FAILED_TO_FETCH_DATA')})
-          }
-        })
-        .catch(err => {
-          this.setState(STATES.ERROR, { error: err.message || getText('FAILED_TO_FETCH_DATA') })
         })
     },
     

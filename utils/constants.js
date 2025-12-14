@@ -1,11 +1,10 @@
-
 export const COLORS = {
   background: 0x000000,
   text: 0xffffff,
   textSubtitle: 0xaaaaaa,
   highlight: 0x0055ff,
   cardBg: 0x222222,
-  activeTab: 0x984ce5,//0x0055ff,
+  activeTab: 0x984ce5, //0x0055ff,
   activeTabText: 0xffffff,
   inactiveTab: 0x1a1a1a,
   inactiveTabText: 0xAAAAAA,
@@ -13,9 +12,9 @@ export const COLORS = {
   highlightText: 0xffffff,
   warning: 0xff6600,
   warningText: 0xffffff,
-  success: 0x39935a,//0x2ecd6e,//0x00aa00,
+  success: 0x39935a, //0x2ecd6e,//0x00aa00,
   error: 0xff0000,
-  inactive: 0xb3b3b3,//0x666666,
+  inactive: 0xb3b3b3, //0x666666,
   loading: 0x666666,
   roomIndicator: 0x0000cc,
   zoneIndicator: 0x009900,
@@ -28,19 +27,20 @@ export const COLORS = {
   sliderFill: 0xffffff,
   briText: 0xcccccc,
   defaultSwatchColor: 0xFFCC66,
-
+  white: 0xFFFFFF,
+  
   color_sys_key: 0x0986d4,
   color_sys_warning: 0xad3c23,
   color_sys_item_bg: 0x333333,
   color_sys_empty_status_graphic: 0x666666,
-
+  
   color_text_warning: 0xd14221,
   color_text_link: 0x059af7,
   color_text_title: 0xffffff,
   color_text_subtitle: 0xb3b3b3,
   color_text_secondary_info: 0x808080,
   color_text_button: 0xffffff
-
+  
 }
 
 export const DEFAULT_USER_SETTINGS = {
@@ -189,6 +189,7 @@ export const DEMO_DATA = {
 }
 
 // Mappatura completa dei Model ID di Philips Hue
+//https://zigbee.blakadder.com/vendors.html
 export const LIGHT_MODELS = {
   // --------------------------------------------------------------------------------
   // 🟢 A19 / E27 (Lampadine Standard)
@@ -202,22 +203,24 @@ export const LIGHT_MODELS = {
   'LCT027': { name: 'Hue Bulb E27 C&W', icon: 'a19' },
   'LCT029': { name: 'Hue Bulb A19 C&W (Matter)', icon: 'a19' },
   'LCA005': { name: 'Hue A19 Color (Matter)', icon: 'a19' },
-
+  
+  'LCA001': { name: 'Hue Bulb E27 C&W', icon: 'a19' },
+  
   // White Ambiance
   'LTW001': { name: 'White Ambiance A19', icon: 'a19' },
   'LTW004': { name: 'White Ambiance A19', icon: 'a19' },
   'LWA001': { name: 'White Ambiance A19 (BT)', icon: 'a19' },
   'LWA002': { name: 'White Ambiance A19 (BT)', icon: 'a19' },
   'LWE002': { name: 'White Ambiance E27', icon: 'a19' },
-
+  
   // White Only
   'LWB001': { name: 'Hue White A19', icon: 'a19' },
-  'LWB006': { name: 'E27/B22 White', icon: 'a19' },
+  'LWB006': { name: 'E27/B22 White', icon: 'classic' },
   'LWB007': { name: 'E27 White', icon: 'a19' },
-  'LWB010': { name: 'E27 White', icon: 'a19' },
+  'LWB010': { name: 'E27 White', icon: 'classic' },
   'LWB014': { name: 'Hue White A19 (BT)', icon: 'a19' },
   'LHB001': { name: 'High Lumen E27 White', icon: 'a19' },
-
+  
   // --------------------------------------------------------------------------------
   // 🟡 GU10
   // --------------------------------------------------------------------------------
@@ -230,14 +233,14 @@ export const LIGHT_MODELS = {
   'LTP002': { name: 'GU10 Color (BT)', icon: 'gu10' },
   'LCA004': { name: 'GU10 Color (Matter)', icon: 'gu10' },
   'LTA003': { name: 'GU10 White Ambience (Matter)', icon: 'gu10' },
-
+  
   // --------------------------------------------------------------------------------
   // 🟣 BR30
   // --------------------------------------------------------------------------------
   'LCT002': { name: 'BR30 Color Gen 1', icon: 'br30' },
   'LCT014': { name: 'BR30 Color Gen 2', icon: 'br30' },
   'LCT021': { name: 'BR30 Color (BT)', icon: 'br30' },
-
+  
   // --------------------------------------------------------------------------------
   // 🟠 E14 / Candela
   // --------------------------------------------------------------------------------
@@ -246,10 +249,10 @@ export const LIGHT_MODELS = {
   'LCT022': { name: 'Luster Color', icon: 'candle' },
   'LCT023': { name: 'Candle Color (BT)', icon: 'candle' },
   'LWE001': { name: 'Candle White', icon: 'candle' },
-  'LCA001': { name: 'Candle White Amb. (BT)', icon: 'candle' },
+  // 'LCA001': { name: 'Candle White Amb. (BT)', icon: 'candle' },
   'LCE001': { name: 'Candle Color Ambience (Matter)', icon: 'candle' },
   'LCE002': { name: 'Candle Filament White', icon: 'filament_candle' },
-
+  
   // --------------------------------------------------------------------------------
   // ⚪ Filamento
   // --------------------------------------------------------------------------------
@@ -262,7 +265,7 @@ export const LIGHT_MODELS = {
   'LWA003': { name: 'Filament A19 White (BT/Matter)', icon: 'filament_a19' },
   'LWA004': { name: 'Filament ST72 Edison White', icon: 'filament_st64' },
   'LWA005': { name: 'Filament G125 Globe White', icon: 'filament_globe' },
-
+  
   // --------------------------------------------------------------------------------
   // 🌈 Strisce LED
   // --------------------------------------------------------------------------------
@@ -274,7 +277,7 @@ export const LIGHT_MODELS = {
   'LCG001': { name: 'Gradient LightStrip Indoor (Matter)', icon: 'lightstrip_gradient' },
   'LCL001': { name: 'LightStrip Ambience (BT/Matter)', icon: 'lightstrip' },
   'LCL002': { name: 'LightStrip Ambience Plus', icon: 'lightstrip' },
-
+  
   // --------------------------------------------------------------------------------
   // 🛋️ Lampade Fisse / Tavolo / Pavimento
   // --------------------------------------------------------------------------------
@@ -290,20 +293,20 @@ export const LIGHT_MODELS = {
   'LTV001': { name: 'Bloom (Matter)', icon: 'bloom' },
   'LTF001': { name: 'Signe Floor (Matter)', icon: 'signe_floor' },
   'LTF002': { name: 'Signe Table (Matter)', icon: 'signe_table' },
-
+  
   // play / gradient
   'LJL001': { name: 'Play Bar', icon: 'play_bar' },
   'LCA002': { name: 'Play Gradient Light Tube', icon: 'play_tube' },
   'LCA003': { name: 'Play Gradient Light Strip', icon: 'play_strip' },
   'LCA010': { name: 'Play Gradient Bar (2024)', icon: 'play_bar' },
   'LCA011': { name: 'Play Gradient Compact', icon: 'play_bar' },
-
+  
   // Signe
   'LSL001': { name: 'Signe Floor', icon: 'signe_floor' },
   'LSL002': { name: 'Signe Table', icon: 'signe_table' },
   'LSL003': { name: 'Signe Floor Gradient', icon: 'signe_floor' },
   'LSL004': { name: 'Signe Table Gradient', icon: 'signe_table' },
-
+  
   // --------------------------------------------------------------------------------
   // 🏡 Lampadari / Plafoniere / Ceiling
   // --------------------------------------------------------------------------------
@@ -311,7 +314,7 @@ export const LIGHT_MODELS = {
   'LCA008': { name: 'Ceiling Round Color Ambience', icon: 'ceiling' },
   'LTC001': { name: 'Ceiling Panel Color', icon: 'ceiling_panel' },
   'LTC002': { name: 'Ceiling Panel Ambience', icon: 'ceiling_panel' },
-
+  
   // --------------------------------------------------------------------------------
   // 🌳 Outdoor
   // --------------------------------------------------------------------------------
@@ -335,7 +338,7 @@ export const LIGHT_MODELS = {
   'LWA014': { name: 'Inara Filament Wall', icon: 'inara' },
   'LLA001': { name: 'Amarant Linear Flood', icon: 'amarant' },
   'LPA001': { name: 'Outdoor Spotlight', icon: 'outdoor_spot' },
-
+  
   // --------------------------------------------------------------------------------
   // Default - per tutti gli ID sconosciuti
   // --------------------------------------------------------------------------------
@@ -344,9 +347,9 @@ export const LIGHT_MODELS = {
 
 
 export const PRESET_TYPES = {
-  COLOR: 'COLOR',    // Preset che usano HUE e SAT (per luci colorate)
-  CT: 'CT',          // Preset che usano CT (per luci CT o colorate)
-  WHITE: 'WHITE'     // Preset che usano solo BRI (compatibili con tutte)
+  COLOR: 'COLOR', // Preset che usano HUE e SAT (per luci colorate)
+  CT: 'CT', // Preset che usano CT (per luci CT o colorate)
+  WHITE: 'WHITE' // Preset che usano solo BRI (compatibili con tutte)
 };
 
 export const DEFAULT_PRESETS = [
@@ -365,20 +368,48 @@ export function hsb2hex(h, s, v) {
     const val = Math.round(v * 2.55)
     return val << 16 | val << 8 | val;
   }
-  h /= 60; s /= 100; v /= 100;
+  h /= 60;
+  s /= 100;
+  v /= 100;
   const i = Math.floor(h);
   const f = h - i;
   const p = v * (1 - s);
   const q = v * (1 - f * s);
   const t = v * (1 - (1 - f) * s);
-  let r = 0, g = 0, b = 0;
+  let r = 0,
+    g = 0,
+    b = 0;
   switch (i % 6) {
-    case 0: r = v; g = t; b = p; break;
-    case 1: r = q; g = v; b = p; break;
-    case 2: r = p; g = v; b = t; break;
-    case 3: r = p; g = q; b = v; break;
-    case 4: r = t; g = p; b = v; break;
-    case 5: r = v; g = p; b = q; break;
+    case 0:
+      r = v;
+      g = t;
+      b = p;
+      break;
+    case 1:
+      r = q;
+      g = v;
+      b = p;
+      break;
+    case 2:
+      r = p;
+      g = v;
+      b = t;
+      break;
+    case 3:
+      r = p;
+      g = q;
+      b = v;
+      break;
+    case 4:
+      r = t;
+      g = p;
+      b = v;
+      break;
+    case 5:
+      r = v;
+      g = p;
+      b = q;
+      break;
   }
   const toInt = (c) => Math.round(c * 255);
   return (toInt(r) << 16) + (toInt(g) << 8) + toInt(b);
@@ -388,10 +419,10 @@ function calculateCtRgb(mireds) {
   // 153 (Freddo) -> 500 (Caldo)
   const MIN_CT = 153;
   const MAX_CT = 500;
-
+  
   // Normalizza la percentuale tra 0 (freddo) e 1 (caldo)
   const pct = Math.max(0, Math.min(1, (mireds - MIN_CT) / (MAX_CT - MIN_CT)));
-
+  
   // Cold: 0xCCDDFF (RGB 204, 221, 255), Warm: 0xFFB044 (RGB 255, 176, 68)
   // Interpolazione:
   // R: 204 -> 255
@@ -400,7 +431,7 @@ function calculateCtRgb(mireds) {
   const g = 221 + (176 - 221) * pct;
   // B: 255 -> 68
   const b = 255 + (68 - 255) * pct;
-
+  
   return {
     r: Math.round(r),
     g: Math.round(g),
@@ -420,13 +451,13 @@ export function ct2hex(mireds) {
 
 export function ct2hexString(mireds) {
   const { r, g, b } = calculateCtRgb(mireds);
-
+  
   // Funzione helper per convertire un componente in HEX a due cifre
   const componentToHex = (c) => {
     const hex = c.toString(16);
     return hex.length === 1 ? '0' + hex : hex;
   };
-
+  
   return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b);
 }
 
@@ -440,26 +471,26 @@ export const normalizeHex = (hex) => {
 
 export function multiplyHexColor(hex_color, multiplier) {
   hex_color = Math.floor(hex_color).toString(16).padStart(6, "0"); // @fix 1.0.6
-
+  
   let r = parseInt(hex_color.substring(0, 2), 16);
   let g = parseInt(hex_color.substring(2, 4), 16);
   let b = parseInt(hex_color.substring(4, 6), 16);
-
+  
   r = Math.min(Math.round(r * multiplier), 255);
   g = Math.min(Math.round(g * multiplier), 255);
   b = Math.min(Math.round(b * multiplier), 255);
-
+  
   const result = "0x" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, "0");
   return result;
 }
 
 export function btnPressColor(hex_color, multiplier) { // @add 1.0.6
   hex_color = Math.floor(hex_color).toString(16).padStart(6, "0");
-
+  
   let r = parseInt(hex_color.substring(0, 2), 16);
   let g = parseInt(hex_color.substring(2, 4), 16);
   let b = parseInt(hex_color.substring(4, 6), 16);
-
+  
   // check if any of the color components are at their maximum value
   if (r === 255 || g === 255 || b === 255) {
     // and if so + the multiplier is greater than 1, divide the color

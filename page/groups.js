@@ -25,12 +25,14 @@ Page(
     onInit(p) {
       logger.debug('Groups page onInit')
       const app = getApp()
+      this.state.currentTab = app.getCurrentTab()
+      logger.debug('Restored tab:', this.state.currentTab)
       
       // 1. Controlla se dobbiamo ricaricare
       const needsRefresh = app.globalData.needsGroupsRefresh
       
       if (needsRefresh) {
-        logger.log('Refresh flag set, will reload from API')
+        logger.debug('Refresh flag set, will reload from API')
         app.globalData.needsGroupsRefresh = false
         // Non carichiamo qui, lo farà build()
         return
@@ -176,6 +178,8 @@ Page(
     switchTab(tabName) {
       if (this.state.currentTab === tabName) return
       this.state.currentTab = tabName
+      const app = getApp()
+      app.setCurrentTab(tabName)
       this.renderPage()
     },
     
@@ -206,8 +210,8 @@ Page(
           if (data_key === 'on_off') {
             this.toggleGroup(item.raw)
           } else {
-            // ✅ Setta flag per invalidare cache detail se necessario
             const app = getApp()
+            app.setCurrentTab(this.state.currentTab)
             app.globalData.isComingBackFromDetail = true
             
             const paramsString = JSON.stringify({
@@ -226,6 +230,8 @@ Page(
     },
     
     onDestroy() {
+      const app = getApp()
+      app.setCurrentTab(this.state.currentTab)
       this.clearAllWidgets()
     }
   })
