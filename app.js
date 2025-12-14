@@ -1,5 +1,7 @@
 import { BaseApp } from '@zeppos/zml/base-app'
 import { log } from '@zos/utils'
+import { DEFAULT_USER_SETTINGS } from './utils/constants.js'
+
 
 App(
   BaseApp({
@@ -14,19 +16,62 @@ App(
       currentTab: 'ROOMS',
       isComingBackFromDetail: false,
       needsGroupsRefresh: false,
-      // Impostazioni Utente (Persistenti)
+      settingsLoaded: false,
       settings: {
-        bridgeIp: null,
-        username: null,
-        show_global_toggle: true,
-        show_scenes: true,
-        display_order: 'LIGHTS_FIRST'
+        ...DEFAULT_USER_SETTINGS
       }
     },
     
     onCreate(options) {
       console.log('Hue On-Off App Created')
       // Qui in futuro caricherai i settings dal file system
+      //this.loadUserSettings()
+    },
+    
+    // 👇 NUOVO: Carica settings dal backend
+    loadUserSettings() {
+      console.log('Loading user settings from backend...')
+      
+      // Richiesta al backend per ottenere le settings
+      this.request({
+          method: 'GET_USER_SETTINGS'
+        })
+        .then(result => {
+          if (result.success && result.settings) {
+            console.log('User settings loaded:', result.settings)
+            
+            // Aggiorna le settings mantenendo bridgeIp e username
+            this.globalData.settings = {
+              ...this.globalData.settings, // Mantiene bridgeIp/username
+              ...result.settings // Sovrascrive con backend
+            }
+            
+            this.globalData.settingsLoaded = true
+          } else {
+            console.warn('Failed to load settings, using defaults')
+            this.globalData.settingsLoaded = true
+          }
+        })
+        .catch(err => {
+          console.error('Error loading user settings:', err)
+          this.globalData.settingsLoaded = true
+        })
+    },
+    
+    areSettingsReady() {
+      return this.globalData.settingsLoaded
+    },
+    
+    updateSettings(newSettings) {
+      console.log('Global Store: Updating settings', newSettings)
+      this.globalData.settings = {
+        ...this.globalData.settings,
+        ...newSettings
+      }
+    },
+    
+    getSettings() {
+      return this.globalData.settings
     },
     
     // --- HELPER METHODS ---
@@ -38,6 +83,15 @@ App(
       this.globalData.data.rooms = apiData.rooms || []
       this.globalData.data.zones = apiData.zones || []
       this.globalData.data.hasLoadedOnce = true
+      
+      // 👇 NUOVO: Aggiorna anche settings se presenti
+      if (apiData.userSettings) {
+        console.log('Global Store: Updating User Settings from API')
+        this.globalData.settings = {
+          ...this.globalData.settings,  // Mantiene bridgeIp/username
+          ...apiData.userSettings        // Sovrascrive con backend
+        }
+      }
     },
     
     getGroupsData() {
