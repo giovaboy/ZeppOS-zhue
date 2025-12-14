@@ -351,6 +351,7 @@ Page(
         navigateToLightDetail: (light) => this.navigateToLightDetail(light)
       }, COLORS)
       
+      logger.debug(this.state.scrollTop)
       if (this.state.scrollTop) {
         scrollTo({
           y: this.state.scrollTop,
