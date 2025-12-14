@@ -179,7 +179,7 @@ Page(
             app.globalData.needsGroupsRefresh = true
             
             this.state.scrollTop = getScrollTop()
-            
+            logger.debug(this.state.scrollTop)
             this.renderPage()
           }
         })
@@ -209,6 +209,7 @@ Page(
             // ✅ Flag per ricaricare groups
             app.globalData.needsGroupsRefresh = true
             this.state.scrollTop = getScrollTop()
+            logger.debug(this.state.scrollTop)
             this.renderPage()
           }
         })
@@ -230,6 +231,7 @@ Page(
             app.setGroupDetailCache(this.state.groupId, null)
             app.globalData.needsGroupsRefresh = true
             this.state.scrollTop = getScrollTop()
+            logger.debug(this.state.scrollTop)
             setTimeout(() => this.loadGroupDetail(), 200)
           }
         })
