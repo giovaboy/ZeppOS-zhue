@@ -8,7 +8,7 @@ import { onGesture, GESTURE_RIGHT, createModal, MODAL_CONFIRM } from '@zos/inter
 import { px } from '@zos/utils'
 import { renderLightDetail, LAYOUT_CONFIG } from 'zosLoader:./light-detail.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
-import { DEFAULT_PRESETS, PRESET_TYPES, hsb2hex, ct2hex, ct2hexString, xy2hex, normalizeHex } from '../utils/constants.js'
+import { DEFAULT_PRESETS, PRESET_TYPES, hsb2hex, ct2hex, ct2hexString, xy2hex, xy2hexString, normalizeHex } from '../utils/constants.js'
 
 const logger = getLogger('zhue-light-detail-page')
 
@@ -420,6 +420,7 @@ Page(
       this.state.light.bri = favorite.bri
       this.state.light.hue = favorite.hue
       this.state.light.sat = favorite.sat
+      this.state.light.xy = favorite.xy
       this.state.light.ct = favorite.ct
 
       this.request({
@@ -430,6 +431,7 @@ Page(
           hue: favorite.hue,
           sat: favorite.sat,
           bri: favorite.bri,
+          xy: favorite.xy,
           ct: favorite.ct
         }
       })
@@ -447,7 +449,11 @@ Page(
         newFavorite.hue = light.hue || 0
         newFavorite.sat = light.sat || 0
         newFavorite.hex = normalizeHex(light.hex) || '#FF0000'
-      } else if ((light.colormode === 'ct' || light.colormode === 'bri') && light.ct > 0) {
+      } else if ((light.colormode === 'xy' ) && light.xy) {
+        newFavorite.type = PRESET_TYPES.COLOR
+        newFavorite.xy = light.xy || [0.0, 0.0]
+        newFavorite.hex = normalizeHex(light.hex) || '#FF0000'
+      }else if ((light.colormode === 'ct' ) && light.ct > 0) {
         newFavorite.type = PRESET_TYPES.CT
         newFavorite.ct = light.ct
         newFavorite.hex = ct2hexString(light.ct) || '#FFFFFF'

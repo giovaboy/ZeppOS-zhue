@@ -358,7 +358,7 @@ export const LIGHT_MODELS = {
 
 
 export const PRESET_TYPES = {
-  COLOR: 'COLOR', // Preset che usano HUE e SAT (per luci colorate - non usiamo XY per comodità)
+  COLOR: 'COLOR', // Preset che usano HUE e SAT (per luci colorate)
   CT: 'CT', // Preset che usano CT (per luci CT o colorate)
   WHITE: 'WHITE' // Preset che usano solo BRI (compatibili con tutte)
 };
@@ -448,6 +448,11 @@ function calculateCtRgb(mireds) {
     g: Math.round(g),
     b: Math.round(b)
   };
+}
+
+export function xy2hexString(xy, bri = 254) {
+  const hex = xy2hex(xy, bri).toString(16).padStart(6, '0').toUpperCase()
+  return '#' + hex
 }
 
 /**

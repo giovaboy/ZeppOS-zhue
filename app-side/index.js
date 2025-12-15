@@ -315,7 +315,7 @@ function presetsAreEqual(presetA, presetB) {
   switch (presetA.type) {
     case PRESET_TYPES.COLOR:
       // Per COLOR, confronta anche HUE e SAT (HEX è solo cosmetico)
-      return presetA.hue === presetB.hue && presetA.sat === presetB.sat;
+      return (presetA.hue === presetB.hue && presetA.sat === presetB.sat) || (presetA.xy === presetB.xy);
 
     case PRESET_TYPES.CT:
       // Per CT, confronta il CT (temperatura colore)

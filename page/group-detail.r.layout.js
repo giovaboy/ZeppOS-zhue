@@ -2,6 +2,9 @@ import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
 import { widget, align, text_style } from '@zos/ui'
 import { getText } from '@zos/i18n'
+import { getLogger } from '../utils/logger.js'
+
+const logger = getLogger('zhue-group-detail-page')
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
@@ -13,7 +16,7 @@ export const LAYOUT_CONFIG = {
 // Funzione principale di rendering chiamata da group_detail.js
 export function renderGroupDetailPage(pageContext, state, viewData, callbacks, COLORS) {
     const { toggleGroup, retry } = callbacks
-    const { groupName, isLoading, error, scrollTop } = state
+    const { groupName, isLoading, error } = state
     const userSettings = getApp().globalData.settings
     // Background
     pageContext.createTrackedWidget(widget.FILL_RECT, {
@@ -87,13 +90,14 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
     }
 
     // 4. Contenuto Scrollabile con VIEW_CONTAINER
-    renderGroupContentWithViewContainer(pageContext, viewData, callbacks, COLORS, currentY)
+    renderGroupContentWithViewContainer(pageContext, state, viewData, callbacks, COLORS, currentY)
 }
 
 // ✅ NUOVO: Rendering con VIEW_CONTAINER
-function renderGroupContentWithViewContainer(pageContext, viewData, callbacks, COLORS, startY) {
-    const { applyScene, toggleLight, navigateToLightDetail } = callbacks
+function renderGroupContentWithViewContainer(pageContext, state, viewData, callbacks, COLORS, startY) {
+    const { applyScene, toggleLight, navigateToLightDetail, onScrollChange } = callbacks
     const { data } = viewData
+    const { scrollPos_y } = state
 
     if (data.length === 0) {
         pageContext.createTrackedWidget(widget.TEXT, {
@@ -127,7 +131,15 @@ function renderGroupContentWithViewContainer(pageContext, viewData, callbacks, C
         w: DEVICE_WIDTH,
         h: containerHeight,
         scroll_enable: true,
-        scroll_max_height: totalContentHeight + px(20) // Padding bottom
+        scroll_max_height: totalContentHeight + px(20), // questa proprietà non esiste, dobbiamo aggiungere in fase di rendering un fill rect alto px(20) alla fine per padding
+        pos_y: scrollPos_y || 0, // <-- APPLICA IL VALORE SALVATO, altrimenti 0
+        // 🔥 NUOVO: Aggiungi il listener per catturare la posizione
+        scroll_frame_func: (FrameParams) => {
+            if (FrameParams.yoffset !== undefined) {
+                logger.debug('VIEW_CONTAINER scroll_y:', FrameParams.yoffset)
+                onScrollChange(FrameParams.yoffset)
+            }
+        }
     })
 
     let currentY = 0

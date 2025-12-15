@@ -4,7 +4,6 @@ import { getLogger } from '../utils/logger.js'
 import { getText } from '@zos/i18n'
 import { createWidget, deleteWidget } from '@zos/ui'
 import { push } from '@zos/router'
-import { getScrollTop, scrollTo } from '@zos/page'
 import { renderGroupDetailPage } from 'zosLoader:./group-detail.[pf].layout.js'
 import { DEFAULT_USER_SETTINGS, COLORS, LIGHT_MODELS, ct2hex, xy2hex } from '../utils/constants.js'
 
@@ -20,7 +19,7 @@ Page(
       scenes: [],
       isLoading: false,
       error: null,
-      scrollTop: null
+      scrollPos_y: null
     },
 
     widgets: [],
@@ -152,6 +151,16 @@ Page(
       this.listWidget = null
     },
 
+    onScrollChange(y) {
+        // Questa funzione viene chiamata dal VIEW_CONTAINER nel layout
+        if (this.state.scrollPos_y !== y) {
+            this.state.scrollPos_y = y
+            // Nota: Non chiamiamo renderPage() qui per evitare un ciclo infinito 
+            // e un consumo eccessivo di risorse. Lo stato viene solo aggiornato.
+            logger.debug(`Scroll Y saved: ${y}`)
+        }
+    },
+
     toggleGroup() {
       const anyOn = this.state.lights.some(light => !!light.ison)
       const newState = !anyOn
@@ -177,9 +186,6 @@ Page(
 
             // ✅ Flag per ricaricare groups
             app.globalData.needsGroupsRefresh = true
-
-            this.state.scrollTop = getScrollTop()
-            logger.debug(this.state.scrollTop)
             this.renderPage()
           }
         })
@@ -208,8 +214,6 @@ Page(
 
             // ✅ Flag per ricaricare groups
             app.globalData.needsGroupsRefresh = true
-            this.state.scrollTop = getScrollTop()
-            logger.debug(this.state.scrollTop)
             this.renderPage()
           }
         })
@@ -230,8 +234,6 @@ Page(
             const app = getApp()
             app.setGroupDetailCache(this.state.groupId, null)
             app.globalData.needsGroupsRefresh = true
-            this.state.scrollTop = getScrollTop()
-            logger.debug(this.state.scrollTop)
             setTimeout(() => this.loadGroupDetail(), 200)
           }
         })
@@ -337,15 +339,9 @@ Page(
         retry: () => this.loadGroupDetail(),
         applyScene: (item) => this.applyScene(item),
         toggleLight: (light) => this.toggleLight(light),
-        navigateToLightDetail: (light) => this.navigateToLightDetail(light)
+        navigateToLightDetail: (light) => this.navigateToLightDetail(light),
+        onScrollChange: (y) => this.onScrollChange(y)
       }, COLORS)
-
-      logger.debug(this.state.scrollTop)
-      if (this.state.scrollTop) {
-        scrollTo({
-          y: this.state.scrollTop,
-        })
-      }
     },
 
     onDestroy() {
