@@ -17,7 +17,8 @@ Page(
       zones: [],
       currentTab: 'ROOMS',
       isLoading: false,
-      error: null
+      error: null,
+      scrollPos_y: null
     },
     
     widgets: [],
@@ -181,6 +182,16 @@ Page(
       const app = getApp()
       app.setCurrentTab(tabName)
       this.renderPage()
+    },
+    
+    onScrollChange(y) {
+        // Questa funzione viene chiamata dal VIEW_CONTAINER nel layout
+        if (this.state.scrollPos_y !== y) {
+            this.state.scrollPos_y = y
+            // Nota: Non chiamiamo renderPage() qui per evitare un ciclo infinito 
+            // e un consumo eccessivo di risorse. Lo stato viene solo aggiornato.
+            logger.debug(`Scroll Y saved: ${y}`)
+        }
     },
     
     // --- RENDERING ---

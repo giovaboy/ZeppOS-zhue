@@ -12,7 +12,7 @@ export const LAYOUT_CONFIG = {
 }
 
 export function renderGroupsPage(pageContext, state, listData, callbacks) {
-    const { switchTab, refresh, handleListItemClick } = callbacks
+    const { switchTab, refresh, handleListItemClick, onScrollChange } = callbacks
     const { currentTab, isLoading, error } = state
     
     // 1. Sfondo
@@ -123,11 +123,13 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
         return
     }
     
-    renderGroupsList(pageContext, listData, listStartY, handleListItemClick)
+    renderGroupsList(pageContext, state, listData, listStartY, callbacks)
 }
 
 // ✅ Rendering con VIEW_CONTAINER
-function renderGroupsList(pageContext, listData, startY, onItemClick) {
+function renderGroupsList(pageContext, state, listData, startY, callbacks) {
+    const { handleListItemClick, onScrollChange } = callbacks
+    const { scrollPos_y } = state
     const itemHeight = px(100)
     const itemSpacing = px(10)
     
@@ -142,14 +144,29 @@ function renderGroupsList(pageContext, listData, startY, onItemClick) {
         w: DEVICE_WIDTH,
         h: totalContainerHeight,
         scroll_enable: true,
-        //scroll_max_height: totalContentHeight
+        pos_y: scrollPos_y || 0,
+        scroll_frame_func: (FrameParams) => {
+            if (FrameParams.yoffset !== undefined) {
+                logger.debug('VIEW_CONTAINER scroll_y:', FrameParams.yoffset)
+                onScrollChange(FrameParams.yoffset)
+            }
+        }
     })
     
     // Renderizza ogni gruppo
     let currentY = 0
     listData.forEach((item, index) => {
-        currentY = renderGroupItem(viewContainer, item, index, currentY, itemHeight, onItemClick)
+        currentY = renderGroupItem(viewContainer, item, index, currentY, itemHeight, handleListItemClick)
         currentY += itemSpacing
+    })
+    // ✅ Fix Padding Bottom
+    viewContainer.createWidget(widget.FILL_RECT, {
+        x: 0,
+        y: currentY,
+        w: DEVICE_WIDTH,
+        h: px(20),
+        color: COLORS.background,
+        alpha: 0
     })
 }
 
