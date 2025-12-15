@@ -438,7 +438,7 @@ Page(
         })
     },
     
-    AddCurrentColorToFavorites() {
+    addCurrentColorToFavorites() {
       const light = this.state.light
       let newFavorite = {
         // 1. Inizializza la luminosità per tutti i preferiti
