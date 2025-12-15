@@ -111,18 +111,6 @@ function renderGroupContentWithViewContainer(pageContext, state, viewData, callb
         return
     }
 
-    // Calcola l'altezza totale del contenuto
-    let totalContentHeight = 0
-    data.forEach(item => {
-        if (item.type === 'header') {
-            totalContentHeight += px(50)
-        } else if (item.type === 'scene') {
-            totalContentHeight += px(80) + px(10) // item + spacing
-        } else if (item.type === 'light') {
-            totalContentHeight += px(90) + px(10) // item + spacing
-        }
-    })
-
     // ✅ VIEW_CONTAINER per scrolling
     const containerHeight = DEVICE_HEIGHT - startY
     const viewContainer = pageContext.createTrackedWidget(widget.VIEW_CONTAINER, {
@@ -131,7 +119,6 @@ function renderGroupContentWithViewContainer(pageContext, state, viewData, callb
         w: DEVICE_WIDTH,
         h: containerHeight,
         scroll_enable: true,
-        scroll_max_height: totalContentHeight + px(20), // questa proprietà non esiste, dobbiamo aggiungere in fase di rendering un fill rect alto px(20) alla fine per padding
         pos_y: scrollPos_y || 0, // <-- APPLICA IL VALORE SALVATO, altrimenti 0
         // 🔥 NUOVO: Aggiungi il listener per catturare la posizione
         scroll_frame_func: (FrameParams) => {
@@ -160,6 +147,15 @@ function renderGroupContentWithViewContainer(pageContext, state, viewData, callb
                 () => navigateToLightDetail(item.raw)
             )
         }
+    })
+    // ✅ Fix Padding Bottom
+    viewContainer.createWidget(widget.FILL_RECT, {
+        x: 0,
+        y: currentY,
+        w: DEVICE_WIDTH,
+        h: px(20),
+        color: COLORS.background,
+        alpha: 0
     })
 }
 
