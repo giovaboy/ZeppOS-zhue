@@ -208,7 +208,7 @@ Page(
       const caps = this.getLightCapabilities(light)
 
       let initialMode = 'color'
-      if (((light.colormode === 'ct' || light.colormode === 'bri') && light.ct > 0) || !caps.includes('color')) {
+      if (((light.colormode === 'ct') && light.ct > 0) || !caps.includes('color')) {
         initialMode = 'ct'
       }
       /*
@@ -457,7 +457,7 @@ Page(
         newFavorite.type = PRESET_TYPES.CT
         newFavorite.ct = light.ct
         newFavorite.hex = ct2hexString(light.ct) || '#FFFFFF'
-      } else if (light.colormode === 'bri' && light.bri > 0) {
+      } else if (light.colormode === undefined && light.bri > 0) {
         newFavorite.type = PRESET_TYPES.WHITE
         newFavorite.hex = '#FFFFFF'
       }
