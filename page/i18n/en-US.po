@@ -118,6 +118,9 @@ msgstr "Turn off"
 msgid "LIGHT_OFF"
 msgstr "Turn on"
 
+msgid "SCENES"
+msgstr "Scenes"
+
 msgid "ADD_FAVORITE_COLOR"
 msgstr "Add favorite color"
 
