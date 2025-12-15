@@ -8,7 +8,7 @@ import { onGesture, GESTURE_RIGHT, createModal, MODAL_CONFIRM } from '@zos/inter
 import { px } from '@zos/utils'
 import { renderLightDetail, LAYOUT_CONFIG } from 'zosLoader:./light-detail.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
-import { DEFAULT_PRESETS, PRESET_TYPES, hsb2hex, ct2hexString, normalizeHex } from '../utils/constants.js'
+import { DEFAULT_PRESETS, PRESET_TYPES, hsb2hex, ct2hex, ct2hexString, xy2hex, normalizeHex } from '../utils/constants.js'
 
 const logger = getLogger('zhue-light-detail-page')
 
@@ -38,7 +38,7 @@ Page(
       lightName: '',
       light: null,
       isLoading: false,
-      favoriteColors: null, // ← null = non ancora caricato
+      favoriteColors: null,
       isDraggingBrightness: false,
       tempBrightness: 0,
       brightnessSliderFillWidget: null,
@@ -59,6 +59,7 @@ Page(
       }
       this.state.lightId = params?.lightId
       this.state.lightName = params?.lightName || getText('LIGHT')
+      this.state.light = params?.light
     },
 
     build() {
@@ -130,14 +131,61 @@ Page(
       }
 
       // Pre-calcola hex se necessario (SOLO se abbiamo light)
-      if (this.state.light && !this.state.light.hex) {
+      /*if (this.state.light && !this.state.light.hex) {
         const bri = this.state.light.bri || 100
         const nBri = Math.round(bri / 254 * 100)
         const nHue = Math.round((this.state.light.hue || 0) / 65535 * 360)
         const nSat = Math.round((this.state.light.sat || 0) / 254 * 100)
         const val = hsb2hex(nHue, nSat, nBri)
         this.state.light.hex = '#' + val.toString(16).padStart(6, '0').toUpperCase()
+      }*/
+
+        logger.debug('Pre-calculating light hex color if needed...')
+        logger.debug('light state:', this.state.light)
+
+      if (this.state.light && !this.state.light.hex) {
+        const light = this.state.light
+        let rgb = null
+
+        switch (light.colormode) {
+          case 'hs': {
+            const bri = light.bri ?? 100
+            const hue = light.hue ?? 0
+            const sat = light.sat ?? 0
+
+            const nBri = Math.round((bri / 254) * 100)
+            const nHue = Math.round((hue / 65535) * 360)
+            const nSat = Math.round((sat / 254) * 100)
+
+            rgb = hsb2hex(nHue, nSat, nBri)
+            break
+          }
+
+          case 'xy': {
+            if (Array.isArray(light.xy)) {
+              rgb = xy2hex(light.xy)
+            }
+            break
+          }
+
+          case 'ct': {
+            if (Number.isInteger(light.ct)) {
+              rgb = ct2hex(light.ct)
+            }
+            break
+          }
+        }
+
+        if (Number.isInteger(rgb)) {
+          this.state.light = {
+            ...light,
+            hex: normalizeHex('#' + rgb.toString(16).padStart(6, '0').toUpperCase())
+          }
+        }
+        logger.debug('Calculated light hex color:', this.state.light.hex)
       }
+
+
 
       // Chiama il layout - gestirà tutti gli stati
       renderLightDetail(this, this.state, {
@@ -163,12 +211,12 @@ Page(
       if (((light.colormode === 'ct' || light.colormode === 'bri') && light.ct > 0) || !caps.includes('color')) {
         initialMode = 'ct'
       }
-/*
-      if (light.colormode === 'hs' && (light.sat > 0 || light.hue > 0)) {
-        initialMode = 'color'
-      } else if ((light.colormode === 'ct' || light.colormode === 'bri') && light.ct > 0) {
-        initialMode = 'ct'
-      }*/
+      /*
+            if (light.colormode === 'hs' && (light.sat > 0 || light.hue > 0)) {
+              initialMode = 'color'
+            } else if ((light.colormode === 'ct' || light.colormode === 'bri') && light.ct > 0) {
+              initialMode = 'ct'
+            }*/
 
       push({
         url: 'page/color-picker',
@@ -293,6 +341,11 @@ Page(
         this.renderPage()
       }
 
+      logger.log('Loading light detail...')
+      logger.debug('Light ID:', this.state.lightId)
+      logger.debug('Current favorite colors loaded:', this.state.favoriteColors ? this.state.favoriteColors.length : 'none')
+      logger.debug('Current light data:', this.state.light)
+
       this.request({
         method: 'GET_LIGHT_DETAIL',
         params: { lightId: this.state.lightId }
@@ -413,11 +466,11 @@ Page(
           if (result.success && result.added) {
             this.loadFavoriteColors()
           } else if (result.success && !result.added) {
-            showToast({text:getText('DUPLICATE_FAVORITE_COLOR')})
+            showToast({ text: getText('DUPLICATE_FAVORITE_COLOR') })
           }
         })
         .catch(err => {
-          showToast({text:getText('FAILED_TO_ADD_FAVORITE')})
+          showToast({ text: getText('FAILED_TO_ADD_FAVORITE') })
           logger.error('Failed to add favorite color:', err)
         })
     },

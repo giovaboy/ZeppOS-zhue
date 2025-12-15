@@ -2,7 +2,7 @@ import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
 import { widget, align, text_style, prop, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
-import { COLORS, PRESET_TYPES, btnPressColor, ct2hex } from '../utils/constants'
+import { COLORS, PRESET_TYPES, btnPressColor, ct2hex, xy2hex } from '../utils/constants'
 import { getLogger } from '../utils/logger'
 
 const logger = getLogger('zhue-light-detail-layout')
@@ -55,6 +55,7 @@ export function renderLightDetail(pageContext, state, callbacks) {
 // === STATE RENDERERS ===
 
 function renderLoadingState(pageContext, lightName) {
+  logger.log('Rendering loading state for light detail page...')
   pageContext.createTrackedWidget(widget.FILL_RECT, {
     x: 0,
     y: 0,
@@ -211,6 +212,7 @@ function renderNoDataState(pageContext, lightName, retryFunc) {
 }
 
 function renderNormalState(pageContext, state, callbacks) {
+  logger.log('Rendering normal state for light detail page...')
   const { light, lightName, favoriteColors } = state
   const {
     toggleLightFunc,
@@ -225,13 +227,24 @@ function renderNormalState(pageContext, state, callbacks) {
   const lightOn = !!light.ison
   let bgColor = COLORS.background
 
+  logger.debug('Light is', lightOn ? 'ON' : 'OFF')
+  logger.debug('Light colormode:', light.colormode)
+  logger.debug('Light hex color:', light.hex)
+  logger.debug('Light ct value:', light.ct)
+  logger.debug('Light xy value:', light.xy)
+  logger.debug('Light bri value:', light.bri)
+
   if (lightOn) {
     if (light.colormode === 'hs' && light.hex) {
       bgColor = getLightBgColor(light.hex)
     } else if (light.colormode === 'ct' && light.ct) {
-      bgColor = ((ct2hex(light.ct) >> 3) & 0x1f1f1f) + 0x0a0a0a
+      bgColor = getLightBgColor(ct2hex(light.ct).toString(16).padStart(6, '0').toUpperCase())
+    } else if (light.colormode === 'xy' && light.xy) {
+      bgColor = getLightBgColor(xy2hex(light.xy, light.bri).toString(16).padStart(6, '0').toUpperCase())
     }
   }
+
+  logger.debug('Determined background color:', bgColor.toString(16).padStart(6, '0').toUpperCase())
 
   // Sfondo
   const background = pageContext.createTrackedWidget(widget.FILL_RECT, {
@@ -385,9 +398,12 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
     btnColor = parseInt(light.hex.replace('#', '0x'), 16)
   } else if (light.colormode === 'ct' && light.ct) {
     btnColor = ct2hex(light.ct)
+  } else if (light.colormode === 'xy' && light.xy) {
+    btnColor = xy2hex(light.xy, light.bri || 254)
   } else {
-    btnColor = 0xFFFFFF
+    btnColor = COLORS.white
   }
+  //return btnColor
 
   // Border
   pageContext.createTrackedWidget(widget.STROKE_RECT, {
