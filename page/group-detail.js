@@ -235,19 +235,6 @@ Page(
         .catch(err => logger.error('Apply scene error:', err))
     },
     
-    navigateToLightDetailold(light) {
-      const paramsString = JSON.stringify({
-        lightId: light.id,
-        lightName: light.name,
-        light: light
-      })
-      
-      push({
-        url: 'page/light-detail',
-        params: paramsString
-      })
-    },
-    
     navigateToLightDetail(light) {
       // 👇 NUOVO: Salva i dati nel global store
       app.setLightData(light.id, light)/*{

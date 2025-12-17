@@ -327,7 +327,7 @@ Page(
     
     getLightCapabilities(light) {
       if (!light) return []
-      logger.debug(light.type)
+      logger.debug('getLightCapabilities',light)
       logger.debug(light.capabilities)
       const type = light.type || ''
       let caps = ['brightness']

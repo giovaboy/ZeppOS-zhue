@@ -147,8 +147,6 @@ App(
     
     onDestroy(options) {
       console.log('Hue On-Off App Destroyed')
-      clearCurrentLightData()
-      
     }
   })
 )
