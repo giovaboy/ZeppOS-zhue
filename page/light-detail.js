@@ -8,7 +8,7 @@ import { onGesture, GESTURE_RIGHT, createModal, MODAL_CONFIRM } from '@zos/inter
 import { px } from '@zos/utils'
 import { renderLightDetail, LAYOUT_CONFIG } from 'zosLoader:./light-detail.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
-import { DEFAULT_PRESETS, PRESET_TYPES, hsb2hex, ct2hex, ct2hexString, xy2hex, xy2hexString, normalizeHex } from '../utils/constants.js'
+import { DEFAULT_PRESETS, PRESET_TYPES, hsb2hex, ct2hex, ct2hexString, xy2hex, xy2hexString, normalizeHex, DEFAULT_USER_SETTINGS } from '../utils/constants.js'
 
 const logger = getLogger('zhue-light-detail-page')
 
@@ -42,7 +42,8 @@ Page(
       lightName: '',
       light: null,
       isLoading: false,
-      favoriteColors: null,
+      // 👇 RIMOSSO: Non serve più questo stato locale
+      // favoriteColors: null,
       isDraggingBrightness: false,
       tempBrightness: 0,
       brightnessSliderFillWidget: null,
@@ -53,18 +54,6 @@ Page(
     widgets: [],
     currentModal: null,
     exitGestureListener: null,
-    
-    onInitold(p) {
-      let params = {}
-      try {
-        params = typeof p === 'string' ? JSON.parse(p) : p
-      } catch (e) {
-        logger.error('Error parsing params', e)
-      }
-      this.state.lightId = params?.lightId
-      this.state.lightName = params?.lightName || getText('LIGHT')
-      this.state.light = params?.light
-    },
     
     onInit(p) {
       let params = {}
@@ -77,46 +66,42 @@ Page(
       this.state.lightId = params?.lightId
       this.state.lightName = params?.lightName || getText('LIGHT')
       
-      // 👇 NUOVO: Prova a usare i dati dal global store
+      // Prova a usare i dati dal global store
       const app = getApp()
       const cachedLightData = app.getCurrentLightData()
       
       if (cachedLightData && cachedLightData.id === this.state.lightId) {
         logger.log('Using cached light data from global store')
         this.state.light = cachedLightData
-        
-        // 👇 IMPORTANTE: Pulisci subito dopo aver usato i dati
-        // Così eviti problemi se l'utente naviga a un'altra luce
         app.clearCurrentLightData()
       } else {
         logger.log('No cached light data available, will load from API')
+        this.state.isLoading = true
       }
-    },
-    
-    buildold() {
-      logger.log('Building Light Detail page')
-      setPageBrightTime({ brightTime: 60000 })
-      setScrollLock({ lock: false })
-      this.unlockExitGesture()
-      this.loadLightDetail()
     },
     
     build() {
       logger.log('Building Light Detail page')
+      logger.debug('Initial state - light:', !!this.state.light, 'isLoading:', this.state.isLoading)
+      
       setPageBrightTime({ brightTime: 60000 })
       setScrollLock({ lock: false })
       this.unlockExitGesture()
       
-      // 👇 MODIFICATO: Carica solo se non abbiamo dati
-      if (!this.state.light) {
-        this.loadLightDetail()
+      if (this.state.isLoading) {
+        logger.log('Rendering loading state, then loading data...')
+        this.renderPage()
+        setTimeout(() => this.loadLightDetail(), 10)
+        
+      } else if (this.state.light) {
+        logger.log('Have cached data, rendering page...')
+        this.renderPage()
+        
       } else {
-        // Abbiamo già i dati dal cache, carica solo i preset
-        if (!this.state.favoriteColors) {
-          this.loadFavoriteColors()
-        } else {
-          this.renderPage()
-        }
+        logger.warn('Unexpected state: no loading flag and no data')
+        this.state.isLoading = true
+        this.renderPage()
+        setTimeout(() => this.loadLightDetail(), 10)
       }
     },
     
@@ -144,8 +129,6 @@ Page(
       return w
     },
     
-    // --- GESTURE LOCK LOGIC ---
-    
     unlockExitGesture() {
       if (this.exitGestureListener) {
         this.exitGestureListener()
@@ -166,25 +149,32 @@ Page(
         this.exitGestureListener()
       }
       this.exitGestureListener = onGesture({
-        callback: (event) => true // Consuma l'evento
+        callback: (event) => true
       })
     },
     
-    // --- RENDERING ---
+    // 👇 NUOVO: Helper per ottenere favorite colors
+    getFavoriteColors() {
+      const app = getApp()
+      const settings = app.getSettings() || DEFAULT_USER_SETTINGS
+      return settings.favorite_colors || DEFAULT_PRESETS
+    },
     
     renderPage() {
       this.clearAllWidgets()
       
-      // Ordina i preset se esistono
-      if (this.state.favoriteColors) {
-        this.state.favoriteColors.sort(comparePresets)
-      }
+      // 👇 MODIFICATO: Ottieni favorite colors dal global store
+      const favoriteColors = this.getFavoriteColors()
       
-      // Pre-calcola hex se necessario (SOLO se abbiamo light) per 
-      logger.debug('Pre-calculating light hex color if needed...')
-      logger.debug('light state:', this.state.light)
+      // Ordina i preset
+      const sortedPresets = [...favoriteColors].sort(comparePresets)
       
-      if (this.state.light && !this.state.light.hex) {
+      logger.debug('Rendering page - isLoading:', this.state.isLoading, 'error:', this.state.error, 'hasLight:', !!this.state.light)
+      logger.debug('Favorite colors count:', favoriteColors.length)
+      
+      // Pre-calcola hex se necessario
+      if (this.state.light && !this.state.light.hex && !this.state.isLoading) {
+        logger.debug('Pre-calculating light hex color...')
         const light = this.state.light
         let rgb = null
         
@@ -204,7 +194,7 @@ Page(
           
           case 'xy': {
             if (Array.isArray(light.xy)) {
-              rgb = xy2hex(light.xy)
+              rgb = xy2hex(light.xy, light.bri)
             }
             break
           }
@@ -222,27 +212,23 @@ Page(
             ...light,
             hex: normalizeHex('#' + rgb.toString(16).padStart(6, '0').toUpperCase())
           }
+          logger.debug('Calculated light hex color:', this.state.light.hex)
         }
-        logger.debug('Calculated light hex color:', this.state.light.hex)
       }
       
-      
-      
-      // Chiama il layout - gestirà tutti gli stati
-      renderLightDetail(this, this.state, {
+      // 👇 MODIFICATO: Passa sortedPresets invece di this.state.favoriteColors
+      renderLightDetail(this, { ...this.state, favoriteColors: sortedPresets }, {
         toggleLightFunc: () => this.toggleLight(),
         setBrightnessDrag: (evtType, info) => this.handleBrightnessDrag(evtType, info),
         openColorPickerFunc: () => this.openColorPicker(),
         applyPresetFunc: (fav) => this.applyPreset(fav),
         addFavoriteFunc: () => this.addCurrentColorToFavorites(),
         deleteFavoriteFunc: (fav) => this.deletePreset(fav),
-        retryFunc: () => this.loadLightDetail(), // ← AGGIUNTO
+        retryFunc: () => this.loadLightDetail(),
         getLightBgColor: (hex) => this.getLightBgColor(hex),
         capabilities: this.getLightCapabilities(this.state.light)
       })
     },
-    
-    // --- NAVIGATION ---
     
     openColorPicker() {
       const light = this.state.light
@@ -266,8 +252,6 @@ Page(
         })
       })
     },
-    
-    // --- DRAG LOGIC ---
     
     handleBrightnessDrag(evtType, info) {
       const { sliderX, sliderW } = LAYOUT_CONFIG
@@ -342,8 +326,6 @@ Page(
       }).catch(e => logger.error(e))
     },
     
-    // --- HELPERS ---
-    
     getLightCapabilities(light) {
       if (!light) return []
       const type = light.type || ''
@@ -366,62 +348,21 @@ Page(
       return ((color >> 3) & 0x1f1f1f) + 0x0a0a0a
     },
     
-    // --- API CALLS ---
-    
-    loadLightDetailold() {
-      // Mostra loading solo se non abbiamo dati
-      if (!this.state.light) {
-        this.state.isLoading = true
-        this.state.error = null
-        this.renderPage()
-      }
-      
-      logger.log('Loading light detail...')
-      logger.debug('Light ID:', this.state.lightId)
-      logger.debug('Current favorite colors loaded:', this.state.favoriteColors ? this.state.favoriteColors.length : 'none')
-      logger.debug('Current light data:', this.state.light)
-      
-      this.request({
-          method: 'GET_LIGHT_DETAIL',
-          params: { lightId: this.state.lightId }
-        })
-        .then(result => {
-          if (result.success) {
-            this.state.light = result.data.light
-            this.state.tempBrightness = this.state.light.bri || 0
-            this.state.isLoading = false
-            this.state.error = null
-            
-            // Carica preset se non già caricati
-            if (!this.state.favoriteColors) {
-              this.loadFavoriteColors()
-            } else {
-              this.renderPage()
-            }
-          } else {
-            this.state.isLoading = false
-            this.state.error = result.message || getText('FAILED_TO_LOAD_DETAIL')
-            this.renderPage()
-          }
-        })
-        .catch(err => {
-          logger.error('Load light detail error:', err)
-          this.state.isLoading = false
-          this.state.error = err.message || getText('NETWORK_ERROR')
-          this.renderPage()
-        })
-    },
-    
     loadLightDetail() {
-      // Mostra loading solo se non abbiamo dati
-      if (!this.state.light) {
-        this.state.isLoading = true
-        this.state.error = null
-        this.renderPage()
-      }
-      
       logger.log('Loading light detail...')
       logger.debug('Light ID:', this.state.lightId)
+      
+      if (this.state.isLoading) {
+        logger.debug('Already loading, skipping duplicate request')
+        return
+      }
+      
+      this.state.isLoading = true
+      this.state.error = null
+      
+      if (this.widgets.length === 0) {
+        this.renderPage()
+      }
       
       this.request({
           method: 'GET_LIGHT_DETAIL',
@@ -434,12 +375,11 @@ Page(
             this.state.isLoading = false
             this.state.error = null
             
-            // Carica preset se non già caricati
-            if (!this.state.favoriteColors) {
-              this.loadFavoriteColors()
-            } else {
-              this.renderPage()
-            }
+            logger.log('Light detail loaded successfully')
+            
+            // 👇 RIMOSSO: Non serve più caricare favorite colors
+            // Renderizza direttamente
+            this.renderPage()
           } else {
             this.state.isLoading = false
             this.state.error = result.message || getText('FAILED_TO_LOAD_DETAIL')
@@ -454,25 +394,12 @@ Page(
         })
     },
     
+    // 👇 RIMOSSO: Metodo loadFavoriteColors() non più necessario
+    /*
     loadFavoriteColors() {
-      logger.log('Loading favorite colors...')
-      
-      this.request({ method: 'GET_FAVORITE_COLORS' })
-        .then(result => {
-          if (result.success) {
-            this.state.favoriteColors = result.colors || DEFAULT_PRESETS
-            logger.log('Favorite colors loaded:', this.state.favoriteColors.length)
-          } else {
-            this.state.favoriteColors = DEFAULT_PRESETS
-          }
-          this.renderPage()
-        })
-        .catch(err => {
-          logger.error('Failed to load favorite colors:', err)
-          this.state.favoriteColors = DEFAULT_PRESETS
-          this.renderPage()
-        })
-    },
+      // Non serve più, usiamo globalData.settings.favorite_colors
+    }
+    */
     
     toggleLight() {
       const newState = !this.state.light.ison
@@ -520,49 +447,36 @@ Page(
     addCurrentColorToFavorites() {
       const light = this.state.light
       let newFavorite = {
-        // 1. Inizializza la luminosità per tutti i preferiti
         bri: light.bri || 254
       }
       
       const colormode = light.colormode
       
       if (colormode === 'hs' && (light.sat > 0 || light.hue > 0)) {
-        // Modalità Colore HS (Hue/Saturation)
         newFavorite.type = PRESET_TYPES.COLOR
         newFavorite.hue = light.hue || 0
         newFavorite.sat = light.sat || 0
-        // Assicurati sempre che hex sia valido per il rendering dell'anteprima
         newFavorite.hex = normalizeHex(light.hex) || '#FF0000'
         
       } else if (colormode === 'xy' && light.xy) {
-        // Modalità Colore XY (Coordinate CIE)
         newFavorite.type = PRESET_TYPES.COLOR
         newFavorite.xy = light.xy
         newFavorite.hex = normalizeHex(light.hex) || '#FF0000'
         
       } else if (colormode === 'ct' && light.ct > 0) {
-        // Modalità Temperatura Colore (CT)
         newFavorite.type = PRESET_TYPES.CT
         newFavorite.ct = light.ct
-        // Usa la funzione per convertire in Hex per l'anteprima (bianchi caldi/freddi)
         newFavorite.hex = ct2hexString(light.ct) || '#FFFFFF'
         
       } else if (colormode === 'ct' || light.ct === 0 || colormode === 'none' || !colormode) {
-        // Modalità Bianco Puro / Luminosità (Caso di fallback)
-        // Questo copre le luci bianche che non hanno un colormode definito
-        // o hanno ct ma luce bianca a massima temperatura (tipicamente ct alto).
         newFavorite.type = PRESET_TYPES.WHITE
         newFavorite.hex = '#FFFFFF'
         
       } else {
-        // Caso di fallback generale o stato non gestito (es. luce spenta senza modalità)
-        // Possiamo decidere se salvare un preferito 'neutro' o abortire.
-        // Scelta: se i dati sono insufficienti, salviamo un bianco base a max bri (254).
         newFavorite.type = PRESET_TYPES.WHITE
         newFavorite.bri = 254
         newFavorite.hex = '#FFFFFF'
       }
-      
       
       this.request({
           method: 'ADD_FAVORITE_COLOR',
@@ -571,7 +485,19 @@ Page(
         .then(result => {
           logger.debug('Add favorite color result:', result)
           if (result.success && result.added) {
-            this.loadFavoriteColors()
+            // 👇 MODIFICATO: Aggiorna globalData invece di ricaricare
+            const app = getApp()
+            const currentSettings = app.getSettings()
+            
+            // Il backend ha già aggiunto l'ID, quindi ricarica le settings
+            this.request({ method: 'GET_USER_SETTINGS' })
+              .then(settingsResult => {
+                if (settingsResult.success && settingsResult.settings) {
+                  app.updateSettings(settingsResult.settings)
+                  this.renderPage() // Re-render con i nuovi preset
+                }
+              })
+            
           } else if (result.success && !result.added) {
             showToast({ text: getText('DUPLICATE_FAVORITE_COLOR') })
           }
@@ -608,9 +534,18 @@ Page(
                 params: { index: favorite.id }
               })
               .then(result => {
-                //showToast(result)
                 if (result.success) {
-                  this.loadFavoriteColors()
+                  // 👇 MODIFICATO: Aggiorna globalData invece di ricaricare
+                  const app = getApp()
+                  
+                  // Ricarica settings dal backend
+                  this.request({ method: 'GET_USER_SETTINGS' })
+                    .then(settingsResult => {
+                      if (settingsResult.success && settingsResult.settings) {
+                        app.updateSettings(settingsResult.settings)
+                        this.renderPage() // Re-render senza il preset eliminato
+                      }
+                    })
                 }
               })
           }
@@ -634,7 +569,7 @@ Page(
     onDestroy() {
       const app = getApp()
       app.clearCurrentLightData()
-
+      
       if (this.exitGestureListener) this.exitGestureListener()
       if (this.currentModal) {
         try {
