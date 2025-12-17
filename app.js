@@ -18,7 +18,7 @@ App(
       settings: {
         ...DEFAULT_USER_SETTINGS
       },
-      currentLightData: {}
+      lightData: {}
     },
     
     onCreate(options) {
@@ -117,16 +117,32 @@ App(
     
     setLightData(lightId, lightData) {
       console.log('Global Store: Setting current light data', lightData?.id)
-      this.globalData.currentLightData[lightId] = lightData
+      this.globalData.lightData[lightId] = {
+        ...lightData,
+        _timestamp: Date.now(),
+        _ttl: 5000 // 5 secondi di validità
+      }
     },
     
     getLightData(lightId) {
-      return this.globalData.currentLightData[lightId] || null
+      //return this.globalData.lightData[lightId] || null
+      const data = this.globalData.lightData[lightId]
+      if (!data) return null
+      
+      // Verifica se il cache è ancora valido
+      const age = Date.now() - (data._timestamp || 0)
+      if (age > (data._ttl || 5000)) {
+        console.log('Light data cache expired')
+        this.clearLightData(lightId)
+        return null
+      }
+      
+      return data
     },
     
     clearLightData(lightId) {
       console.log('Global Store: Clearing current light data')
-      this.globalData.currentLightData[lightId] = null
+      this.globalData.lightData[lightId] = null
     },
     
     onDestroy(options) {
