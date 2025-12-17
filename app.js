@@ -10,7 +10,7 @@ App(
         zones: [],
         hasLoadedOnce: false // Flag per sapere se abbiamo dati validi
       },
-      detailCache: {},
+      groupDetailCache: {},
       currentTab: 'ROOMS',
       isComingBackFromDetail: false,
       needsGroupsRefresh: false,
@@ -18,7 +18,7 @@ App(
       settings: {
         ...DEFAULT_USER_SETTINGS
       },
-      currentLightData: null
+      currentLightData: {}
     },
     
     onCreate(options) {
@@ -108,29 +108,31 @@ App(
     
     setGroupDetailCache(groupId, data) {
       // Salviamo i dati associandoli all'ID
-      this.globalData.detailCache[groupId] = data
+      this.globalData.groupDetailCache[groupId] = data
     },
     
     getGroupDetailCache(groupId) {
-      return this.globalData.detailCache[groupId] || null
+      return this.globalData.groupDetailCache[groupId] || null
     },
     
-    setCurrentLightData(lightData) {
+    setLightData(lightId, lightData) {
       console.log('Global Store: Setting current light data', lightData?.id)
-      this.globalData.currentLightData = lightData
+      this.globalData.currentLightData[lightId] = lightData
     },
     
-    getCurrentLightData() {
-      return this.globalData.currentLightData
+    getLightData(lightId) {
+      return this.globalData.currentLightData[lightId] || null
     },
     
-    clearCurrentLightData() {
+    clearLightData(lightId) {
       console.log('Global Store: Clearing current light data')
-      this.globalData.currentLightData = null
+      this.globalData.currentLightData[lightId] = null
     },
     
     onDestroy(options) {
       console.log('Hue On-Off App Destroyed')
+      clearCurrentLightData()
+      
     }
   })
 )

@@ -66,13 +66,12 @@ Page(
       this.state.lightName = params?.lightName || getText('LIGHT')
       
       // Prova a usare i dati dal global store
-      //const app = getApp()
-      const cachedLightData = app.getCurrentLightData()
+      const cachedLightData = app.getLightData(this.state.lightId)
       
-      if (cachedLightData && cachedLightData.id === this.state.lightId) {
+      if (cachedLightData) {
         logger.log('Using cached light data from global store')
         this.state.light = cachedLightData
-        app.clearCurrentLightData()
+        //app.clearLightData(this.state.lightId)
       } else {
         logger.log('No cached light data available, will load from API')
         this.state.isLoading = true
@@ -154,7 +153,6 @@ Page(
     
     // 👇 NUOVO: Helper per ottenere favorite colors
     getFavoriteColors() {
-      //const app = getApp()
       const settings = app.getSettings() || DEFAULT_USER_SETTINGS
       return settings.favorite_colors || DEFAULT_PRESETS
     },
@@ -211,6 +209,7 @@ Page(
             ...light,
             hex: normalizeHex('#' + rgb.toString(16).padStart(6, '0').toUpperCase())
           }
+          app.setLightData(this.state.lightId, this.state.light)
           logger.debug('Calculated light hex color:', this.state.light.hex)
         }
       }
@@ -297,6 +296,7 @@ Page(
     
     setBrightness(brightness, skipApiCall = false) {
       this.state.light.bri = brightness
+      app.setLightData(this.state.lightId, this.state.light)
       const { sliderW } = LAYOUT_CONFIG
       const fillWidth = Math.max(px(5), Math.round(sliderW * brightness / 254))
       const percent = Math.round(brightness / 254 * 100)
@@ -370,6 +370,7 @@ Page(
         .then(result => {
           if (result.success) {
             this.state.light = result.data.light
+            app.setLightData(this.state.lightId, this.state.light)
             this.state.tempBrightness = this.state.light.bri || 0
             this.state.isLoading = false
             this.state.error = null
@@ -410,6 +411,7 @@ Page(
         .then(result => {
           if (result.success) {
             this.state.light.ison = newState
+            app.setLightData(this.state.lightId, this.state.light)
             this.renderPage()
           }
         })
@@ -425,6 +427,8 @@ Page(
       this.state.light.sat = favorite.sat
       this.state.light.xy = favorite.xy
       this.state.light.ct = favorite.ct
+      
+      app.setLightData(this.state.lightId, this.state.light)
       
       this.request({
           method: 'SET_COLOR',
@@ -554,7 +558,6 @@ Page(
     },
     
     goBack() {
-      app.clearCurrentLightData()
       if (this.currentModal) {
         this.currentModal.show(false)
         this.currentModal = null
@@ -564,8 +567,6 @@ Page(
     },
     
     onDestroy() {
-      app.clearCurrentLightData()
-      
       if (this.exitGestureListener) this.exitGestureListener()
       if (this.currentModal) {
         try {
