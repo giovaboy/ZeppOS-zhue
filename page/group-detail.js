@@ -8,6 +8,7 @@ import { renderGroupDetailPage } from 'zosLoader:./group-detail.[pf].layout.js'
 import { DEFAULT_USER_SETTINGS, COLORS, LIGHT_MODELS, ct2hex, xy2hex } from '../utils/constants.js'
 
 const logger = getLogger('zhue-group-detail-page')
+const app = getApp()
 
 Page(
   BasePage({
@@ -47,7 +48,6 @@ Page(
       }
       
       // ✅ Prova a usare la cache
-      const app = getApp()
       const cachedData = app.getGroupDetailCache(this.state.groupId)
       
       if (cachedData) {
@@ -75,7 +75,6 @@ Page(
       const rawLights = data.lights || []
       
       // ✅ Gestione Settings (CORRETTO)
-      const app = getApp()
       if (data.userSettings) {
         app.globalData.settings = { ...app.globalData.settings, ...data.userSettings }
         logger.log('User settings updated in global store')
@@ -109,7 +108,6 @@ Page(
         .then(result => {
           if (result.success && result.data) {
             // ✅ Salva in cache globale
-            const app = getApp()
             app.setGroupDetailCache(this.state.groupId, result.data)
             logger.log('Detail data cached globally')
             
@@ -181,7 +179,6 @@ Page(
             })
             
             // ✅ Invalida cache detail
-            const app = getApp()
             app.setGroupDetailCache(this.state.groupId, null)
             
             // ✅ Flag per ricaricare groups
@@ -209,7 +206,6 @@ Page(
             light.ison = newState
             
             // ✅ Invalida cache detail
-            const app = getApp()
             app.setGroupDetailCache(this.state.groupId, null)
             
             // ✅ Flag per ricaricare groups
@@ -231,7 +227,6 @@ Page(
         .then(result => {
           if (result.success) {
             // ✅ Invalida cache e ricarica
-            const app = getApp()
             app.setGroupDetailCache(this.state.groupId, null)
             app.globalData.needsGroupsRefresh = true
             setTimeout(() => this.loadGroupDetail(), 200)
@@ -255,7 +250,6 @@ Page(
     
     navigateToLightDetail(light) {
       // 👇 NUOVO: Salva i dati nel global store
-      const app = getApp()
       app.setCurrentLightData({
         id: light.id,
         name: light.name,
@@ -307,7 +301,6 @@ Page(
       const data = []
       
       // ✅ Usa settings dal global store (CORRETTO)
-      const app = getApp()
       const settings = app.globalData.settings || DEFAULT_USER_SETTINGS
       
       const addScenes = () => {

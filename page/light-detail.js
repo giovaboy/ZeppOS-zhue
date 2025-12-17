@@ -11,6 +11,7 @@ import { getLogger } from '../utils/logger.js'
 import { DEFAULT_PRESETS, PRESET_TYPES, hsb2hex, ct2hex, ct2hexString, xy2hex, xy2hexString, normalizeHex, DEFAULT_USER_SETTINGS } from '../utils/constants.js'
 
 const logger = getLogger('zhue-light-detail-page')
+const app = getApp()
 
 function getPresetTypePriority(type) {
   switch (type) {
@@ -42,8 +43,6 @@ Page(
       lightName: '',
       light: null,
       isLoading: false,
-      // 👇 RIMOSSO: Non serve più questo stato locale
-      // favoriteColors: null,
       isDraggingBrightness: false,
       tempBrightness: 0,
       brightnessSliderFillWidget: null,
@@ -67,7 +66,7 @@ Page(
       this.state.lightName = params?.lightName || getText('LIGHT')
       
       // Prova a usare i dati dal global store
-      const app = getApp()
+      //const app = getApp()
       const cachedLightData = app.getCurrentLightData()
       
       if (cachedLightData && cachedLightData.id === this.state.lightId) {
@@ -155,7 +154,7 @@ Page(
     
     // 👇 NUOVO: Helper per ottenere favorite colors
     getFavoriteColors() {
-      const app = getApp()
+      //const app = getApp()
       const settings = app.getSettings() || DEFAULT_USER_SETTINGS
       return settings.favorite_colors || DEFAULT_PRESETS
     },
@@ -486,7 +485,7 @@ Page(
           logger.debug('Add favorite color result:', result)
           if (result.success && result.added) {
             // 👇 MODIFICATO: Aggiorna globalData invece di ricaricare
-            const app = getApp()
+            
             const currentSettings = app.getSettings()
             
             // Il backend ha già aggiunto l'ID, quindi ricarica le settings
@@ -535,9 +534,6 @@ Page(
               })
               .then(result => {
                 if (result.success) {
-                  // 👇 MODIFICATO: Aggiorna globalData invece di ricaricare
-                  const app = getApp()
-                  
                   // Ricarica settings dal backend
                   this.request({ method: 'GET_USER_SETTINGS' })
                     .then(settingsResult => {
@@ -558,6 +554,7 @@ Page(
     },
     
     goBack() {
+      app.clearCurrentLightData()
       if (this.currentModal) {
         this.currentModal.show(false)
         this.currentModal = null
@@ -567,7 +564,6 @@ Page(
     },
     
     onDestroy() {
-      const app = getApp()
       app.clearCurrentLightData()
       
       if (this.exitGestureListener) this.exitGestureListener()
