@@ -250,7 +250,7 @@ Page(
     
     navigateToLightDetail(light) {
       // 👇 NUOVO: Salva i dati nel global store
-      app.setLightData(light.id, {
+      app.setLightData(light.id, light)/*{
         id: light.id,
         name: light.name,
         ison: light.ison,
@@ -264,7 +264,7 @@ Page(
         modelid: light.modelid,
         reachable: light.reachable,
         type: light.type
-      })
+      })*/
       
       // 👇 SEMPLIFICATO: Passa solo l'ID
       const paramsString = JSON.stringify({
