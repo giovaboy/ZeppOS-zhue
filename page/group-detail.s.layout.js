@@ -2,14 +2,23 @@ import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
 import { widget, align, text_style } from '@zos/ui'
 import { getText } from '@zos/i18n'
+import { COLORS, btnPressColor } from '../utils/constants.js'
+import { getLogger } from '../utils/logger.js'
+
+const logger = getLogger('zhue-group-detail-page')
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
+
+export const LAYOUT_CONFIG = {
+    headerY: px(20),
+    headerH: px(40)
+}
 
 // Funzione principale di rendering chiamata da group_detail.js
 export function renderGroupDetailPage(pageContext, state, viewData, callbacks, COLORS) {
     const { toggleGroup, retry } = callbacks
-    const { groupName, isLoading, error, userSettings } = state
-
+    const { groupName, isLoading, error } = state
+    const userSettings = getApp().globalData.settings
     // Background
     pageContext.createTrackedWidget(widget.FILL_RECT, {
         x: 0, y: 0, w: DEVICE_WIDTH, h: DEVICE_HEIGHT, color: COLORS.background
@@ -17,7 +26,7 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
 
     // Header: Nome del Gruppo
     pageContext.createTrackedWidget(widget.TEXT, {
-        x: 0, y: px(10), w: DEVICE_WIDTH, h: px(40),
+        x: 0, y: LAYOUT_CONFIG.headerY, w: DEVICE_WIDTH, h: LAYOUT_CONFIG.headerH,
         text: groupName || getText('GROUP_DETAIL'),
         text_size: px(34),
         color: COLORS.text,
@@ -50,10 +59,11 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
     // 2. Loading State
     if (isLoading) {
         pageContext.createTrackedWidget(widget.TEXT, {
-            x: 0, y: px(200), w: DEVICE_WIDTH, h: px(50),
+            //x: 0, y: px(200), w: DEVICE_WIDTH, h: px(50),
+            x: 0, y: DEVICE_HEIGHT / 2 - px(50), w: DEVICE_WIDTH, h: px(50),
             text: getText('LOADING'),
             text_size: px(28),
-            color: COLORS.inactive,
+            color: COLORS.loading,
             align_h: align.CENTER_H,
             align_v: align.CENTER_V
         })
@@ -61,13 +71,13 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
     }
 
     // 3. Pulsante Toggle Globale (condizionale su userSettings)
-    let currentY = px(60)
+    let currentY = LAYOUT_CONFIG.headerY + LAYOUT_CONFIG.headerH + px(10)
 
     if (userSettings.show_global_toggle && state.lights.length > 1) {
         const anyOn = state.lights.some(light => !!light.ison)
         const buttonColor = anyOn ? COLORS.toggleOn : COLORS.toggleOff
 
-        pageContext.createTrackedWidget(widget.BUTTON, {
+        /*pageContext.createTrackedWidget(widget.BUTTON, {
             x: px(80), y: currentY, w: px(320), h: px(60),
             text: anyOn ? getText('GROUP_OFF') : getText('GROUP_ON'),
             text_size: px(28),
@@ -75,19 +85,49 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
             press_color: 0x333333,
             radius: px(30),
             click_func: toggleGroup
-        })
+        })*/
 
-        currentY += px(75) // Spazio dopo toggle
+        /*pageContext.createTrackedWidget(widget.SLIDE_SWITCH, {
+            x: DEVICE_WIDTH / 2 - px(48),
+            y: currentY,
+            w: px(96),
+            h: px(64),
+            select_bg: 'switch_on.png',
+            un_select_bg: 'switch_off.png',
+            slide_src: 'radio_select.png',
+            slide_select_x: px(40),
+            slide_un_select_x: px(8),
+            checked: anyOn,
+            checked_change_func: toggleGroup
+        })*/
+
+        const badgeColor = anyOn ? COLORS.success : COLORS.inactive
+
+        pageContext.createTrackedWidget(widget.BUTTON, {
+            x: DEVICE_WIDTH / 2 - px(40),
+            y: currentY,
+            w: px(80),
+            h: px(50),
+            text: anyOn ? getText('ON') : getText('OFF'),
+            text_size: px(26),
+            radius: px(8),
+            normal_color: badgeColor,
+            press_color: btnPressColor(badgeColor, 0.8),
+            click_func: toggleGroup
+        });
+
+        currentY += px(60) // Spazio dopo toggle
     }
 
     // 4. Contenuto Scrollabile con VIEW_CONTAINER
-    renderGroupContentWithViewContainer(pageContext, viewData, callbacks, COLORS, currentY)
+    renderGroupContentWithViewContainer(pageContext, state, viewData, callbacks, COLORS, currentY)
 }
 
 // ✅ NUOVO: Rendering con VIEW_CONTAINER
-function renderGroupContentWithViewContainer(pageContext, viewData, callbacks, COLORS, startY) {
-    const { applyScene, toggleLight, navigateToLightDetail } = callbacks
+function renderGroupContentWithViewContainer(pageContext, state, viewData, callbacks, COLORS, startY) {
+    const { applyScene, toggleLight, navigateToLightDetail, onScrollChange } = callbacks
     const { data } = viewData
+    const { scrollPos_y } = state
 
     if (data.length === 0) {
         pageContext.createTrackedWidget(widget.TEXT, {
@@ -101,18 +141,6 @@ function renderGroupContentWithViewContainer(pageContext, viewData, callbacks, C
         return
     }
 
-    // Calcola l'altezza totale del contenuto
-    let totalContentHeight = 0
-    data.forEach(item => {
-        if (item.type === 'header') {
-            totalContentHeight += px(50)
-        } else if (item.type === 'scene') {
-            totalContentHeight += px(80) + px(10) // item + spacing
-        } else if (item.type === 'light') {
-            totalContentHeight += px(90) + px(10) // item + spacing
-        }
-    })
-
     // ✅ VIEW_CONTAINER per scrolling
     const containerHeight = DEVICE_HEIGHT - startY
     const viewContainer = pageContext.createTrackedWidget(widget.VIEW_CONTAINER, {
@@ -121,7 +149,14 @@ function renderGroupContentWithViewContainer(pageContext, viewData, callbacks, C
         w: DEVICE_WIDTH,
         h: containerHeight,
         scroll_enable: true,
-        scroll_max_height: totalContentHeight + px(20) // Padding bottom
+        pos_y: scrollPos_y || 0, // <-- APPLICA IL VALORE SALVATO, altrimenti 0
+        // 🔥 NUOVO: Aggiungi il listener per catturare la posizione
+        scroll_frame_func: (FrameParams) => {
+            if (FrameParams.yoffset !== undefined) {
+                logger.debug('VIEW_CONTAINER scroll_y:', FrameParams.yoffset)
+                onScrollChange(FrameParams.yoffset)
+            }
+        }
     })
 
     let currentY = 0
@@ -142,6 +177,15 @@ function renderGroupContentWithViewContainer(pageContext, viewData, callbacks, C
                 () => navigateToLightDetail(item.raw)
             )
         }
+    })
+    // ✅ Fix Padding Bottom
+    viewContainer.createWidget(widget.FILL_RECT, {
+        x: 0,
+        y: currentY,
+        w: DEVICE_WIDTH,
+        h: px(20),
+        color: COLORS.background,
+        alpha: 0
     })
 }
 
@@ -235,48 +279,47 @@ function renderLightItem(container, light, yPos, COLORS, onToggle, onNavigate) {
         y: yPos,
         w: px(440),
         h: itemHeight,
-        color: COLORS.lightBg,
+        color: COLORS.color_sys_item_bg,
         radius: px(10)
-    })
-
-    // Color swatch (left indicator)
-    container.createWidget(widget.FILL_RECT, {
-        x: px(30),
-        y: yPos + px(20),
-        w: px(16),
-        h: px(16),
-        color: light.swatch_bg_color || COLORS.inactive,
-        radius: px(4)
     })
 
     // Light name
     container.createWidget(widget.TEXT, {
-        x: px(55),
+        x: px(45),
         y: yPos + px(15),
-        w: px(300),
+        w: px(305),
         h: px(30),
         text: light.name,
         text_size: px(28),
-        color: isOn ? 0xFFFFFF : COLORS.inactive,
+        color: isOn ? COLORS.color_text_title : COLORS.inactive,
         align_h: align.LEFT,
         align_v: align.CENTER_V
     })
 
     // Status text
     container.createWidget(widget.TEXT, {
-        x: px(55),
+        x: px(45),
         y: yPos + px(45),
-        w: px(300),
+        w: px(305),
         h: px(25),
         text: light.status_text,
         text_size: px(20),
-        color: COLORS.inactive,
+        color: COLORS.color_text_subtitle,
         align_h: align.LEFT,
         align_v: align.CENTER_V
     })
 
     // Light icon/toggle button (right side)
     if (light.icon) {
+        // light background
+        container.createWidget(widget.FILL_RECT, {
+            x: px(380),
+            y: yPos + px(10),
+            w: px(70),
+            h: px(70),
+            color: light.swatch_bg_color || COLORS.inactive
+        })
+        // light mask
         container.createWidget(widget.IMG, {
             x: px(380),
             y: yPos + px(10),

@@ -2,7 +2,10 @@ import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
 import { widget, align, text_style, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
+import { getLogger } from '../utils/logger.js'
 import { COLORS, btnPressColor } from '../utils/constants.js'
+
+const logger = getLogger('zhue-group-detail-page')
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
@@ -14,7 +17,7 @@ export const LAYOUT_CONFIG = {
 export function renderGroupsPage(pageContext, state, listData, callbacks) {
     const { switchTab, refresh, handleListItemClick, onScrollChange } = callbacks
     const { currentTab, isLoading, error } = state
-    
+
     // 1. Sfondo
     pageContext.createTrackedWidget(widget.FILL_RECT, {
         x: 0,
@@ -23,7 +26,7 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
         h: DEVICE_HEIGHT,
         color: COLORS.background
     })
-    
+
     // 2. Gestione Errore
     if (error) {
         pageContext.createTrackedWidget(widget.TEXT, {
@@ -51,7 +54,7 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
         })
         return
     }
-    
+
     // 3. Header: Titolo
     pageContext.createTrackedWidget(widget.TEXT, {
         x: 0,
@@ -64,7 +67,7 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
         align_h: align.CENTER_H,
         align_v: align.CENTER_V
     })
-    
+
     // 4. Tabs
     const tabY = LAYOUT_CONFIG.headerY + LAYOUT_CONFIG.headerH + px(10)
     const tabH = px(40)
@@ -73,7 +76,7 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
     const totalW = (tabW * 2) + gap;
     const startX = (DEVICE_WIDTH - totalW) / 2;
     const isRooms = currentTab === 'ROOMS'
-    
+
     // Tab Rooms
     pageContext.createTrackedWidget(widget.BUTTON, {
         x: startX,
@@ -81,13 +84,14 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
         w: tabW,
         h: tabH,
         text: getText('ROOMS'),
+        text_size: px(26),
         color: isRooms ? COLORS.activeTabText : COLORS.inactiveTabText,
         normal_color: isRooms ? COLORS.activeTab : COLORS.inactiveTab,
         press_color: btnPressColor(COLORS.activeTab, 0.8),
         radius: tabH / 2,
         click_func: () => switchTab('ROOMS')
     })
-    
+
     // Tab Zones
     const isZones = currentTab === 'ZONES'
     pageContext.createTrackedWidget(widget.BUTTON, {
@@ -96,17 +100,18 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
         w: tabW,
         h: tabH,
         text: getText('ZONES'),
+        text_size: px(26),
         color: isZones ? COLORS.activeTabText : COLORS.inactiveTabText,
         normal_color: isZones ? COLORS.activeTab : COLORS.inactiveTab,
         press_color: btnPressColor(COLORS.activeTab, 0.8),
         radius: tabH / 2,
         click_func: () => switchTab('ZONES')
     })
-    
+
     // 5. Lista con VIEW_CONTAINER
     const listStartY = px(120)
     const noun = currentTab === 'ROOMS' ? 'ROOM' : 'ZONE';
-    
+
     if (isLoading || listData.length === 0) {
         pageContext.createTrackedWidget(widget.TEXT, {
             //x: 0, y: px(200), w: DEVICE_WIDTH, h: px(50),
@@ -122,7 +127,7 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
         })
         return
     }
-    
+
     renderGroupsList(pageContext, state, listData, listStartY, callbacks)
 }
 
@@ -132,17 +137,17 @@ function renderGroupsList(pageContext, state, listData, startY, callbacks) {
     const { scrollPos_y } = state
     const itemHeight = px(100)
     const itemSpacing = px(10)
-    
+
     // Calcola altezza totale contenuto
     const totalContentHeight = listData.length * (itemHeight + itemSpacing) + px(20)
-    
+
     // Crea VIEW_CONTAINER scrollabile
     const containerHeight = DEVICE_HEIGHT - startY
     const viewContainer = pageContext.createTrackedWidget(widget.VIEW_CONTAINER, {
         x: 0,
         y: startY,
         w: DEVICE_WIDTH,
-        h: totalContainerHeight,
+        h: containerHeight,
         scroll_enable: true,
         pos_y: scrollPos_y || 0,
         scroll_frame_func: (FrameParams) => {
@@ -152,7 +157,7 @@ function renderGroupsList(pageContext, state, listData, startY, callbacks) {
             }
         }
     })
-    
+
     // Renderizza ogni gruppo
     let currentY = 0
     listData.forEach((item, index) => {
@@ -178,7 +183,7 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
         w: px(310),
         h: itemHeight
     })*/
-    
+
     // Background card
     container.createWidget(widget.FILL_RECT, {
         x: px(20),
@@ -188,7 +193,7 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
         color: COLORS.cardBg,
         radius: px(10)
     })
-    
+
     // Icon/Indicator (colored circle per tipo gruppo)
     const iconColor = group.raw?.type === 'room' ? COLORS.roomIndicator : COLORS.zoneIndicator
     container.createWidget(widget.CIRCLE, {
@@ -197,7 +202,7 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
         radius: px(12),
         color: iconColor || COLORS.highlight
     })
-    
+
     // Nome gruppo
     container.createWidget(widget.TEXT, {
         x: px(75),
@@ -210,7 +215,7 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
         align_h: align.LEFT,
         align_v: align.CENTER_V
     })
-    
+
     // Status (numero luci)
     container.createWidget(widget.TEXT, {
         x: px(75),
@@ -223,11 +228,11 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
         align_h: align.LEFT,
         align_v: align.CENTER_V
     })
-    
-    container.addEventListener(event.CLICK_DOWN, function(info) {
+
+    container.addEventListener(event.CLICK_DOWN, function (info) {
         onItemClick(index, 'navigate')
     })
-    
+
     // Navigate overlay (left side - nome e status)
     let overlay1 = container.createWidget(widget.BUTTON, {
         x: px(20),
@@ -240,13 +245,13 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
         radius: px(10),
         click_func: () => onItemClick(index, 'navigate')
     })
-    
+
     overlay1.setAlpha(0)
-    
+
     // ON/OFF badge (right side)
     const isOn = group.on_off === 'ON'
     const badgeColor = isOn ? COLORS.success : COLORS.inactive
-    
+
     container.createWidget(widget.BUTTON, {
         x: px(340),
         y: yPos + px(25),
@@ -259,6 +264,6 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
         press_color: btnPressColor(badgeColor, 0.8),
         click_func: () => onItemClick(index, 'on_off')
     });
-    
+
     return yPos + itemHeight
 }

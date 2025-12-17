@@ -1,25 +1,39 @@
 import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
-import { widget, align, text_style } from '@zos/ui'
+import { widget, align, text_style, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
-import { COLORS } from '../utils/constants.js'
+import { getLogger } from '../utils/logger.js'
+import { COLORS, btnPressColor } from '../utils/constants.js'
+
+const logger = getLogger('zhue-group-detail-page')
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
+export const LAYOUT_CONFIG = {
+    headerY: px(20),
+    headerH: px(40)
+}
+
 export function renderGroupsPage(pageContext, state, listData, callbacks) {
-    const { switchTab, refresh, handleListItemClick } = callbacks
-    const { currentTab, error } = state
+    const { switchTab, refresh, handleListItemClick, onScrollChange } = callbacks
+    const { currentTab, isLoading, error } = state
 
     // 1. Sfondo
     pageContext.createTrackedWidget(widget.FILL_RECT, {
-        x: 0, y: 0, w: DEVICE_WIDTH, h: DEVICE_HEIGHT,
+        x: 0,
+        y: 0,
+        w: DEVICE_WIDTH,
+        h: DEVICE_HEIGHT,
         color: COLORS.background
     })
 
     // 2. Gestione Errore
     if (error) {
         pageContext.createTrackedWidget(widget.TEXT, {
-            x: px(20), y: px(200), w: px(440), h: px(100),
+            x: px(20),
+            y: px(200),
+            w: px(440),
+            h: px(100),
             text: `ERROR: ${error}`,
             text_size: px(24),
             color: COLORS.error,
@@ -28,10 +42,13 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
             text_style: text_style.WRAP
         })
         pageContext.createTrackedWidget(widget.BUTTON, {
-            x: px(140), y: px(350), w: px(200), h: px(60),
+            x: px(140),
+            y: px(350),
+            w: px(200),
+            h: px(60),
             text: getText('RETRY'),
             normal_color: COLORS.highlight,
-            press_color: 0x333333,
+            press_color: btnPressColor(COLORS.highlight, 0.8),
             radius: px(10),
             click_func: refresh
         })
@@ -40,7 +57,10 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
 
     // 3. Header: Titolo
     pageContext.createTrackedWidget(widget.TEXT, {
-        x: 0, y: px(10), w: DEVICE_WIDTH, h: px(40),
+        x: 0,
+        y: LAYOUT_CONFIG.headerY,
+        w: DEVICE_WIDTH,
+        h: LAYOUT_CONFIG.headerH,
         text: getText('GROUPS'),
         text_size: px(36),
         color: COLORS.text,
@@ -49,31 +69,42 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
     })
 
     // 4. Tabs
-    const tabY = px(60)
-    const tabH = px(50)
-    const tabW = px(200)
+    const tabY = LAYOUT_CONFIG.headerY + LAYOUT_CONFIG.headerH + px(10)
+    const tabH = px(40)
+    const tabW = px(180)
+    const gap = px(10)
+    const totalW = (tabW * 2) + gap;
+    const startX = (DEVICE_WIDTH - totalW) / 2;
     const isRooms = currentTab === 'ROOMS'
 
     // Tab Rooms
     pageContext.createTrackedWidget(widget.BUTTON, {
-        x: px(30), y: tabY, w: tabW, h: tabH,
+        x: startX,
+        y: tabY,
+        w: tabW,
+        h: tabH,
         text: getText('ROOMS'),
+        text_size: px(26),
         color: isRooms ? COLORS.activeTabText : COLORS.inactiveTabText,
         normal_color: isRooms ? COLORS.activeTab : COLORS.inactiveTab,
-        press_color: COLORS.highlight,
-        radius: px(10),
+        press_color: btnPressColor(COLORS.activeTab, 0.8),
+        radius: tabH / 2,
         click_func: () => switchTab('ROOMS')
     })
 
     // Tab Zones
     const isZones = currentTab === 'ZONES'
     pageContext.createTrackedWidget(widget.BUTTON, {
-        x: px(250), y: tabY, w: tabW, h: tabH,
+        x: startX + tabW + gap,
+        y: tabY,
+        w: tabW,
+        h: tabH,
         text: getText('ZONES'),
+        text_size: px(26),
         color: isZones ? COLORS.activeTabText : COLORS.inactiveTabText,
         normal_color: isZones ? COLORS.activeTab : COLORS.inactiveTab,
-        press_color: COLORS.highlight,
-        radius: px(10),
+        press_color: btnPressColor(COLORS.activeTab, 0.8),
+        radius: tabH / 2,
         click_func: () => switchTab('ZONES')
     })
 
@@ -81,23 +112,29 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
     const listStartY = px(120)
     const noun = currentTab === 'ROOMS' ? 'ROOM' : 'ZONE';
 
-    if (listData.length === 0) {
+    if (isLoading || listData.length === 0) {
         pageContext.createTrackedWidget(widget.TEXT, {
-            x: 0, y: px(200), w: DEVICE_WIDTH, h: px(50),
-            text: getText(`NO_${noun}_FOUND`),
-            text_size: px(24),
-            color: COLORS.inactive,
+            //x: 0, y: px(200), w: DEVICE_WIDTH, h: px(50),
+            x: 0,
+            y: DEVICE_HEIGHT / 2 - px(50),
+            w: DEVICE_WIDTH,
+            h: px(50),
+            text: isLoading ? getText('LOADING') : getText(`NO_${noun}_FOUND`),
+            text_size: px(28),
+            color: COLORS.loading,
             align_h: align.CENTER_H,
             align_v: align.CENTER_V
         })
         return
     }
 
-    renderGroupsList(pageContext, listData, listStartY, handleListItemClick)
+    renderGroupsList(pageContext, state, listData, listStartY, callbacks)
 }
 
 // ✅ Rendering con VIEW_CONTAINER
-function renderGroupsList(pageContext, listData, startY, onItemClick) {
+function renderGroupsList(pageContext, state, listData, startY, callbacks) {
+    const { handleListItemClick, onScrollChange } = callbacks
+    const { scrollPos_y } = state
     const itemHeight = px(100)
     const itemSpacing = px(10)
 
@@ -112,19 +149,41 @@ function renderGroupsList(pageContext, listData, startY, onItemClick) {
         w: DEVICE_WIDTH,
         h: containerHeight,
         scroll_enable: true,
-        scroll_max_height: totalContentHeight
+        pos_y: scrollPos_y || 0,
+        scroll_frame_func: (FrameParams) => {
+            if (FrameParams.yoffset !== undefined) {
+                logger.debug('VIEW_CONTAINER scroll_y:', FrameParams.yoffset)
+                onScrollChange(FrameParams.yoffset)
+            }
+        }
     })
 
     // Renderizza ogni gruppo
     let currentY = 0
     listData.forEach((item, index) => {
-        currentY = renderGroupItem(viewContainer, item, index, currentY, itemHeight, onItemClick)
+        currentY = renderGroupItem(viewContainer, item, index, currentY, itemHeight, handleListItemClick)
         currentY += itemSpacing
+    })
+    // ✅ Fix Padding Bottom
+    viewContainer.createWidget(widget.FILL_RECT, {
+        x: 0,
+        y: currentY,
+        w: DEVICE_WIDTH,
+        h: px(20),
+        color: COLORS.background,
+        alpha: 0
     })
 }
 
 // ✅ Render singolo gruppo
 function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick) {
+    /*const grp = container.createWidget(widget.GROUP, {
+        x: px(20),
+        y: yPos,
+        w: px(310),
+        h: itemHeight
+    })*/
+
     // Background card
     container.createWidget(widget.FILL_RECT, {
         x: px(20),
@@ -170,60 +229,41 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
         align_v: align.CENTER_V
     })
 
-    // ON/OFF badge (right side)
-    const isOn = group.on_off === 'ON'
-    const badgeColor = isOn ? COLORS.success : COLORS.inactive
-
-    container.createWidget(widget.FILL_RECT, {
-        x: px(340),
-        y: yPos + px(25),
-        w: px(80),
-        h: px(50),
-        color: badgeColor,
-        radius: px(8)
-    })
-
-    container.createWidget(widget.TEXT, {
-        x: px(340),
-        y: yPos + px(25),
-        w: px(80),
-        h: px(50),
-        text: group.on_off,
-        text_size: px(26),
-        color: COLORS.text,
-        align_h: align.CENTER_H,
-        align_v: align.CENTER_V
+    container.addEventListener(event.CLICK_DOWN, function (info) {
+        onItemClick(index, 'navigate')
     })
 
     // Navigate overlay (left side - nome e status)
-    const overlay1 = container.createWidget(widget.BUTTON, {
+    let overlay1 = container.createWidget(widget.BUTTON, {
         x: px(20),
         y: yPos,
         w: px(310),
         h: itemHeight,
         text: '',
-        normal_color: 0x00000000,
-        press_color: 0x22ffffff,
+        normal_color: 0x000000,
+        press_color: 0xffffff,
         radius: px(10),
         click_func: () => onItemClick(index, 'navigate')
     })
 
     overlay1.setAlpha(0)
 
-     // Toggle button overlay (right side - solo badge)
-    const overlay = container.createWidget(widget.BUTTON, {
+    // ON/OFF badge (right side)
+    const isOn = group.on_off === 'ON'
+    const badgeColor = isOn ? COLORS.success : COLORS.inactive
+
+    container.createWidget(widget.BUTTON, {
         x: px(340),
         y: yPos + px(25),
         w: px(80),
         h: px(50),
-        text: '',
-        normal_color: 0x00000000,
-        press_color: 0x33ffffff,
+        text: group.on_off,
+        text_size: px(26),
         radius: px(8),
+        normal_color: badgeColor,
+        press_color: btnPressColor(badgeColor, 0.8),
         click_func: () => onItemClick(index, 'on_off')
-    })
-
-    overlay.setAlpha(0)
+    });
 
     return yPos + itemHeight
 }

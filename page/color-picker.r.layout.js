@@ -137,27 +137,20 @@ function renderCTPicker(pageContext, state, callbacks) {
     const { ct } = state;
     const { onDragCT } = callbacks;
 
-    // Per CT usiamo un gradiente verticale o orizzontale?
-    // Usiamo verticale per coerenza con il layout quadrato,
-    // In alto FREDDO (bianco), in basso CALDO (giallo).
-
-    const stripCount = 20;
-    const stripH = pickerSize / stripCount;
-
-    for (let i = 0; i < stripCount; i++) {
-        // i=0 -> Freddo (153), i=max -> Caldo (500)
-        const mired = 153 + (i / stripCount) * (500 - 153);
-        pageContext.createTrackedWidget(widget.FILL_RECT, {
-            x: pickerX, y: pickerY + (i * stripH),
-            w: pickerSize,
-            h: stripH + 1,
-            color: ct2hex(mired),
-            radius: 0//(i===0 || i===stripCount-1) ? 12 : 0
-        });
-    }
-
     // Cursore (Barra orizzontale o pallino?) Pallino
     const cursorSize = px(36);
+    const ctPickerW = cursorSize*2;
+
+    pageContext.createTrackedWidget(widget.IMG, {
+        x: (DEVICE_WIDTH - ctPickerW) / 2,//pickerX,
+        y: pickerY,
+        w: ctPickerW,
+        h: pickerSize,
+        auto_scale: true,
+        src: 'ct-picker.png',
+        radius: 5
+    })
+
     // Mappa CT su Y
     const validCt = Math.max(153, Math.min(500, ct));
     const normalizedY = (validCt - 153) / (500 - 153);
@@ -174,7 +167,7 @@ function renderCTPicker(pageContext, state, callbacks) {
 
     // Hitbox
     const hitbox = pageContext.createTrackedWidget(widget.FILL_RECT, {
-        x: pickerX, y: pickerY, w: pickerSize, h: pickerSize,
+        x: (DEVICE_WIDTH - ctPickerW) / 2, y: pickerY, w: ctPickerW, h: pickerSize,
         color: 0, alpha: 0
     });
     hitbox.addEventListener(event.CLICK_DOWN, (info) => onDragCT('DOWN', info));
