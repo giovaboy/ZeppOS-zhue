@@ -54,7 +54,7 @@ Page(
     currentModal: null,
     exitGestureListener: null,
     
-    onInit(p) {
+    onInitold(p) {
       let params = {}
       try {
         params = typeof p === 'string' ? JSON.parse(p) : p
@@ -66,12 +66,58 @@ Page(
       this.state.light = params?.light
     },
     
-    build() {
+    onInit(p) {
+      let params = {}
+      try {
+        params = typeof p === 'string' ? JSON.parse(p) : p
+      } catch (e) {
+        logger.error('Error parsing params', e)
+      }
+      
+      this.state.lightId = params?.lightId
+      this.state.lightName = params?.lightName || getText('LIGHT')
+      
+      // 👇 NUOVO: Prova a usare i dati dal global store
+      const app = getApp()
+      const cachedLightData = app.getCurrentLightData()
+      
+      if (cachedLightData && cachedLightData.id === this.state.lightId) {
+        logger.log('Using cached light data from global store')
+        this.state.light = cachedLightData
+        
+        // 👇 IMPORTANTE: Pulisci subito dopo aver usato i dati
+        // Così eviti problemi se l'utente naviga a un'altra luce
+        app.clearCurrentLightData()
+      } else {
+        logger.log('No cached light data available, will load from API')
+      }
+    },
+    
+    buildold() {
       logger.log('Building Light Detail page')
       setPageBrightTime({ brightTime: 60000 })
       setScrollLock({ lock: false })
       this.unlockExitGesture()
       this.loadLightDetail()
+    },
+    
+    build() {
+      logger.log('Building Light Detail page')
+      setPageBrightTime({ brightTime: 60000 })
+      setScrollLock({ lock: false })
+      this.unlockExitGesture()
+      
+      // 👇 MODIFICATO: Carica solo se non abbiamo dati
+      if (!this.state.light) {
+        this.loadLightDetail()
+      } else {
+        // Abbiamo già i dati dal cache, carica solo i preset
+        if (!this.state.favoriteColors) {
+          this.loadFavoriteColors()
+        } else {
+          this.renderPage()
+        }
+      }
     },
     
     onResume() {
@@ -134,16 +180,7 @@ Page(
         this.state.favoriteColors.sort(comparePresets)
       }
       
-      // Pre-calcola hex se necessario (SOLO se abbiamo light)
-      /*if (this.state.light && !this.state.light.hex) {
-        const bri = this.state.light.bri || 100
-        const nBri = Math.round(bri / 254 * 100)
-        const nHue = Math.round((this.state.light.hue || 0) / 65535 * 360)
-        const nSat = Math.round((this.state.light.sat || 0) / 254 * 100)
-        const val = hsb2hex(nHue, nSat, nBri)
-        this.state.light.hex = '#' + val.toString(16).padStart(6, '0').toUpperCase()
-      }*/
-      
+      // Pre-calcola hex se necessario (SOLO se abbiamo light) per 
       logger.debug('Pre-calculating light hex color if needed...')
       logger.debug('light state:', this.state.light)
       
@@ -331,7 +368,7 @@ Page(
     
     // --- API CALLS ---
     
-    loadLightDetail() {
+    loadLightDetailold() {
       // Mostra loading solo se non abbiamo dati
       if (!this.state.light) {
         this.state.isLoading = true
@@ -343,6 +380,48 @@ Page(
       logger.debug('Light ID:', this.state.lightId)
       logger.debug('Current favorite colors loaded:', this.state.favoriteColors ? this.state.favoriteColors.length : 'none')
       logger.debug('Current light data:', this.state.light)
+      
+      this.request({
+          method: 'GET_LIGHT_DETAIL',
+          params: { lightId: this.state.lightId }
+        })
+        .then(result => {
+          if (result.success) {
+            this.state.light = result.data.light
+            this.state.tempBrightness = this.state.light.bri || 0
+            this.state.isLoading = false
+            this.state.error = null
+            
+            // Carica preset se non già caricati
+            if (!this.state.favoriteColors) {
+              this.loadFavoriteColors()
+            } else {
+              this.renderPage()
+            }
+          } else {
+            this.state.isLoading = false
+            this.state.error = result.message || getText('FAILED_TO_LOAD_DETAIL')
+            this.renderPage()
+          }
+        })
+        .catch(err => {
+          logger.error('Load light detail error:', err)
+          this.state.isLoading = false
+          this.state.error = err.message || getText('NETWORK_ERROR')
+          this.renderPage()
+        })
+    },
+    
+    loadLightDetail() {
+      // Mostra loading solo se non abbiamo dati
+      if (!this.state.light) {
+        this.state.isLoading = true
+        this.state.error = null
+        this.renderPage()
+      }
+      
+      logger.log('Loading light detail...')
+      logger.debug('Light ID:', this.state.lightId)
       
       this.request({
           method: 'GET_LIGHT_DETAIL',
@@ -553,6 +632,9 @@ Page(
     },
     
     onDestroy() {
+      const app = getApp()
+      app.clearCurrentLightData()
+
       if (this.exitGestureListener) this.exitGestureListener()
       if (this.currentModal) {
         try {
