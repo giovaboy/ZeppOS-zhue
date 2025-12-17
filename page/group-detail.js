@@ -264,7 +264,7 @@ Page(
         modelid: light.modelid,
         reachable: light.reachable,
         type: light.type
-      })
+      })*/
       
       // 👇 SEMPLIFICATO: Passa solo l'ID
       const paramsString = JSON.stringify({
