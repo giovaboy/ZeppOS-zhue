@@ -250,7 +250,7 @@ Page(
     
     navigateToLightDetail(light) {
       // 👇 NUOVO: Salva i dati nel global store
-      app.setCurrentLightData({
+      app.setLightData(light.id, {
         id: light.id,
         name: light.name,
         ison: light.ison,
