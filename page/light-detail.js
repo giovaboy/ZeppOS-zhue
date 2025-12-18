@@ -182,7 +182,7 @@ Page(
       logger.debug('Favorite colors count:', favoriteColors.length)
       
       // Pre-calcola hex se necessario
-      if (this.state.light && !this.state.light.hex && !this.state.isLoading) {
+      if (this.state.light && !this.state.isLoading) {
         logger.debug('Pre-calculating light hex color...')
         const light = this.state.light
         let rgb = null
