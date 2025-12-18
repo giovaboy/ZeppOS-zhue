@@ -259,7 +259,8 @@ Page(
                 lightId: this.state.lightId,
                 ct: ctVal,
                 bri: this.state.bri,
-                hue: null, sat: null // Reset color mode logic in API handler if needed
+                hue: null,
+                sat: null // Reset color mode logic in API handler if needed
             }
         }).then(() => {
         // ✅ AGGIORNA LA CACHE PRIMA DI TORNARE
