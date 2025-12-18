@@ -327,8 +327,14 @@ Page(
     
     getLightCapabilities(light) {
       if (!light) return []
-      logger.debug('getLightCapabilities',light)
+      logger.debug('getLightCapabilities', light)
       logger.debug(light.capabilities)
+      
+      // 👇 PROBLEMA: light.capabilities potrebbe non esistere nel formato giusto
+      if (light.capabilities && Array.isArray(light.capabilities)) {
+        return light.capabilities
+      }
+      
       const type = light.type || ''
       let caps = ['brightness']
       
@@ -337,7 +343,7 @@ Page(
       if (type.toLowerCase().includes('color') || type.toLowerCase().includes('ambiance') || light.state?.hasOwnProperty('ct'))
         caps.push('ct')
       
-      if (light.capabilities) return light.capabilities
+      // if (light.capabilities) return light.capabilities
       
       return caps
     },

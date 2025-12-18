@@ -7,8 +7,8 @@ import { setPageBrightTime } from '@zos/display'
 import { renderGroupsPage } from 'zosLoader:./groups.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
 
+const app = getApp()
 const logger = getLogger('zhue-groups-page')
-
 
 Page(
   BasePage({
@@ -25,7 +25,6 @@ Page(
     
     onInit(p) {
       logger.debug('Groups page onInit')
-      const app = getApp()
       this.state.currentTab = app.getCurrentTab()
       logger.debug('Restored tab:', this.state.currentTab)
       
@@ -115,7 +114,6 @@ Page(
           this.state.isLoading = false
           if (result.success && result.data) {
             // ✅ Salva nel global store
-            const app = getApp()
             app.setGroupsData(result.data)
             
             // ✅ Aggiorna anche lo stato locale per il render
@@ -159,7 +157,6 @@ Page(
             }
             
             // ✅ Aggiorna anche global store
-            const app = getApp()
             const globalData = app.getGroupsData()
             
             // Trova e aggiorna nel global store
@@ -179,7 +176,6 @@ Page(
     switchTab(tabName) {
       if (this.state.currentTab === tabName) return
       this.state.currentTab = tabName
-      const app = getApp()
       app.setCurrentTab(tabName)
       this.renderPage()
     },
@@ -221,7 +217,6 @@ Page(
           if (data_key === 'on_off') {
             this.toggleGroup(item.raw)
           } else {
-            const app = getApp()
             app.setCurrentTab(this.state.currentTab)
             app.globalData.isComingBackFromDetail = true
             
@@ -241,7 +236,6 @@ Page(
     },
     
     onDestroy() {
-      const app = getApp()
       app.setCurrentTab(this.state.currentTab)
       this.clearAllWidgets()
     }
