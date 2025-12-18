@@ -11,6 +11,7 @@ import { hsb2hex } from '../utils/constants.js'
 import { renderColorPickerPage, LAYOUT_CONFIG } from 'zosLoader:./color-picker.[pf].layout.js'
 
 const logger = getLogger('zhue-color-picker-page')
+const app = getApp()
 
 const HUE_RANGE = 65535;
 const SAT_RANGE = 254;
@@ -202,7 +203,16 @@ Page(
         this.request({
             method: 'SET_HS',
             params: { lightId: this.state.lightId, hue: h, sat: s, bri: this.state.bri }
-        }).catch(e => logger.error(e));
+        }).then(() => {
+        // ✅ AGGIORNA LA CACHE PRIMA DI TORNARE
+        const light = app.getLightData(this.state.lightId)
+        if (light) {
+            light.hue = h;
+            light.sat = s;
+            light.colormode = 'hs';
+            app.setLightData(this.state.lightId, light);
+        }
+    }).catch(e => logger.error(e));
     },
 
     // --- LOGICA DRAG CT (Temperatura) ---
@@ -212,8 +222,8 @@ Page(
         const calcCT = (y) => {
             let nY = (y - pickerY) / pickerSize;
             nY = Math.max(0, Math.min(1, nY));
-            // 0 = Freddo (153), 1 = Caldo (500)
-            return Math.round(153 + nY * (500 - 153));
+            // 0 = Freddo (CT_MIN), 1 = Caldo (CT_MAX)
+            return Math.round(CT_MIN + nY * (CT_MAX - CT_MIN));
         };
 
         if (evt === 'DOWN') {
@@ -236,7 +246,7 @@ Page(
         this.state.ct = ctVal;
         if (this.state.ctCursorWidget) {
             const { pickerY, pickerSize } = LAYOUT_CONFIG;
-            const nY = (ctVal - 153) / (500 - 153);
+            const nY = (ctVal - CT_MIN) / (CT_MAX - CT_MIN);
             const y = pickerY + nY * pickerSize - px(18); // center
             this.state.ctCursorWidget.setProperty(prop.Y, y);
         }
@@ -251,6 +261,14 @@ Page(
                 bri: this.state.bri,
                 hue: null, sat: null // Reset color mode logic in API handler if needed
             }
+        }).then(() => {
+        // ✅ AGGIORNA LA CACHE PRIMA DI TORNARE
+        const light = app.getLightData(this.state.lightId)
+        if (light) {
+            light.ct = ctVal;
+            light.colormode = 'ct';
+            app.setLightData(this.state.lightId, light);
+        }
         }).catch(e => logger.error(e));
     },
 
@@ -261,7 +279,7 @@ Page(
         const calcBri = (x) => {
             let nX = (x - sliderX) / sliderW;
             nX = Math.max(0, Math.min(1, nX));
-            return Math.round(nX * 254);
+            return Math.round(nX * BRI_RANGE);
         };
 
         if (evt === 'DOWN') {
@@ -283,11 +301,11 @@ Page(
     updateBriUI(val) {
         this.state.bri = val;
         if (this.state.briFillWidget) {
-            const w = Math.max(px(20), (val / 254) * LAYOUT_CONFIG.sliderW);
+            const w = Math.max(px(20), (val / BRI_RANGE) * LAYOUT_CONFIG.sliderW);
             this.state.briFillWidget.setProperty(prop.W, w);
         }
         if (this.state.brightnessLabel) {
-            const brightnessPercent = Math.round(val / 254 * 100);
+            const brightnessPercent = Math.round(val / BRI_RANGE * 100);
             this.state.brightnessLabel.setProperty(prop.TEXT, `${brightnessPercent}%`);
         }
     },
@@ -295,13 +313,19 @@ Page(
     sendBri(val) {
         this.request({
             method: 'SET_BRIGHTNESS',
-            params: { lightId: this.state.lightId, brightness: val }
-        }).catch(e => logger.error(e));
+            params: { lightId: this.state.lightId, bri: val }
+        }).then(() => {
+        // ✅ AGGIORNA LA CACHE PRIMA DI TORNARE
+        const light = app.getLightData(this.state.lightId)
+        if (light) {
+            light.bri = val;
+            app.setLightData(this.state.lightId, light);
+        }
+    }).catch(e => logger.error(e));
     },
 
     onDestroy() {
-        // Scroll lock si rimuove in automatico uscendo dalla pagina?
-        // Meglio esplicitarlo a false per sicurezza, anche se ZeppOS resetta.
+        this.unlockExitGesture();
         setScrollLock({ lock: false });
     }
   })

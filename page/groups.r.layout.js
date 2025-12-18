@@ -11,7 +11,10 @@ export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
 export const LAYOUT_CONFIG = {
     headerY: px(20),
-    headerH: px(40)
+    headerH: px(40),
+    gapY: px(10),
+    tabH: px(40),
+    tabW: px(180)
 }
 
 export function renderGroupsPage(pageContext, state, listData, callbacks) {
@@ -69,11 +72,9 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
     })
 
     // 4. Tabs
-    const tabY = LAYOUT_CONFIG.headerY + LAYOUT_CONFIG.headerH + px(10)
-    const tabH = px(40)
-    const tabW = px(180)
+    const tabY = LAYOUT_CONFIG.headerY + LAYOUT_CONFIG.headerH + LAYOUT_CONFIG.gapY
     const gap = px(10)
-    const totalW = (tabW * 2) + gap;
+    const totalW = (LAYOUT_CONFIG.tabW * 2) + gap;
     const startX = (DEVICE_WIDTH - totalW) / 2;
     const isRooms = currentTab === 'ROOMS'
 
@@ -81,40 +82,39 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
     pageContext.createTrackedWidget(widget.BUTTON, {
         x: startX,
         y: tabY,
-        w: tabW,
-        h: tabH,
+        w: LAYOUT_CONFIG.tabW,
+        h: LAYOUT_CONFIG.tabH,
         text: getText('ROOMS'),
         text_size: px(26),
         color: isRooms ? COLORS.activeTabText : COLORS.inactiveTabText,
         normal_color: isRooms ? COLORS.activeTab : COLORS.inactiveTab,
         press_color: btnPressColor(COLORS.activeTab, 0.8),
-        radius: tabH / 2,
+        radius: LAYOUT_CONFIG.tabH / 2,
         click_func: () => switchTab('ROOMS')
     })
 
     // Tab Zones
     const isZones = currentTab === 'ZONES'
     pageContext.createTrackedWidget(widget.BUTTON, {
-        x: startX + tabW + gap,
+        x: startX + LAYOUT_CONFIG.tabW + gap,
         y: tabY,
-        w: tabW,
-        h: tabH,
+        w: LAYOUT_CONFIG.tabW,
+        h: LAYOUT_CONFIG.tabH,
         text: getText('ZONES'),
         text_size: px(26),
         color: isZones ? COLORS.activeTabText : COLORS.inactiveTabText,
         normal_color: isZones ? COLORS.activeTab : COLORS.inactiveTab,
         press_color: btnPressColor(COLORS.activeTab, 0.8),
-        radius: tabH / 2,
+        radius: LAYOUT_CONFIG.tabH / 2,
         click_func: () => switchTab('ZONES')
     })
 
     // 5. Lista con VIEW_CONTAINER
-    const listStartY = px(120)
+    const listStartY = tabY + LAYOUT_CONFIG.tabH + LAYOUT_CONFIG.gapY
     const noun = currentTab === 'ROOMS' ? 'ROOM' : 'ZONE';
 
     if (isLoading || listData.length === 0) {
         pageContext.createTrackedWidget(widget.TEXT, {
-            //x: 0, y: px(200), w: DEVICE_WIDTH, h: px(50),
             x: 0,
             y: DEVICE_HEIGHT / 2 - px(50),
             w: DEVICE_WIDTH,
@@ -139,7 +139,7 @@ function renderGroupsList(pageContext, state, listData, startY, callbacks) {
     const itemSpacing = px(10)
 
     // Calcola altezza totale contenuto
-    const totalContentHeight = listData.length * (itemHeight + itemSpacing) + px(20)
+    //const totalContentHeight = listData.length * (itemHeight + itemSpacing) + px(20)
 
     // Crea VIEW_CONTAINER scrollabile
     const containerHeight = DEVICE_HEIGHT - startY
@@ -177,35 +177,31 @@ function renderGroupsList(pageContext, state, listData, startY, callbacks) {
 
 // ✅ Render singolo gruppo
 function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick) {
-    /*const grp = container.createWidget(widget.GROUP, {
-        x: px(20),
-        y: yPos,
-        w: px(310),
-        h: itemHeight
-    })*/
 
+    const startX = px(30)
     // Background card
     container.createWidget(widget.FILL_RECT, {
-        x: px(20),
+        x: startX,
         y: yPos,
-        w: px(440),
+        w:  DEVICE_WIDTH - startX * 2,
         h: itemHeight,
-        color: COLORS.cardBg,
+        color: COLORS.color_sys_item_bg,
         radius: px(10)
     })
 
     // Icon/Indicator (colored circle per tipo gruppo)
+    const circleRadius = px(15)
     const iconColor = group.raw?.type === 'room' ? COLORS.roomIndicator : COLORS.zoneIndicator
     container.createWidget(widget.CIRCLE, {
-        center_x: px(50),
+        center_x: startX + circleRadius + px(15),
         center_y: yPos + itemHeight / 2,
-        radius: px(12),
+        radius: circleRadius,
         color: iconColor || COLORS.highlight
     })
 
     // Nome gruppo
     container.createWidget(widget.TEXT, {
-        x: px(75),
+        x: startX + px(15) + circleRadius * 2 + px(15),
         y: yPos + px(20),
         w: px(250),
         h: px(30),
@@ -218,7 +214,7 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
 
     // Status (numero luci)
     container.createWidget(widget.TEXT, {
-        x: px(75),
+        x: startX + px(15) + circleRadius * 2 + px(15),
         y: yPos + px(55),
         w: px(200),
         h: px(25),

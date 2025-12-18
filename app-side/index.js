@@ -901,6 +901,7 @@ class HueBridgeManager {
   _mapLightToSimple(l) {
     const state = {
       on: l.ison,
+      name: l.name,
       bri: l.bri,
       hue: l.hue,
       sat: l.sat,
@@ -915,12 +916,16 @@ class HueBridgeManager {
       name: l.name,
       ison: l.ison,
       bri: l.bri,
+      hue: l.hue,        
+      sat: l.sat,
       ct: l.ct,
       xy: l.xy,
       colormode: l.colormode,
       modelid: l.modelid,
       reachable: l.reachable,
-      hex: this.stateToHex(state)
+      type: l.type,
+      hex: this.stateToHex(state),
+      capabilities: this.getLightCapabilities({ state: state, type: l.type })
     }
   }
 
@@ -930,10 +935,13 @@ class HueBridgeManager {
       name: l.name,
       ison: l.state.on,
       bri: l.state.bri,
+      hue: l.state.hue,     
+      sat: l.state.sat,     
       ct: l.state.ct,
       xy: l.state.xy,
       colormode: l.state.colormode,
       modelid: l.modelid,
+      type: l.type,         
       reachable: l.state.reachable,
       hex: this.stateToHex(l.state)
     }))
@@ -997,14 +1005,14 @@ class HueBridgeManager {
     return { success: true }
   }
 
-  async setLightBrightness(id, brightness) {
+  async setLightBrightness(id, bri) {
     if (this.demo) {
-      console.log(`DEMO MODE: Set brightness for light ${id} to ${brightness}`)
-      return this._handleDemoAction(id, { bri: brightness, colormode: 'bri' })
+      console.log(`DEMO MODE: Set brightness for light ${id} to ${bri}`)
+      return this._handleDemoAction(id, { bri: bri, colormode: 'bri' })
     }
     if (!this.bridgeIp || !this.username)
       throw new Error('Bridge not configured')
-    return await this.setLightBrightnessV1(id, brightness)
+    return await this.setLightBrightnessV1(id, bri)
 
     /*try {
       return await this.setLightBrightnessV2(id, brightness)
@@ -1013,22 +1021,22 @@ class HueBridgeManager {
     }*/
   }
 
-  async setLightBrightnessV1(id, brightness) {
+  async setLightBrightnessV1(id, bri) {
     const url = `http://${this.bridgeIp}/api/${this.username}/lights/${id}/state`
     const res = await fetch({
       url,
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ bri: brightness })
+      body: JSON.stringify({ bri: bri })
     })
     const result = await safeJson(res)
     if (result[0]?.error) throw new Error(result[0].error.description)
     return { success: true }
   }
 
-  async setLightBrightnessV2(id, brightness) {
+  async setLightBrightnessV2(id, bri) {
     // V2 usa percentuale 0-100
-    const brightnessPercent = Math.round((brightness / 254) * 100)
+    const brightnessPercent = Math.round((bri / 254) * 100)
 
     const url = `https://${this.bridgeIp}/clip/v2/resource/light/${id}`
     const res = await fetch({
@@ -1608,10 +1616,10 @@ AppSideService(
 
     async handleSetBrightness(req, res) {
       try {
-        const { lightId, brightness } = req.params
-        console.log(`Set brightness ${lightId} to ${brightness}`)
+        const { lightId, bri } = req.params
+        console.log(`Set brightness ${lightId} to ${bri}`)
 
-        await hueBridge.setLightBrightness(lightId, brightness)
+        await hueBridge.setLightBrightness(lightId, bri)
         res(null, { success: true })
       } catch (error) {
         console.error('Set brightness error:', error)
@@ -1840,14 +1848,14 @@ AppSideService(
         const groupDetails = await hueBridge.getGroupDetail(groupId);
 
         // ✅ Recupera user settings
-        const userSettings = hueBridge.getUserSettings();
+        //const userSettings = hueBridge.getUserSettings();
 
         // ✅ Ritorna tutto insieme
         res(null, {
           success: true,
           data: {
             ...groupDetails, // lights, scenes
-            userSettings // ← AGGIUNTO
+            //userSettings // ← AGGIUNTO
           }
         });
       } catch (error) {

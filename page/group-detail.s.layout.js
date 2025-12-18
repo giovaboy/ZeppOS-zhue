@@ -4,6 +4,7 @@ import { widget, align, text_style } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { COLORS, btnPressColor } from '../utils/constants.js'
 import { getLogger } from '../utils/logger.js'
+import { start } from '@zos/app-service'
 
 const logger = getLogger('zhue-group-detail-page')
 
@@ -270,14 +271,15 @@ function renderSceneItem(container, scene, yPos, COLORS, onTap) {
 
 // ✅ Render Light Item
 function renderLightItem(container, light, yPos, COLORS, onToggle, onNavigate) {
-    const itemHeight = px(90)
+    const startX = px(30)
+    const itemHeight = px(100)
     const isOn = !!light.raw?.ison
 
     // Background
     container.createWidget(widget.FILL_RECT, {
-        x: px(20),
+        x: startX,
         y: yPos,
-        w: px(440),
+        w: DEVICE_WIDTH - startX * 2,
         h: itemHeight,
         color: COLORS.color_sys_item_bg,
         radius: px(10)
@@ -285,8 +287,8 @@ function renderLightItem(container, light, yPos, COLORS, onToggle, onNavigate) {
 
     // Light name
     container.createWidget(widget.TEXT, {
-        x: px(45),
-        y: yPos + px(15),
+        x: startX + px(15),
+        y: yPos + px(20),
         w: px(305),
         h: px(30),
         text: light.name,
@@ -298,8 +300,8 @@ function renderLightItem(container, light, yPos, COLORS, onToggle, onNavigate) {
 
     // Status text
     container.createWidget(widget.TEXT, {
-        x: px(45),
-        y: yPos + px(45),
+        x: startX + px(15),
+        y: yPos + px(55),
         w: px(305),
         h: px(25),
         text: light.status_text,
@@ -308,37 +310,39 @@ function renderLightItem(container, light, yPos, COLORS, onToggle, onNavigate) {
         align_h: align.LEFT,
         align_v: align.CENTER_V
     })
-
+    let iconSize = 0
     // Light icon/toggle button (right side)
     if (light.icon) {
         // light background
+        iconSize = px(70)
+        const iconX = DEVICE_WIDTH - startX - iconSize - px(15)
         container.createWidget(widget.FILL_RECT, {
-            x: px(380),
-            y: yPos + px(10),
-            w: px(70),
-            h: px(70),
+            x: iconX,
+            y: yPos + px(15),
+            w: iconSize,
+            h: iconSize,
             color: light.swatch_bg_color || COLORS.inactive
         })
         // light mask
         container.createWidget(widget.IMG, {
-            x: px(380),
-            y: yPos + px(10),
-            w: px(70),
-            h: px(70),
+            x: iconX,
+            y: yPos + px(15),
+            w: iconSize,
+            h: iconSize,
             src: light.icon,
             auto_scale: true
         })
 
         // Clickable overlay for toggle
         const overlay = container.createWidget(widget.BUTTON, {
-            x: px(380),
-            y: yPos + px(10),
-            w: px(70),
-            h: px(70),
+            x: iconX - px(5),
+            y: yPos,
+            w: iconSize + px(10),
+            h: itemHeight,
             text: '',
             normal_color: 0x00000000,
             press_color: 0x33ffffff,
-            radius: px(10),
+            //radius: px(10),
             click_func: onToggle
         })
 
@@ -347,14 +351,14 @@ function renderLightItem(container, light, yPos, COLORS, onToggle, onNavigate) {
 
     // Clickable overlay for navigation (left area)
     const overlay = container.createWidget(widget.BUTTON, {
-        x: px(20),
+        x: startX,
         y: yPos,
-        w: px(350),
+        w: DEVICE_WIDTH - (startX * 2) - iconSize - px(20),
         h: itemHeight,
         text: '',
         normal_color: 0x00000000,
         press_color: 0x22ffffff,
-        radius: px(10),
+        //radius: px(10),
         click_func: onNavigate
     })
 

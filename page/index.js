@@ -19,6 +19,7 @@ const STATES = {
 }
 
 const logger = getLogger('zhue-index-page')
+const app = getApp()
 
 Page(
   BasePage({
@@ -187,22 +188,21 @@ Page(
           this.setState(STATES.ERROR, { error: err.message || getText('PAIRING_FAILED') })
         })
     },
-    
+
     fetchAllData() {
       this.request({ method: 'GET_GROUPS' })
         .then(result => {
           if (result.success && result.data) {
-            
+
             // 🔥 MODIFICA QUI: Salviamo nel Global Store invece che nello stato locale
-            const app = getApp()
             app.setGroupsData(result.data)
-            
+
             const totalGroups = (result.data.rooms?.length || 0) + (result.data.zones?.length || 0)
             logger.log(`Loaded and stored ${totalGroups} groups globally`)
-            
+
             this.setState(STATES.SUCCESS)
           } else {
-            this.setState(STATES.ERROR, { error: getText('FAILED_TO_FETCH_DATA')})
+            this.setState(STATES.ERROR, { error: getText('FAILED_TO_FETCH_DATA') })
           }
         })
         .catch(err => {
@@ -229,25 +229,25 @@ Page(
     navigateToGroups_old() {
       logger.log('Navigating to groups page with preloaded data')
       this.stopBluetoothMonitoring()
-      
+
       // ✅ Passa i dati come parametro
       const params = this.state.groupsData ? JSON.stringify({
         preloadedData: this.state.groupsData
       }) : '{}'
-      
-      push({ 
-        url: 'page/groups', 
+
+      push({
+        url: 'page/groups',
         params: params
       })
     },
-    
+
     navigateToGroups() {
       logger.log('Navigating to groups page')
       this.stopBluetoothMonitoring()
-      
+
       // 🔥 MODIFICA QUI: Nessun parametro pesante!
       // Il router ringrazia.
-      push({ 
+      push({
         url: 'page/groups'
       })
     },
