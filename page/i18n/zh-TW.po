@@ -1,0 +1,137 @@
+# Chinese (Traditional) translations for zhue integration
+# INDEX.JS
+msgid "LOADING"
+msgstr "載入中..."
+
+msgid "HUE_BRIDGE"
+msgstr "Hue 橋接器"
+
+msgid "BRIDGE_POWERED_ON"
+msgstr "請確認您的橋接器已接通電源"
+
+msgid "SEARCHING_BRIDGE"
+msgstr "正在網路中搜尋 Hue 橋接器..."
+
+msgid "BRIDGE_FOUND"
+msgstr "已找到橋接器！"
+
+msgid "PRESS_BUTTON_TO_PAIR"
+msgstr "按下 Hue 橋接器上的按鈕進行配對"
+
+msgid "WAIT_PRESS"
+msgstr "等待按下按鈕..."
+
+msgid "PAIRED_SUCCESS"
+msgstr "配對成功！"
+
+msgid "INDEX_CONNECTION_ERROR"
+msgstr "連線錯誤"
+
+msgid "INDEX_CONNECTION_ERROR_DESC"
+msgstr "無法連線至 Hue 橋接器"
+
+msgid "DISCOVERY_FAILED"
+msgstr "搜尋失敗"
+
+msgid "BRIDGE_NOT_FOUND"
+msgstr "網路中未發現橋接器"
+
+msgid "PAIRING_FAILED"
+msgstr "配對失敗"
+
+msgid "BUTTON_NOT_PRESSED"
+msgstr "請按下橋接器上的連結按鈕並重試"
+
+msgid "INITIAL_CONNECTION_FAILED"
+msgstr "初始連線檢查失敗"
+
+msgid "FAILED_TO_FETCH_DATA"
+msgstr "取得資料失敗"
+
+msgid "LOADING_HUE_SETUP"
+msgstr "正在載入您的 Hue 設定..."
+
+msgid "RETRY"
+msgstr "重試"
+
+# GROUPS.JS
+msgid "GROUPS"
+msgstr "群組"
+
+msgid "ROOMS"
+msgstr "房間"
+
+msgid "PROGRESS_ROOMS"
+msgstr "房間: %d"
+
+msgid "ZONES"
+msgstr "區域"
+
+msgid "PROGRESS_ZONES"
+msgstr "區域: %d"
+
+msgid "NO_ROOM_FOUND"
+msgstr "未發現房間"
+
+msgid "NO_ZONE_FOUND"
+msgstr "未發現區域"
+
+msgid "PROGRESS_LIGHTS"
+msgstr "燈光: %d"
+
+msgid "PROGRESS_SCENES"
+msgstr "場景: %d"
+
+msgid "NAVIGATING_TO_GROUPS"
+msgstr "正在前往群組頁面"
+
+msgid "GROUP_DETAIL"
+msgstr "群組詳情"
+
+msgid "GROUP_ON"
+msgstr "開啟"
+
+msgid "GROUP_OFF"
+msgstr "關閉"
+
+msgid "BRIGHTNESS"
+msgstr "亮度: "
+
+msgid "PRESETS_TITLE"
+msgstr "預設:"
+
+msgid "ERROR_MSG"
+msgstr "錯誤: "
+
+msgid "LIGHT"
+msgstr "燈光"
+
+msgid "LIGHTS"
+msgstr "燈光"
+
+msgid "LIGHT_DETAIL"
+msgstr "燈光詳情"
+
+msgid "LIGHT_ON"
+msgstr "關閉"
+
+msgid "LIGHT_OFF"
+msgstr "開啟"
+
+msgid "UNREACHABLE"
+msgstr "無法連線"
+
+msgid "SCENES"
+msgstr "場景"
+
+msgid "ADD_FAVORITE_COLOR"
+msgstr "新增收藏顏色"
+
+msgid "NO_FAVORITE_COLOR"
+msgstr "未新增收藏顏色"
+
+msgid "FAVORITE_COLORS"
+msgstr "收藏顏色"
+
+msgid "DUPLICATE_FAVORITE_COLOR"
+msgstr "預設已存在"

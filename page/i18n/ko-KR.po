@@ -1,0 +1,137 @@
+# Korean translations for zhue integration
+# INDEX.JS
+msgid "LOADING"
+msgstr "로딩 중..."
+
+msgid "HUE_BRIDGE"
+msgstr "Hue 브릿지"
+
+msgid "BRIDGE_POWERED_ON"
+msgstr "브릿지의 전원이 켜져 있는지 확인하십시오"
+
+msgid "SEARCHING_BRIDGE"
+msgstr "네트워크에서 Hue 브릿지를 찾는 중..."
+
+msgid "BRIDGE_FOUND"
+msgstr "브릿지를 찾았습니다!"
+
+msgid "PRESS_BUTTON_TO_PAIR"
+msgstr "페어링을 위해 Hue 브릿지의 버튼을 누르세요"
+
+msgid "WAIT_PRESS"
+msgstr "버튼 입력을 기다리는 중..."
+
+msgid "PAIRED_SUCCESS"
+msgstr "페어링 성공!"
+
+msgid "INDEX_CONNECTION_ERROR"
+msgstr "연결 오류"
+
+msgid "INDEX_CONNECTION_ERROR_DESC"
+msgstr "Hue 브릿지에 연결할 수 없습니다"
+
+msgid "DISCOVERY_FAILED"
+msgstr "검색 실패"
+
+msgid "BRIDGE_NOT_FOUND"
+msgstr "네트워크에서 브릿지를 찾을 수 없습니다"
+
+msgid "PAIRING_FAILED"
+msgstr "페어링 실패"
+
+msgid "BUTTON_NOT_PRESSED"
+msgstr "브릿지의 링크 버튼을 누른 후 다시 시도하십시오"
+
+msgid "INITIAL_CONNECTION_FAILED"
+msgstr "초기 연결 확인 실패"
+
+msgid "FAILED_TO_FETCH_DATA"
+msgstr "데이터를 가져오지 못했습니다"
+
+msgid "LOADING_HUE_SETUP"
+msgstr "Hue 설정을 로드하는 중..."
+
+msgid "RETRY"
+msgstr "재시도"
+
+# GROUPS.JS
+msgid "GROUPS"
+msgstr "그룹"
+
+msgid "ROOMS"
+msgstr "방"
+
+msgid "PROGRESS_ROOMS"
+msgstr "방: %d"
+
+msgid "ZONES"
+msgstr "구역"
+
+msgid "PROGRESS_ZONES"
+msgstr "구역: %d"
+
+msgid "NO_ROOM_FOUND"
+msgstr "방을 찾을 수 없습니다"
+
+msgid "NO_ZONE_FOUND"
+msgstr "구역을 찾을 수 없습니다"
+
+msgid "PROGRESS_LIGHTS"
+msgstr "조명: %d"
+
+msgid "PROGRESS_SCENES"
+msgstr "장면: %d"
+
+msgid "NAVIGATING_TO_GROUPS"
+msgstr "그룹 페이지로 이동 중"
+
+msgid "GROUP_DETAIL"
+msgstr "그룹 상세 정보"
+
+msgid "GROUP_ON"
+msgstr "켜기"
+
+msgid "GROUP_OFF"
+msgstr "끄기"
+
+msgid "BRIGHTNESS"
+msgstr "밝기: "
+
+msgid "PRESETS_TITLE"
+msgstr "프리셋:"
+
+msgid "ERROR_MSG"
+msgstr "오류: "
+
+msgid "LIGHT"
+msgstr "조명"
+
+msgid "LIGHTS"
+msgstr "조명"
+
+msgid "LIGHT_DETAIL"
+msgstr "조명 상세 정보"
+
+msgid "LIGHT_ON"
+msgstr "끄기"
+
+msgid "LIGHT_OFF"
+msgstr "켜기"
+
+msgid "UNREACHABLE"
+msgstr "연결할 수 없음"
+
+msgid "SCENES"
+msgstr "장면"
+
+msgid "ADD_FAVORITE_COLOR"
+msgstr "즐겨찾는 색상 추가"
+
+msgid "NO_FAVORITE_COLOR"
+msgstr "추가된 즐겨찾는 색상이 없습니다"
+
+msgid "FAVORITE_COLORS"
+msgstr "즐겨찾는 색상"
+
+msgid "DUPLICATE_FAVORITE_COLOR"
+msgstr "이미 존재하는 프리셋입니다"

@@ -1,0 +1,137 @@
+# French translations for zhue integration
+# INDEX.JS
+msgid "LOADING"
+msgstr "Chargement..."
+
+msgid "HUE_BRIDGE"
+msgstr "Pont Hue"
+
+msgid "BRIDGE_POWERED_ON"
+msgstr "Vérifiez que votre pont est sous tension"
+
+msgid "SEARCHING_BRIDGE"
+msgstr "Recherche du pont Hue sur votre réseau..."
+
+msgid "BRIDGE_FOUND"
+msgstr "Pont trouvé !"
+
+msgid "PRESS_BUTTON_TO_PAIR"
+msgstr "Appuyez sur le bouton de votre pont Hue pour l'associer"
+
+msgid "WAIT_PRESS"
+msgstr "En attente d'une pression sur le bouton..."
+
+msgid "PAIRED_SUCCESS"
+msgstr "Association réussie !"
+
+msgid "INDEX_CONNECTION_ERROR"
+msgstr "Erreur de connexion"
+
+msgid "INDEX_CONNECTION_ERROR_DESC"
+msgstr "Impossible de se connecter au pont Hue"
+
+msgid "DISCOVERY_FAILED"
+msgstr "Échec de la détection"
+
+msgid "BRIDGE_NOT_FOUND"
+msgstr "Aucun pont trouvé sur le réseau"
+
+msgid "PAIRING_FAILED"
+msgstr "Échec de l'association"
+
+msgid "BUTTON_NOT_PRESSED"
+msgstr "Appuyez sur le bouton de liaison du pont et réessayez"
+
+msgid "INITIAL_CONNECTION_FAILED"
+msgstr "Échec de la vérification initiale de la connexion"
+
+msgid "FAILED_TO_FETCH_DATA"
+msgstr "Échec de la récupération des données"
+
+msgid "LOADING_HUE_SETUP"
+msgstr "Chargement de votre configuration Hue..."
+
+msgid "RETRY"
+msgstr "Réessayer"
+
+# GROUPS.JS
+msgid "GROUPS"
+msgstr "Groupes"
+
+msgid "ROOMS"
+msgstr "Pièces"
+
+msgid "PROGRESS_ROOMS"
+msgstr "Pièces : %d"
+
+msgid "ZONES"
+msgstr "Zones"
+
+msgid "PROGRESS_ZONES"
+msgstr "Zones : %d"
+
+msgid "NO_ROOM_FOUND"
+msgstr "Aucune pièce trouvée"
+
+msgid "NO_ZONE_FOUND"
+msgstr "Aucune zone trouvée"
+
+msgid "PROGRESS_LIGHTS"
+msgstr "Lumières : %d"
+
+msgid "PROGRESS_SCENES"
+msgstr "Scènes : %d"
+
+msgid "NAVIGATING_TO_GROUPS"
+msgstr "Navigation vers la page des groupes"
+
+msgid "GROUP_DETAIL"
+msgstr "Détails du groupe"
+
+msgid "GROUP_ON"
+msgstr "Allumer"
+
+msgid "GROUP_OFF"
+msgstr "Éteindre"
+
+msgid "BRIGHTNESS"
+msgstr "Luminosité : "
+
+msgid "PRESETS_TITLE"
+msgstr "Préréglages :"
+
+msgid "ERROR_MSG"
+msgstr "Erreur : "
+
+msgid "LIGHT"
+msgstr "Lumière"
+
+msgid "LIGHTS"
+msgstr "Lumières"
+
+msgid "LIGHT_DETAIL"
+msgstr "Détails de la lumière"
+
+msgid "LIGHT_ON"
+msgstr "Éteindre"
+
+msgid "LIGHT_OFF"
+msgstr "Allumer"
+
+msgid "UNREACHABLE"
+msgstr "Inaccessible"
+
+msgid "SCENES"
+msgstr "Scènes"
+
+msgid "ADD_FAVORITE_COLOR"
+msgstr "Ajouter une couleur favorite"
+
+msgid "NO_FAVORITE_COLOR"
+msgstr "Aucune couleur favorite ajoutée"
+
+msgid "FAVORITE_COLORS"
+msgstr "Couleurs favorites"
+
+msgid "DUPLICATE_FAVORITE_COLOR"
+msgstr "Ce préréglage existe déjà"

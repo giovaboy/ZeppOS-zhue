@@ -1,0 +1,137 @@
+# Spanish translations for zhue integration
+# INDEX.JS
+msgid "LOADING"
+msgstr "Cargando..."
+
+msgid "HUE_BRIDGE"
+msgstr "Puente Hue"
+
+msgid "BRIDGE_POWERED_ON"
+msgstr "Asegúrate de que el puente esté encendido"
+
+msgid "SEARCHING_BRIDGE"
+msgstr "Buscando Puente Hue en tu red..."
+
+msgid "BRIDGE_FOUND"
+msgstr "¡Puente encontrado!"
+
+msgid "PRESS_BUTTON_TO_PAIR"
+msgstr "Pulsa el botón de tu Puente Hue para vincular"
+
+msgid "WAIT_PRESS"
+msgstr "Esperando a que pulses el botón..."
+
+msgid "PAIRED_SUCCESS"
+msgstr "¡Vinculado con éxito!"
+
+msgid "INDEX_CONNECTION_ERROR"
+msgstr "Error de conexión"
+
+msgid "INDEX_CONNECTION_ERROR_DESC"
+msgstr "No se pudo conectar con el Puente Hue"
+
+msgid "DISCOVERY_FAILED"
+msgstr "Error en la búsqueda"
+
+msgid "BRIDGE_NOT_FOUND"
+msgstr "No se encontró ningún puente en la red"
+
+msgid "PAIRING_FAILED"
+msgstr "Error de vinculación"
+
+msgid "BUTTON_NOT_PRESSED"
+msgstr "Pulsa el botón de enlace en el puente e inténtalo de nuevo"
+
+msgid "INITIAL_CONNECTION_FAILED"
+msgstr "Error en la comprobación de conexión inicial"
+
+msgid "FAILED_TO_FETCH_DATA"
+msgstr "Error al obtener los datos"
+
+msgid "LOADING_HUE_SETUP"
+msgstr "Cargando tu configuración de Hue..."
+
+msgid "RETRY"
+msgstr "Reintentar"
+
+# GROUPS.JS
+msgid "GROUPS"
+msgstr "Grupos"
+
+msgid "ROOMS"
+msgstr "Habitaciones"
+
+msgid "PROGRESS_ROOMS"
+msgstr "Habitaciones: %d"
+
+msgid "ZONES"
+msgstr "Zonas"
+
+msgid "PROGRESS_ZONES"
+msgstr "Zonas: %d"
+
+msgid "NO_ROOM_FOUND"
+msgstr "No se encontraron habitaciones"
+
+msgid "NO_ZONE_FOUND"
+msgstr "No se encontraron zonas"
+
+msgid "PROGRESS_LIGHTS"
+msgstr "Luces: %d"
+
+msgid "PROGRESS_SCENES"
+msgstr "Escenas: %d"
+
+msgid "NAVIGATING_TO_GROUPS"
+msgstr "Navegando a la página de grupos"
+
+msgid "GROUP_DETAIL"
+msgstr "Detalle del grupo"
+
+msgid "GROUP_ON"
+msgstr "Encender"
+
+msgid "GROUP_OFF"
+msgstr "Apagar"
+
+msgid "BRIGHTNESS"
+msgstr "Brillo: "
+
+msgid "PRESETS_TITLE"
+msgstr "Ajustes preestablecidos:"
+
+msgid "ERROR_MSG"
+msgstr "Error: "
+
+msgid "LIGHT"
+msgstr "Luz"
+
+msgid "LIGHTS"
+msgstr "Luces"
+
+msgid "LIGHT_DETAIL"
+msgstr "Detalle de la luz"
+
+msgid "LIGHT_ON"
+msgstr "Apagar"
+
+msgid "LIGHT_OFF"
+msgstr "Encender"
+
+msgid "UNREACHABLE"
+msgstr "No disponible"
+
+msgid "SCENES"
+msgstr "Escenas"
+
+msgid "ADD_FAVORITE_COLOR"
+msgstr "Añadir color favorito"
+
+msgid "NO_FAVORITE_COLOR"
+msgstr "No hay colores favoritos guardados"
+
+msgid "FAVORITE_COLORS"
+msgstr "Colores favoritos"
+
+msgid "DUPLICATE_FAVORITE_COLOR"
+msgstr "El ajuste ya existe"

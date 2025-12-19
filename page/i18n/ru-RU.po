@@ -1,0 +1,137 @@
+# Russian translations for zhue integration
+# INDEX.JS
+msgid "LOADING"
+msgstr "Загрузка..."
+
+msgid "HUE_BRIDGE"
+msgstr "Шлюз Hue"
+
+msgid "BRIDGE_POWERED_ON"
+msgstr "Убедитесь, что шлюз включен"
+
+msgid "SEARCHING_BRIDGE"
+msgstr "Поиск шлюза Hue в вашей сети..."
+
+msgid "BRIDGE_FOUND"
+msgstr "Шлюз найден!"
+
+msgid "PRESS_BUTTON_TO_PAIR"
+msgstr "Нажмите кнопку на шлюзе Hue для сопряжения"
+
+msgid "WAIT_PRESS"
+msgstr "Ожидание нажатия кнопки..."
+
+msgid "PAIRED_SUCCESS"
+msgstr "Сопряжение успешно выполнено!"
+
+msgid "INDEX_CONNECTION_ERROR"
+msgstr "Ошибка подключения"
+
+msgid "INDEX_CONNECTION_ERROR_DESC"
+msgstr "Не удалось подключиться к шлюзу Hue"
+
+msgid "DISCOVERY_FAILED"
+msgstr "Ошибка поиска"
+
+msgid "BRIDGE_NOT_FOUND"
+msgstr "Шлюз не найден в сети"
+
+msgid "PAIRING_FAILED"
+msgstr "Ошибка сопряжения"
+
+msgid "BUTTON_NOT_PRESSED"
+msgstr "Нажмите кнопку сопряжения на шлюзе и попробуйте снова"
+
+msgid "INITIAL_CONNECTION_FAILED"
+msgstr "Ошибка первоначальной проверки подключения"
+
+msgid "FAILED_TO_FETCH_DATA"
+msgstr "Не удалось получить данные"
+
+msgid "LOADING_HUE_SETUP"
+msgstr "Загрузка ваших настроек Hue..."
+
+msgid "RETRY"
+msgstr "Повторить"
+
+# GROUPS.JS
+msgid "GROUPS"
+msgstr "Группы"
+
+msgid "ROOMS"
+msgstr "Комнаты"
+
+msgid "PROGRESS_ROOMS"
+msgstr "Комнат: %d"
+
+msgid "ZONES"
+msgstr "Зоны"
+
+msgid "PROGRESS_ZONES"
+msgstr "Зон: %d"
+
+msgid "NO_ROOM_FOUND"
+msgstr "Комнаты не найдены"
+
+msgid "NO_ZONE_FOUND"
+msgstr "Зоны не найдены"
+
+msgid "PROGRESS_LIGHTS"
+msgstr "Ламп: %d"
+
+msgid "PROGRESS_SCENES"
+msgstr "Сцен: %d"
+
+msgid "NAVIGATING_TO_GROUPS"
+msgstr "Переход к странице групп"
+
+msgid "GROUP_DETAIL"
+msgstr "Детали группы"
+
+msgid "GROUP_ON"
+msgstr "Включить"
+
+msgid "GROUP_OFF"
+msgstr "Выключить"
+
+msgid "BRIGHTNESS"
+msgstr "Яркость: "
+
+msgid "PRESETS_TITLE"
+msgstr "Пресеты:"
+
+msgid "ERROR_MSG"
+msgstr "Ошибка: "
+
+msgid "LIGHT"
+msgstr "Свет"
+
+msgid "LIGHTS"
+msgstr "Освещение"
+
+msgid "LIGHT_DETAIL"
+msgstr "Детали лампы"
+
+msgid "LIGHT_ON"
+msgstr "Выключить"
+
+msgid "LIGHT_OFF"
+msgstr "Включить"
+
+msgid "UNREACHABLE"
+msgstr "Недоступно"
+
+msgid "SCENES"
+msgstr "Сцены"
+
+msgid "ADD_FAVORITE_COLOR"
+msgstr "Добавить любимый цвет"
+
+msgid "NO_FAVORITE_COLOR"
+msgstr "Любимые цвета не добавлены"
+
+msgid "FAVORITE_COLORS"
+msgstr "Любимые цвета"
+
+msgid "DUPLICATE_FAVORITE_COLOR"
+msgstr "Пресет уже существует"

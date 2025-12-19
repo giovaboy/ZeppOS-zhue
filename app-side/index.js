@@ -287,8 +287,6 @@ function forceIntoGamut(x, y, gamut = 'C') {
   return { x: closest[0], y: closest[1] }
 }
 
-
-
 async function safeJson(resp) {
   console.log('safeJson:', resp)
   try {
@@ -791,7 +789,6 @@ class HueBridgeManager {
     return { success: true }
   }
 
-
   async getGroupDetail(groupId, groupType) {
     if (this.demo) {
       console.log(`DEMO MODE: Get group detail for ${groupId}`)
@@ -1147,7 +1144,6 @@ class HueBridgeManager {
     if (result.errors?.length) throw new Error(result.errors[0].description)
     return { success: true }
   }
-
 
   async toggleAllLights(on) {
     if (this.demo) {
