@@ -282,7 +282,7 @@ Page(
                     light.colormode = 'ct'
                     light.hex = newHex
 
-                    app.setLightData(this.state.lightId, light);                    
+                    app.setLightData(this.state.lightId, light);
                     app.updateLightStatusInGroupsCache(this.state.lightId, light);
                 }
             }).catch(e => logger.error(e));
