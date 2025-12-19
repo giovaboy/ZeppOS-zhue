@@ -18,7 +18,7 @@ export const LAYOUT_CONFIG = {
 }
 
 export function renderGroupsPage(pageContext, state, listData, callbacks) {
-    const { switchTab, refresh, handleListItemClick, onScrollChange } = callbacks
+    const { switchTab, refresh } = callbacks
     const { currentTab, isLoading, error } = state
 
     // 1. Sfondo
@@ -152,7 +152,7 @@ function renderGroupsList(pageContext, state, listData, startY, callbacks) {
         pos_y: scrollPos_y || 0,
         scroll_frame_func: (FrameParams) => {
             if (FrameParams.yoffset !== undefined) {
-                logger.debug('VIEW_CONTAINER scroll_y:', FrameParams.yoffset)
+                //logger.debug('VIEW_CONTAINER scroll_y:', FrameParams.yoffset)
                 onScrollChange(FrameParams.yoffset)
             }
         }

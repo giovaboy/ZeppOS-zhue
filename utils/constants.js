@@ -28,6 +28,7 @@ export const COLORS = {
   briText: 0xcccccc,
   defaultSwatchColor: 0xFFCC66,
   white: 0xFFFFFF,
+  black: 0x000000,
 
   color_sys_key: 0x0986d4,
   color_sys_warning: 0xad3c23,

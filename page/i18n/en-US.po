@@ -118,6 +118,9 @@ msgstr "Turn off"
 msgid "LIGHT_OFF"
 msgstr "Turn on"
 
+msgid "UNREACHABLE"
+msgstr "Unreachable"
+
 msgid "SCENES"
 msgstr "Scenes"
 

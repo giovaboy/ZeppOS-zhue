@@ -118,6 +118,9 @@ msgstr "Spegni"
 msgid "LIGHT_OFF"
 msgstr "Accendi"
 
+msgid "UNREACHABLE"
+msgstr "Non raggiungibile"
+
 msgid "SCENES"
 msgstr "Scenes"
 

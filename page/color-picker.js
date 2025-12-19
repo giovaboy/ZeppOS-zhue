@@ -5,7 +5,7 @@ import { createWidget, deleteWidget, prop } from '@zos/ui'
 import { back } from '@zos/router'
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import { getLogger } from '../utils/logger.js'
-import { hsb2hex } from '../utils/constants.js'
+import { hsb2hex, ct2hex } from '../utils/constants.js'
 
 // Import Layout
 import { renderColorPickerPage, LAYOUT_CONFIG } from 'zosLoader:./color-picker.[pf].layout.js'
@@ -40,21 +40,21 @@ Page(
             briFillWidget: null,
             brightnessLabel: null
         },
-        
+
         widgets: [],
         exitGestureListener: null, // Riferimento al listener per lo swipe di uscita
-        
+
         onInit(p) {
             logger.log('Color Picker Init', p);
             let params = {};
             try { params = JSON.parse(p) } catch (e) { params = p || {} }
-            
+
             this.state.lightId = params.lightId;
             this.state.hue = params.hue || 0;
             this.state.sat = params.sat || 0;
             this.state.bri = params.bri || 100;
             this.state.ct = params.ct || 370; // Default warm-ish
-            
+
             // Parse capabilities semplici passate come stringa o array
             const caps = params.caps || [];
             this.state.supportsColor = caps.includes('color');
@@ -63,7 +63,7 @@ Page(
             // Assumiamo che se ha "color" ha anche "ct" a meno che non sia specificato diversamente.
             // O controlliamo il parametro 'supportsCT' esplicito se lo passiamo.
             this.state.supportsCT = caps.includes('ct') || caps.includes('color_temperature') || true;
-            
+
             // Decide initial mode
             if (params.initialMode) {
                 this.state.mode = params.initialMode;
@@ -71,7 +71,7 @@ Page(
                 this.state.mode = this.state.supportsColor ? 'color' : 'ct';
             }
         },
-        
+
         build() {
             // BLOCCA SCROLLING
             setScrollLock({ lock: true });
@@ -79,9 +79,9 @@ Page(
             this.unlockExitGesture();
             this.render();
         },
-        
+
         // --- GESTURE LOCK LOGIC ---
-        
+
         // La funzione di uscita che viene allegata al listener di ZeppOS
         exitOnSwipe(event) {
             if (event === GESTURE_RIGHT) {
@@ -90,7 +90,7 @@ Page(
             }
             return false;
         },
-        
+
         /** Blocca lo swipe laterale per l'uscita rimuovendo il listener. */
         lockExitGesture() {
             if (this.exitGestureListener) {
@@ -99,7 +99,7 @@ Page(
                 logger.debug('Exit gesture LOCKED');
             }
         },
-        
+
         /** Ripristina lo swipe laterale per l'uscita. */
         unlockExitGesture() {
             if (this.exitGestureListener) {
@@ -111,13 +111,13 @@ Page(
             });
             logger.debug('Exit gesture UNLOCKED');
         },
-        
+
         createTrackedWidget(type, props) {
             const w = createWidget(type, props);
             this.widgets.push(w);
             return w;
         },
-        
+
         clearWidgets() {
             this.widgets.forEach(w => {
                 try { deleteWidget(w) } catch (e) {
@@ -130,7 +130,7 @@ Page(
             this.state.briFillWidget = null;
             this.state.brightnessLabel = null;
         },
-        
+
         render() {
             this.clearWidgets();
             renderColorPickerPage(this, this.state, {
@@ -143,24 +143,24 @@ Page(
                 onDragBri: (evt, info) => this.handleBriDrag(evt, info)
             });
         },
-        
+
         // --- LOGICA DRAG COLOR (Hue/Sat) ---
         handleColorDrag(evt, info) {
             const { pickerX, pickerY, pickerSize } = LAYOUT_CONFIG;
-            
+
             // Calcolo valori da coordinate
             const calcValues = (x, y) => {
                 let nX = (x - pickerX) / pickerSize;
                 let nY = (y - pickerY) / pickerSize;
                 nX = Math.max(0, Math.min(1, nX));
                 nY = Math.max(0, Math.min(1, nY));
-                
+
                 return {
                     hue: Math.round(nX * HUE_RANGE),
                     sat: Math.round((1 - nY) * SAT_RANGE) // Y invertita (in alto sat max)
                 };
             };
-            
+
             if (evt === 'DOWN') {
                 this.lockExitGesture(); // BLOCCA GESTURE
                 this.state.isDragging = true;
@@ -178,7 +178,7 @@ Page(
                 this.sendColor(vals.hue, vals.sat, true); // Final send
             }
         },
-        
+
         updateColorUI(h, s) {
             this.state.hue = h;
             this.state.sat = s;
@@ -197,11 +197,11 @@ Page(
                 this.state.cursorWidget.setProperty(prop.COLOR, currentHex);
             }
         },
-        
+
         sendColor(h, s, force) {
             // Se non è force (MOVE), magari saltiamo per non floodare, oppure usiamo throttle
             if (!force) return;
-            
+
             this.request({
                 method: 'SET_HS',
                 params: { lightId: this.state.lightId, hue: h, sat: s, bri: this.state.bri }
@@ -219,21 +219,22 @@ Page(
                     light.colormode = 'hs';
                     light.hex = newHex;
                     app.setLightData(this.state.lightId, light);
+                    app.updateLightStatusInGroupsCache(this.state.lightId, light);
                 }
             }).catch(e => logger.error(e));
         },
-        
+
         // --- LOGICA DRAG CT (Temperatura) ---
         handleCTDrag(evt, info) {
             const { pickerX, pickerY, pickerSize } = LAYOUT_CONFIG;
-            
+
             const calcCT = (y) => {
                 let nY = (y - pickerY) / pickerSize;
                 nY = Math.max(0, Math.min(1, nY));
                 // 0 = Freddo (CT_MIN), 1 = Caldo (CT_MAX)
                 return Math.round(CT_MIN + nY * (CT_MAX - CT_MIN));
             };
-            
+
             if (evt === 'DOWN') {
                 this.lockExitGesture(); // BLOCCA GESTURE
                 this.state.isDragging = true;
@@ -249,7 +250,7 @@ Page(
                 this.sendCT(val);
             }
         },
-        
+
         updateCTUI(ctVal) {
             this.state.ct = ctVal;
             if (this.state.ctCursorWidget) {
@@ -259,7 +260,7 @@ Page(
                 this.state.ctCursorWidget.setProperty(prop.Y, y);
             }
         },
-        
+
         sendCT(ctVal) {
             this.request({
                 method: 'SET_COLOR', // General method usually handles ct too
@@ -276,26 +277,27 @@ Page(
                 if (light) {
                     const rgb = ct2hex(ctVal)
                     const newHex = '#' + rgb.toString(16).padStart(6, '0').toUpperCase()
-                    
+
                     light.ct = ctVal
                     light.colormode = 'ct'
                     light.hex = newHex
-                    
-                    app.setLightData(this.state.lightId, light);
+
+                    app.setLightData(this.state.lightId, light);                    
+                    app.updateLightStatusInGroupsCache(this.state.lightId, light);
                 }
             }).catch(e => logger.error(e));
         },
-        
+
         // --- LOGICA DRAG BRI (Luminosità) ---
         handleBriDrag(evt, info) {
             const { sliderX, sliderW } = LAYOUT_CONFIG;
-            
+
             const calcBri = (x) => {
                 let nX = (x - sliderX) / sliderW;
                 nX = Math.max(0, Math.min(1, nX));
                 return Math.round(nX * BRI_RANGE);
             };
-            
+
             if (evt === 'DOWN') {
                 this.lockExitGesture(); // BLOCCA GESTURE
                 this.state.isDragging = true;
@@ -311,7 +313,7 @@ Page(
                 this.sendBri(val);
             }
         },
-        
+
         updateBriUI(val) {
             this.state.bri = val;
             if (this.state.briFillWidget) {
@@ -323,7 +325,7 @@ Page(
                 this.state.brightnessLabel.setProperty(prop.TEXT, `${brightnessPercent}%`);
             }
         },
-        
+
         sendBri(val) {
             this.request({
                 method: 'SET_BRIGHTNESS',
@@ -334,10 +336,11 @@ Page(
                 if (light) {
                     light.bri = val;
                     app.setLightData(this.state.lightId, light);
+                    app.updateLightStatusInGroupsCache(this.state.lightId, { bri: val });
                 }
             }).catch(e => logger.error(e));
         },
-        
+
         onDestroy() {
             this.unlockExitGesture();
             setScrollLock({ lock: false });
