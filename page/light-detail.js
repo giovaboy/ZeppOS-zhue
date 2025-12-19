@@ -668,7 +668,7 @@ Page(
       
       // Sincronizza con globalData
       app.setLightData(this.state.lightId, this.state.light)
-      
+      app.updateLightStatusInGroupsCache(this.state.lightId, this.state.light.ison)
       // Flag per refresh group detail se necessario
       if (updates.ison !== undefined || updates.bri !== undefined) {
         app.globalData.needsGroupDetailRefresh = true

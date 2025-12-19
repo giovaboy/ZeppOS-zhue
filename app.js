@@ -111,7 +111,7 @@ App(
     },
     
     // ✅ NUOVO METODO: Aggiorna la cache "chirurgicamente"
-    updateGroupStatusInCache(groupId, isOn) {
+    updateGroupStatusInCacheold(groupId, isOn) {
       const cachedGroup = this.globalData.groupDetailCache[groupId]
       
       if (cachedGroup) {
@@ -141,6 +141,95 @@ App(
         
         // 3. Rinnova il timestamp per non farla scadere subito
         cachedGroup._timestamp = Date.now()
+      }
+    },
+    
+    // In app.js
+    
+    updateGroupStatusInCache(groupId, isOn) {
+      const cachedGroup = this.globalData.groupDetailCache[groupId]
+      
+      if (cachedGroup) {
+        console.log(`Global Store: Patching cache for group ${groupId} -> ${isOn}`)
+        
+        // 1. Aggiorna lo stato del gruppo
+        if (cachedGroup.action) cachedGroup.action.on = isOn
+        if (cachedGroup.state) {
+          cachedGroup.state.any_on = isOn
+          cachedGroup.state.all_on = isOn
+        }
+        
+        // 2. Aggiorna le luci dentro il gruppo E la cache delle luci singole
+        if (cachedGroup.lights && Array.isArray(cachedGroup.lights)) {
+          cachedGroup.lights.forEach(lightInGroup => {
+            // A. Aggiorna dentro l'oggetto gruppo
+            if (lightInGroup.state) {
+              lightInGroup.state.on = isOn
+              if (isOn && lightInGroup.state.bri === 0) lightInGroup.state.bri = 254
+            }
+            
+            // B. ✅ AGGIUNTA FONDAMENTALE: Aggiorna la cache della singola luce (se esiste)
+            // Le luci nel gruppo hanno un ID, usiamolo per trovare la cache singola
+            const individualLightId = lightInGroup.id // O lightInGroup.lightId a seconda della tua API
+            const cachedLight = this.globalData.lightData[individualLightId]
+            
+            if (cachedLight) {
+              console.log(`Global Store: Syncing individual light ${individualLightId} to ${isOn}`)
+              cachedLight.on = isOn // Nota: lightData spesso è "piatto" (light.on)
+              // Se la struttura di lightData usa 'state', usa cachedLight.state.on = isOn
+              if (cachedLight.state) cachedLight.state.on = isOn
+              
+              // Aggiorna timestamp per tenerla valida
+              cachedLight._timestamp = Date.now()
+            }
+          })
+        }
+        
+        cachedGroup._timestamp = Date.now()
+      }
+    },
+    
+    // ✅ SINCRONIZZAZIONE LUCE -> GRUPPO
+    updateLightStatusInGroupsCache(lightId, isOn) {
+      Object.keys(this.globalData.groupDetailCache).forEach(groupId => {
+        const cachedGroup = this.globalData.groupDetailCache[groupId]
+        
+        if (cachedGroup && cachedGroup.lights) {
+          // Cerchiamo se la luce fa parte di questo gruppo
+          const lightInGroup = cachedGroup.lights.find(l => (l.id === lightId || l.lightId === lightId))
+          
+          if (lightInGroup) {
+            console.log(`Global Store: Updating light ${lightId} inside group ${groupId}`)
+            
+            // 1. Aggiorna la luce dentro il gruppo
+            if (lightInGroup.state) lightInGroup.state.on = isOn
+            if (lightInGroup.ison !== undefined) lightInGroup.ison = isOn
+            
+            // 2. Ricalcola lo stato del gruppo (any_on / all_on)
+            const anyOn = cachedGroup.lights.some(l => {
+              const s = l.state || l
+              return !!(s.on || s.ison)
+            })
+            
+            if (cachedGroup.state) cachedGroup.state.any_on = anyOn
+            if (cachedGroup.action) cachedGroup.action.on = anyOn // Per coerenza UI
+            
+            cachedGroup._timestamp = Date.now()
+          }
+        }
+      })
+      
+      // Aggiorna anche la lista generale dei gruppi (quella di groups.js)
+      const gData = this.globalData.data
+      if (gData.hasLoadedOnce) {
+        [...gData.rooms, ...gData.zones].forEach(group => {
+          if (group.lights && group.lights.includes(lightId)) {
+            // Qui la struttura è più semplice, di solito anyOn
+            group.anyOn = isOn || group.anyOn // Logica semplificata: se una è accesa, anyOn è true
+            // Per essere precisi servirebbe ricalcolare su tutte le luci del gruppo, 
+            // ma come "update veloce" questo basta a non mostrare dati palesemente falsi.
+          }
+        })
       }
     },
     

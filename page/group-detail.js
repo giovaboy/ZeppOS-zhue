@@ -219,6 +219,7 @@ Page(
             app.setGroupDetailCache(this.state.groupId, null)
 
             // ✅ Flag per ricaricare groups
+            app.updateLightStatusInGroupsCache(this.state.lightId, newState)
             app.globalData.needsGroupsRefresh = true
             this.renderPage()
           }
