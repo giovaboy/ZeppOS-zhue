@@ -671,7 +671,7 @@ Page(
       app.updateLightStatusInGroupsCache(this.state.lightId, this.state.light.ison)
       // Flag per refresh group detail se necessario
       if (updates.ison !== undefined || updates.bri !== undefined) {
-        app.globalData.needsGroupDetailRefresh = true
+        //app.globalData.needsGroupDetailRefresh = true
       }
     },
     
