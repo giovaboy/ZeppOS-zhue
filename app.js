@@ -153,6 +153,7 @@ App(
         console.log(`Global Store: Patching cache for group ${groupId} -> ${isOn}`)
         
         // 1. Aggiorna lo stato del gruppo
+        cachedGroup.anyOn = isOn
         if (cachedGroup.action) cachedGroup.action.on = isOn
         if (cachedGroup.state) {
           cachedGroup.state.any_on = isOn
@@ -163,9 +164,9 @@ App(
         if (cachedGroup.lights && Array.isArray(cachedGroup.lights)) {
           cachedGroup.lights.forEach(lightInGroup => {
             // A. Aggiorna dentro l'oggetto gruppo
-            if (lightInGroup.state) {
-              lightInGroup.state.on = isOn
-              if (isOn && lightInGroup.state.bri === 0) lightInGroup.state.bri = 254
+            if (lightInGroup) {
+              lightInGroup.ison = isOn
+              //if (isOn && lightInGroup.bri === 0) lightInGroup.bri = 254
             }
             
             // B. ✅ AGGIUNTA FONDAMENTALE: Aggiorna la cache della singola luce (se esiste)
@@ -175,9 +176,9 @@ App(
             
             if (cachedLight) {
               console.log(`Global Store: Syncing individual light ${individualLightId} to ${isOn}`)
-              cachedLight.on = isOn // Nota: lightData spesso è "piatto" (light.on)
+              cachedLight.ison = isOn // Nota: lightData spesso è "piatto" (light.on)
               // Se la struttura di lightData usa 'state', usa cachedLight.state.on = isOn
-              if (cachedLight.state) cachedLight.state.on = isOn
+             // if (cachedLight.state) cachedLight.state.ison = isOn
               
               // Aggiorna timestamp per tenerla valida
               cachedLight._timestamp = Date.now()
@@ -202,15 +203,16 @@ App(
             console.log(`Global Store: Updating light ${lightId} inside group ${groupId}`)
             
             // 1. Aggiorna la luce dentro il gruppo
-            if (lightInGroup.state) lightInGroup.state.on = isOn
-            if (lightInGroup.ison !== undefined) lightInGroup.ison = isOn
+            //if (lightInGroup.state) lightInGroup.state.on = isOn
+           // if (lightInGroup.ison !== undefined)
+            lightInGroup.ison = isOn
             
             // 2. Ricalcola lo stato del gruppo (any_on / all_on)
             const anyOn = cachedGroup.lights.some(l => {
-              const s = l.state || l
-              return !!(s.on || s.ison)
+              return !!(l.ison)
             })
             
+            cachedGroup.state.anyOn = anyOn
             if (cachedGroup.state) cachedGroup.state.any_on = anyOn
             if (cachedGroup.action) cachedGroup.action.on = anyOn // Per coerenza UI
             

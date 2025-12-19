@@ -213,7 +213,7 @@ Page(
         .then(result => {
           if (result.success) {
             // ✅ Aggiorna stato locale
-            this.state.light.ison = newState
+            light.ison = newState
             
             // ✅ Invalida cache detail
             //app.setGroupDetailCache(this.state.groupId, null)
