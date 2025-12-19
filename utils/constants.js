@@ -44,6 +44,13 @@ export const COLORS = {
 
 }
 
+// Range API Hue/Sat/Bri
+export const HUE_RANGE = 65535; // 0-65535
+export const SAT_RANGE = 254;   // 0-254
+export const BRI_RANGE = 254;   // 1-254
+export const CT_MIN = 153;      // 153 (6500K)
+export const CT_MAX = 500;      // 500 (2000K)
+
 export const DEFAULT_USER_SETTINGS = {
   show_global_toggle: true,
   show_scenes: true,
@@ -361,7 +368,7 @@ export const LIGHT_MODELS = {
 export const PRESET_TYPES = {
   COLOR: 'COLOR', // Preset che usano HUE e SAT (per luci colorate)
   CT: 'CT', // Preset che usano CT (per luci CT o colorate)
-  WHITE: 'WHITE' // Preset che usano solo BRI (compatibili con tutte)
+  WHITE: 'WHITE' // Preset che usano solo BRI (per luci bianche)
 };
 
 export const DEFAULT_PRESETS = [
@@ -428,12 +435,9 @@ export function hsb2hex(h, s, v) {
 }
 
 function calculateCtRgb(mireds) {
-  // 153 (Freddo) -> 500 (Caldo)
-  const MIN_CT = 153;
-  const MAX_CT = 500;
 
   // Normalizza la percentuale tra 0 (freddo) e 1 (caldo)
-  const pct = Math.max(0, Math.min(1, (mireds - MIN_CT) / (MAX_CT - MIN_CT)));
+  const pct = Math.max(0, Math.min(1, (mireds - CT_MIN) / (CT_MAX - CT_MIN)));
 
   // Cold: 0xCCDDFF (RGB 204, 221, 255), Warm: 0xFFB044 (RGB 255, 176, 68)
   // Interpolazione:
@@ -459,7 +463,7 @@ export function xy2hexString(xy, bri = 254) {
 /**
  * Converti coordinate XY (CIE 1931) a hex color integer
  */
-export function xy2hex(xy, bri = 254) {
+export function xy2hex(xy, bri = BRI_RANGE) {
   if (!xy || !Array.isArray(xy) || xy.length < 2) {
     return 0xFFFFFF // Fallback bianco
   }
@@ -474,7 +478,7 @@ export function xy2hex(xy, bri = 254) {
  * Converti coordinate XY + brightness a RGB
  */
 function xyBriToRgb(x, y, bri) {
-  const brightness = bri / 254
+  const brightness = bri / BRI_RANGE
   const z = 1.0 - x - y
 
   const Y = brightness
@@ -535,7 +539,7 @@ export const normalizeHex = (hex) => {
 }
 
 export function multiplyHexColor(hex_color, multiplier) {
-  hex_color = Math.floor(hex_color).toString(16).padStart(6, "0"); // @fix 1.0.6
+  hex_color = Math.floor(hex_color).toString(16).padStart(6, "0");
 
   let r = parseInt(hex_color.substring(0, 2), 16);
   let g = parseInt(hex_color.substring(2, 4), 16);
@@ -549,7 +553,7 @@ export function multiplyHexColor(hex_color, multiplier) {
   return result;
 }
 
-export function btnPressColor(hex_color, multiplier) { // @add 1.0.6
+export function btnPressColor(hex_color, multiplier) {
   hex_color = Math.floor(hex_color).toString(16).padStart(6, "0");
 
   let r = parseInt(hex_color.substring(0, 2), 16);

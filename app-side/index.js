@@ -1,5 +1,5 @@
 import { BaseSideService, settingsLib } from '@zeppos/zml/base-side'
-import { DEFAULT_PRESETS, PRESET_TYPES, DEMO_DATA } from '../utils/constants.js'
+import { HUE_RANGE, SAT_RANGE, BRI_RANGE, CT_MIN, CT_MAX, DEFAULT_PRESETS, PRESET_TYPES, DEMO_DATA } from '../utils/constants.js'
 
 const BRIDGE_IP_KEY = 'hue_bridge_ip'
 const USERNAME_KEY = 'hue_username'
@@ -27,9 +27,9 @@ const DEFAULT_USER_SETTINGS = {
 
 // --- Nuova funzione: HSB (0-65535, 0-254, 0-254) a RGB (0-255) ---
 function hsbToRgb(h, s, v) {
-  h = h / 65535 * 360 // Hue API (0-65535) -> 0-360
-  s = s / 254 // Sat API (0-254) -> 0-1
-  v = v / 254 // Bri API (0-254) -> 0-1
+  h = h / HUE_RANGE * 360 // Hue API (0-65535) -> 0-360
+  s = s / SAT_RANGE // Sat API (0-254) -> 0-1
+  v = v / BRI_RANGE // Bri API (0-254) -> 0-1
 
   let r, g, b
   if (s === 0) {
@@ -108,9 +108,9 @@ function rgbToHsb(r, g, b) {
   const bri = max
 
   return {
-    hue: Math.round(h / 360 * 65535), // Hue API usa 0-65535
-    sat: Math.round(s * 254), // Hue API usa 0-254
-    bri: Math.round(bri * 254) // Hue API usa 0-254
+    hue: Math.round(h / 360 * HUE_RANGE), // Hue API usa 0-65535
+    sat: Math.round(s * SAT_RANGE), // Hue API usa 0-254
+    bri: Math.round(bri * BRI_RANGE) // Hue API usa 0-254
   }
 }
 
@@ -125,7 +125,7 @@ function rgbToHsb(r, g, b) {
  */
 function xyBriToRgb(x, y, bri) {
   // Normalizza brightness da 0-254 a 0-1
-  const brightness = bri / 254
+  const brightness = bri / BRI_RANGE
 
   // Calcola z dalla x e y
   const z = 1.0 - x - y
@@ -191,12 +191,12 @@ function rgbToXy(r, g, b) {
   const y = Y / sum
 
   // Y rappresenta la brightness (luminance)
-  const bri = Math.round(Y * 254)
+  const bri = Math.round(Y * BRI_RANGE)
 
   return {
     x: Math.max(0, Math.min(1, x)),
     y: Math.max(0, Math.min(1, y)),
-    bri: Math.max(1, Math.min(254, bri))
+    bri: Math.max(1, Math.min(BRI_RANGE, bri))
   }
 }
 

@@ -5,19 +5,13 @@ import { createWidget, deleteWidget, prop } from '@zos/ui'
 import { back } from '@zos/router'
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import { getLogger } from '../utils/logger.js'
-import { hsb2hex, ct2hex } from '../utils/constants.js'
+import { HUE_RANGE, SAT_RANGE, BRI_RANGE, CT_MIN, CT_MAX, hsb2hex, ct2hex } from '../utils/constants.js'
 
 // Import Layout
 import { renderColorPickerPage, LAYOUT_CONFIG } from 'zosLoader:./color-picker.[pf].layout.js'
 
 const logger = getLogger('zhue-color-picker-page')
 const app = getApp()
-
-const HUE_RANGE = 65535;
-const SAT_RANGE = 254;
-const BRI_RANGE = 254;
-const CT_MIN = 153; // Freddo
-const CT_MAX = 500; // Caldo
 
 Page(
     BasePage({
@@ -184,17 +178,16 @@ Page(
             this.state.sat = s;
             if (this.state.cursorWidget) {
                 const { pickerX, pickerY, pickerSize } = LAYOUT_CONFIG;
-                const curSz = px(36);
                 const x = pickerX + (h / HUE_RANGE) * pickerSize;
                 const y = pickerY + ((SAT_RANGE - s) / SAT_RANGE) * pickerSize;
                 this.state.cursorWidget.setProperty(prop.CENTER_X, x);
                 this.state.cursorWidget.setProperty(prop.CENTER_Y, y);
-                const currentHex = hsb2hex(
+                const cursorHex = hsb2hex(
                     (h / HUE_RANGE) * 360,
                     (s / SAT_RANGE) * 100,
                     90 //(this.state.bri / BRI_RANGE) * 100
                 );
-                this.state.cursorWidget.setProperty(prop.COLOR, currentHex);
+                this.state.cursorWidget.setProperty(prop.COLOR, cursorHex);
             }
         },
 
@@ -209,9 +202,9 @@ Page(
                 // ✅ AGGIORNA LA CACHE PRIMA DI TORNARE
                 const light = app.getLightData(this.state.lightId)
                 if (light) {
-                    const nBri = Math.round((this.state.bri / 254) * 100)
-                    const nHue = Math.round((h / 65535) * 360)
-                    const nSat = Math.round((s / 254) * 100)
+                    const nBri = Math.round((this.state.bri / BRI_RANGE) * 100)
+                    const nHue = Math.round((h / HUE_RANGE) * 360)
+                    const nSat = Math.round((s / SAT_RANGE) * 100)
                     const rgb = hsb2hex(nHue, nSat, nBri)
                     const newHex = '#' + rgb.toString(16).padStart(6, '0').toUpperCase()
                     light.hue = h;

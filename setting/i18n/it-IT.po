@@ -10,7 +10,7 @@ msgid "BRIDGE_IP"
 msgstr "Bridge IP Address"
 
 msgid "BRIDGE_IP_PLACEHOLDER"
-msgstr "e.g. 192.168.1.132"
+msgstr "e.g. 192.168.1.100"
 
 msgid "API_VERSION"
 msgstr "API Version"

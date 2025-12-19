@@ -8,7 +8,7 @@ import { onGesture, GESTURE_RIGHT, createModal, MODAL_CONFIRM } from '@zos/inter
 import { px } from '@zos/utils'
 import { renderLightDetail, LAYOUT_CONFIG } from 'zosLoader:./light-detail.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
-import { DEFAULT_PRESETS, PRESET_TYPES, hsb2hex, ct2hex, ct2hexString, xy2hex, xy2hexString, normalizeHex, DEFAULT_USER_SETTINGS } from '../utils/constants.js'
+import { HUE_RANGE, SAT_RANGE, BRI_RANGE, CT_MIN, CT_MAX, DEFAULT_PRESETS, PRESET_TYPES, hsb2hex, ct2hex, ct2hexString, xy2hex, xy2hexString, normalizeHex, DEFAULT_USER_SETTINGS } from '../utils/constants.js'
 
 const logger = getLogger('zhue-light-detail-page')
 const app = getApp()
@@ -192,9 +192,9 @@ Page(
             const hue = light.hue ?? 0
             const sat = light.sat ?? 0
 
-            const nBri = Math.round((bri / 254) * 100)
-            const nHue = Math.round((hue / 65535) * 360)
-            const nSat = Math.round((sat / 254) * 100)
+            const nBri = Math.round((bri / BRI_RANGE) * 100)
+            const nHue = Math.round((hue / HUE_RANGE) * 360)
+            const nSat = Math.round((sat / SAT_RANGE) * 100)
 
             rgb = hsb2hex(nHue, nSat, nBri)
             break
@@ -268,7 +268,7 @@ Page(
       const getBrightnessFromX = (x) => {
         let positionInTrack = x - sliderX
         positionInTrack = Math.max(0, Math.min(positionInTrack, sliderW))
-        return Math.max(this.state.light.ison ? 1 : 0, Math.round((positionInTrack / sliderW) * 254))
+        return Math.max(this.state.light.ison ? 1 : 0, Math.round((positionInTrack / sliderW) * BRI_RANGE))
       }
 
       if (evtType === 'DOWN') {
@@ -307,8 +307,8 @@ Page(
 
     setBrightness(brightness, skipApiCall = false) {
       const { sliderW } = LAYOUT_CONFIG
-      const fillWidth = Math.max(px(5), Math.round(sliderW * brightness / 254))
-      const percent = Math.round(brightness / 254 * 100)
+      const fillWidth = Math.max(px(5), Math.round(sliderW * brightness / BRI_RANGE))
+      const percent = Math.round(brightness / BRI_RANGE * 100)
 
       if (this.state.brightnessSliderFillWidget) {
         try {
@@ -543,7 +543,7 @@ Page(
     addCurrentColorToFavorites() {
       const light = this.state.light
       let newFavorite = {
-        bri: light.bri || 254
+        bri: light.bri || BRI_RANGE
       }
 
       const colormode = light.colormode
@@ -570,7 +570,7 @@ Page(
 
       } else {
         newFavorite.type = PRESET_TYPES.WHITE
-        newFavorite.bri = 254
+        newFavorite.bri = BRI_RANGE
         newFavorite.hex = '#FFFFFF'
       }
 
@@ -616,7 +616,7 @@ Page(
       } else if (favorite.type === PRESET_TYPES.CT) {
         presetDescription = 'White preset'
       } else if (favorite.type === PRESET_TYPES.WHITE) {
-        const briPercent = Math.round((favorite.bri || 254) / 254 * 100)
+        const briPercent = Math.round((favorite.bri || BRI_RANGE) / BRI_RANGE * 100)
         presetDescription = `Brightness preset (${briPercent}%)`
       }
 

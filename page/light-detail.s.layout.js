@@ -2,7 +2,7 @@ import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
 import { widget, align, text_style, prop, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
-import { COLORS, PRESET_TYPES, btnPressColor, ct2hex, xy2hex } from '../utils/constants'
+import { BRI_RANGE, COLORS, PRESET_TYPES, btnPressColor, ct2hex, xy2hex } from '../utils/constants'
 import { getLogger } from '../utils/logger'
 
 const logger = getLogger('zhue-light-detail-layout')
@@ -315,7 +315,7 @@ function renderNormalState(pageContext, state, callbacks) {
 function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
   const { light, isDraggingBrightness, tempBrightness } = state
   const brightness = isDraggingBrightness ? tempBrightness : light.bri
-  const brightnessPercent = Math.round(brightness / 254 * 100)
+  const brightnessPercent = Math.round(brightness / BRI_RANGE * 100)
   const { sliderX, sliderW, sliderH } = LAYOUT_CONFIG
 
   const sliderY = yPos
@@ -331,7 +331,7 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
   })
 
   // Fill
-  const fillWidth = Math.max(px(5), (brightness / 254) * sliderW)
+  const fillWidth = Math.max(px(5), (brightness / BRI_RANGE) * sliderW)
   const fillWidget = pageContext.createTrackedWidget(widget.FILL_RECT, {
     x: sliderX,
     y: sliderY,
@@ -399,7 +399,7 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
   } else if (light.colormode === 'ct' && light.ct) {
     btnColor = ct2hex(light.ct)
   } else if (light.colormode === 'xy' && light.xy) {
-    btnColor = xy2hex(light.xy, light.bri || 254)
+    btnColor = xy2hex(light.xy, light.bri || BRI_RANGE)
   } else {
     btnColor = COLORS.white
   }
@@ -510,7 +510,7 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
 
     let buttonText = ''
     if (fav.type === PRESET_TYPES.WHITE) {
-      const briPercent = Math.round((fav.bri / 254) * 100)
+      const briPercent = Math.round((fav.bri / BRI_RANGE) * 100)
       buttonText = `${briPercent}%`
     }
 

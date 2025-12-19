@@ -18,7 +18,7 @@ export const LAYOUT_CONFIG = {
 }
 
 export function renderGroupsPage(pageContext, state, listData, callbacks) {
-    const { switchTab, refresh, handleListItemClick, onScrollChange } = callbacks
+    const { switchTab, refresh } = callbacks
     const { currentTab, isLoading, error } = state
 
     // 1. Sfondo
@@ -152,7 +152,7 @@ function renderGroupsList(pageContext, state, listData, startY, callbacks) {
         pos_y: scrollPos_y || 0,
         scroll_frame_func: (FrameParams) => {
             if (FrameParams.yoffset !== undefined) {
-                logger.debug('VIEW_CONTAINER scroll_y:', FrameParams.yoffset)
+                //logger.debug('VIEW_CONTAINER scroll_y:', FrameParams.yoffset)
                 onScrollChange(FrameParams.yoffset)
             }
         }
@@ -190,17 +190,18 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
     })
 
     // Icon/Indicator (colored circle per tipo gruppo)
+    const circleRadius = px(15)
     const iconColor = group.raw?.type === 'room' ? COLORS.roomIndicator : COLORS.zoneIndicator
     container.createWidget(widget.CIRCLE, {
-        center_x: px(50),
+        center_x: startX + circleRadius + px(15),
         center_y: yPos + itemHeight / 2,
-        radius: px(12),
+        radius: circleRadius,
         color: iconColor || COLORS.highlight
     })
 
     // Nome gruppo
     container.createWidget(widget.TEXT, {
-        x: px(75),
+        x: startX + px(15) + circleRadius * 2 + px(15),
         y: yPos + px(20),
         w: px(250),
         h: px(30),
@@ -213,7 +214,7 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
 
     // Status (numero luci)
     container.createWidget(widget.TEXT, {
-        x: px(75),
+        x: startX + px(15) + circleRadius * 2 + px(15),
         y: yPos + px(55),
         w: px(200),
         h: px(25),

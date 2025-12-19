@@ -4,7 +4,6 @@ import { widget, align, text_style } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { COLORS, btnPressColor } from '../utils/constants.js'
 import { getLogger } from '../utils/logger.js'
-import { start } from '@zos/app-service'
 
 const logger = getLogger('zhue-group-detail-page')
 
@@ -154,7 +153,7 @@ function renderGroupContentWithViewContainer(pageContext, state, viewData, callb
         // 🔥 NUOVO: Aggiungi il listener per catturare la posizione
         scroll_frame_func: (FrameParams) => {
             if (FrameParams.yoffset !== undefined) {
-                logger.debug('VIEW_CONTAINER scroll_y:', FrameParams.yoffset)
+                //logger.debug('VIEW_CONTAINER scroll_y:', FrameParams.yoffset)
                 onScrollChange(FrameParams.yoffset)
             }
         }
@@ -209,28 +208,30 @@ function renderHeader(container, item, yPos, COLORS) {
 
 // ✅ Render Scene Item
 function renderSceneItem(container, scene, yPos, COLORS, onTap) {
+    const startX = px(30)
     const itemHeight = px(80)
 
     // Background
     container.createWidget(widget.FILL_RECT, {
-        x: px(20),
+        x: startX,
         y: yPos,
-        w: px(440),
+        w: DEVICE_WIDTH - startX * 2,
         h: itemHeight,
         color: COLORS.sceneBg,
         radius: px(10)
     })
 
     // Scene icon (optional colored circle)
+    const circleRadius = px(15)
     if (scene.color) {
         try {
             const colorHex = scene.color.replace('#', '')
             const colorInt = parseInt(colorHex, 16)
 
             container.createWidget(widget.CIRCLE, {
-                center_x: px(50),
+                center_x: startX + circleRadius + px(15),
                 center_y: yPos + itemHeight / 2,
-                radius: px(15),
+                radius: circleRadius,
                 color: colorInt
             })
         } catch (e) {
@@ -240,7 +241,7 @@ function renderSceneItem(container, scene, yPos, COLORS, onTap) {
 
     // Scene name
     container.createWidget(widget.TEXT, {
-        x: px(80),
+        x: startX + px(15) + circleRadius * 2 + px(15),
         y: yPos,
         w: px(360),
         h: itemHeight,
@@ -253,9 +254,9 @@ function renderSceneItem(container, scene, yPos, COLORS, onTap) {
 
     // Clickable overlay
     const overlay = container.createWidget(widget.BUTTON, {
-        x: px(20),
+        x: startX,
         y: yPos,
-        w: px(440),
+        w: DEVICE_WIDTH - startX * 2,
         h: itemHeight,
         text: '',
         normal_color: 0x00000000,
@@ -274,6 +275,7 @@ function renderLightItem(container, light, yPos, COLORS, onToggle, onNavigate) {
     const startX = px(30)
     const itemHeight = px(100)
     const isOn = !!light.raw?.ison
+    const reachable = light.raw?.reachable !== false
 
     // Background
     container.createWidget(widget.FILL_RECT, {
@@ -293,7 +295,7 @@ function renderLightItem(container, light, yPos, COLORS, onToggle, onNavigate) {
         h: px(30),
         text: light.name,
         text_size: px(28),
-        color: isOn ? COLORS.color_text_title : COLORS.inactive,
+        color: isOn && reachable ? COLORS.color_text_title : COLORS.inactive,
         align_h: align.LEFT,
         align_v: align.CENTER_V
     })
@@ -334,35 +336,35 @@ function renderLightItem(container, light, yPos, COLORS, onToggle, onNavigate) {
         })
 
         // Clickable overlay for toggle
-        const overlay = container.createWidget(widget.BUTTON, {
+        const toggleOverlay = container.createWidget(widget.BUTTON, {
             x: iconX - px(5),
             y: yPos,
             w: iconSize + px(10),
             h: itemHeight,
             text: '',
-            normal_color: 0x00000000,
-            press_color: 0x33ffffff,
+            normal_color: COLORS.black,
+            press_color: COLORS.white,
             //radius: px(10),
-            click_func: onToggle
+            click_func: reachable ? onToggle : null
         })
 
-        overlay.setAlpha(0)
+        toggleOverlay.setAlpha(0)
     }
 
     // Clickable overlay for navigation (left area)
-    const overlay = container.createWidget(widget.BUTTON, {
+    const navigationOverlay = container.createWidget(widget.BUTTON, {
         x: startX,
         y: yPos,
         w: DEVICE_WIDTH - (startX * 2) - iconSize - px(20),
         h: itemHeight,
         text: '',
-        normal_color: 0x00000000,
-        press_color: 0x22ffffff,
+        normal_color: COLORS.black,
+        press_color: COLORS.white,
         //radius: px(10),
-        click_func: onNavigate
+        click_func: reachable ? onNavigate : null
     })
 
-    overlay.setAlpha(0)
+    navigationOverlay.setAlpha(0)
 
     return yPos + itemHeight + px(10) // item + spacing
 }

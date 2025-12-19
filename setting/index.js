@@ -1,5 +1,5 @@
 import { gettext } from 'i18n'
-import { DEFAULT_PRESETS, PRESET_TYPES } from '../utils/constants' 
+import { DEFAULT_PRESETS, PRESET_TYPES } from '../utils/constants'
 
 AppSettingsPage({
   build(props) {
@@ -9,7 +9,7 @@ AppSettingsPage({
         {
           style: {
             marginTop: '20px',
-            marginBottom: '30px',
+            //marginBottom: '30px',
             textAlign: 'center',
             padding: '20px',
             backgroundColor: '#f8f9fa',
@@ -20,14 +20,28 @@ AppSettingsPage({
           Text(
             {
               style: {
-                fontSize: '24px',
+                fontSize: '36px',
                 fontWeight: 'bold',
                 color: '#333',
                 marginBottom: '10px'
               }
             },
-            ['🏠 Hue Bridge Settings']
-          ),
+            ['🎨 zhue']
+          )]),
+
+      // ===== SUBTITLE =====
+      View(
+        {
+          style: {
+            //marginTop: '20px',
+            //marginBottom: '30px',
+            textAlign: 'center',
+            //padding: '20px',
+            backgroundColor: '#f8f9fa',
+            borderRadius: '8px'
+          },
+        },
+        [
           Text(
             {
               style: {
@@ -35,7 +49,7 @@ AppSettingsPage({
                 color: '#666'
               }
             },
-            [gettext('SETTINGS_SUBTITLE') || 'Configure your Philips Hue Bridge connection']
+            [gettext('SETTINGS_SUBTITLE')]
           )
         ]
       ),
@@ -72,8 +86,14 @@ AppSettingsPage({
             onChange: (value) => {
               props.settingsStorage.setItem('hue_bridge_ip', value)
             },
-            style: {
-              marginBottom: '15px'
+            labelStyle: {
+              marginTop: '20px',
+              marginBottom: '5px',
+              marginLeft: '5px'
+            },
+            subStyle: {
+              marginLeft: '5px',
+              marginRight: '5px'
             }
           }),
 
@@ -82,6 +102,8 @@ AppSettingsPage({
             {
               style: {
                 marginTop: '15px',
+                marginLeft: '5px',
+                marginRight: '5px',
                 padding: '12px',
                 backgroundColor: '#f8f9fa',
                 borderRadius: '6px',
@@ -97,10 +119,11 @@ AppSettingsPage({
                     marginBottom: '5px'
                   }
                 },
-                ['Username (Auto-generated):']
+                ['Username:']
               ),
               Text(
                 {
+                  paragraph: true,
                   style: {
                     fontSize: '14px',
                     color: '#495057',
@@ -118,6 +141,8 @@ AppSettingsPage({
             {
               style: {
                 marginTop: '15px',
+                marginLeft: '5px',
+                marginRight: '5px',
                 padding: '12px',
                 backgroundColor: '#e7f3ff',
                 borderRadius: '6px',
@@ -178,6 +203,9 @@ AppSettingsPage({
             {
               style: {
                 display: 'flex',
+                marginTop: '20px',
+                marginLeft: '5px',
+                marginRight: '5px',
                 alignItems: 'center',
                 padding: '12px',
                 backgroundColor: props.settingsStorage.getItem('hue_username') ? '#d4edda' : '#f8d7da',
@@ -267,42 +295,53 @@ AppSettingsPage({
             ]
           ),*/
           // Show global toggle
-          Toggle({
-            label: 'Show global toggle',
-            value: props.settingsStorage.getItem('hue_show_global_toggle') === 'true',
-            onChange: (value) => {
-              props.settingsStorage.setItem('hue_show_global_toggle', value ? 'true' : 'false')
-            }
-          }),
-          // Show scenes
-          Toggle({
-            label: 'Show Scenes',
-            value: props.settingsStorage.getItem('hue_show_scenes') === 'true',
-            onChange: (value) => {
-              props.settingsStorage.setItem('hue_show_scenes', value ? 'true' : 'false')
-            }
-          }),
+          View(
+            {
+              style: {
+                //marginBottom: '15px',
+                marginTop: '20px',
+                marginLeft: '5px',
+                marginRight: '5px',
+              }
+            },
+            [
+              Toggle({
+                label: 'Show global toggle',
+                value: props.settingsStorage.getItem('hue_show_global_toggle') === 'true',
+                onChange: (value) => {
+                  props.settingsStorage.setItem('hue_show_global_toggle', value ? 'true' : 'false')
+                }
+              }),
+              // Show scenes
+              Toggle({
+                label: 'Show Scenes',
+                value: props.settingsStorage.getItem('hue_show_scenes') === 'true',
+                onChange: (value) => {
+                  props.settingsStorage.setItem('hue_show_scenes', value ? 'true' : 'false')
+                }
+              }),
 
-          // Display Order
-          Select({
-            title: 'Display Order',
-            options: [{ name: 'Light first', value: 'LIGHTS_FIRST' },
-                      { name: 'Scenes first', value: 'SCENES_FIRST' }],
-            value: props.settingsStorage.getItem('hue_display_order'),
-            onChange: (value) => {
-              props.settingsStorage.setItem('hue_display_order', value )
-            }
-          }),
+              // Display Order
+              Select({
+                title: 'Display Order',
+                options: [{ name: 'Light first', value: 'LIGHTS_FIRST' },
+                { name: 'Scenes first', value: 'SCENES_FIRST' }],
+                value: props.settingsStorage.getItem('hue_display_order'),
+                onChange: (value) => {
+                  props.settingsStorage.setItem('hue_display_order', value)
+                }
+              }),
 
-          // Debug Mode Toggle
-          Toggle({
-            label: '🐛 DEMO Mode',
-            //settingsKey: 'hue_demo_mode',
-            value: props.settingsStorage.getItem('hue_demo_mode') === 'true',
-            onChange: (value) => {
-              props.settingsStorage.setItem('hue_demo_mode', value ? 'true' : 'false')
-            }
-          })
+              // Debug Mode Toggle
+              Toggle({
+                label: '🐛 DEMO Mode',
+                //settingsKey: 'hue_demo_mode',
+                value: props.settingsStorage.getItem('hue_demo_mode') === 'true',
+                onChange: (value) => {
+                  props.settingsStorage.setItem('hue_demo_mode', value ? 'true' : 'false')
+                }
+              })
+            ])
         ]
       ),
 
@@ -332,6 +371,7 @@ AppSettingsPage({
 
           Text(
             {
+              paragraph: true,
               style: {
                 fontSize: '14px',
                 color: '#6c757d',
@@ -346,6 +386,9 @@ AppSettingsPage({
             {
               style: {
                 display: 'flex',
+              marginTop: '20px',
+              marginLeft: '5px',
+              marginRight: '5px',
                 flexWrap: 'wrap',
                 gap: '10px',
                 marginBottom: '15px',
@@ -357,7 +400,7 @@ AppSettingsPage({
             (() => {
               const favColorsStr = props.settingsStorage.getItem('hue_favorite_colors')
               let colors = DEFAULT_PRESETS
-              
+
               if (favColorsStr) {
                 try {
                   colors = JSON.parse(favColorsStr)
@@ -366,7 +409,7 @@ AppSettingsPage({
                 }
               }
 
-              return colors.map((color, i) => 
+              return colors.map((color, i) =>
                 View(
                   {
                     style: {
@@ -418,9 +461,9 @@ AppSettingsPage({
             },
             onClick: () => {
               //if (confirm('Reset favorite colors to default presets?')) {
-                props.settingsStorage.setItem('hue_favorite_colors', JSON.stringify(DEFAULT_PRESETS))
-                //alert('✅ Favorite colors reset to defaults!')
-                //window.location.reload()
+              props.settingsStorage.setItem('hue_favorite_colors', JSON.stringify(DEFAULT_PRESETS))
+              //alert('✅ Favorite colors reset to defaults!')
+              //window.location.reload()
               //}
             }
           })
@@ -519,6 +562,7 @@ AppSettingsPage({
           ),
           Text(
             {
+              paragraph: true,
               style: {
                 fontSize: '14px',
                 color: '#856404',
@@ -555,7 +599,7 @@ AppSettingsPage({
                 color: '#6c757d'
               }
             },
-            ['Hue On-Off App v1.0']
+            ['zhue v1.0']
           ),
           Text(
             {
@@ -565,7 +609,7 @@ AppSettingsPage({
                 marginTop: '5px'
               }
             },
-            ['Made with ❤️ for Zepp OS']
+            [' | Made with ❤️ for Zepp OS']
           )
         ]
       )

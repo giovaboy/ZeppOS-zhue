@@ -2,14 +2,9 @@ import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
 import { widget, align, text_style, prop, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
-import { COLORS, hsb2hex, ct2hex, btnPressColor } from '../utils/constants.js'
+import { HUE_RANGE, SAT_RANGE, BRI_RANGE, CT_MIN, CT_MAX, COLORS, hsb2hex, ct2hex, btnPressColor } from '../utils/constants.js'
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
-
-// Range API Hue/Sat/Bri
-const HUE_RANGE = 65535;
-const SAT_RANGE = 254;
-const BRI_RANGE = 254;
 
 // Configurazione Layout
 export const LAYOUT_CONFIG = {
@@ -91,11 +86,6 @@ function renderHueSatPicker(pageContext, state, callbacks) {
     })
 
     // B. Cursore
-    //const cursorSize = px(20);//36
-    // Hue mappa su X, Sat mappa su Y (Sat 254 = Alto, 0 = Basso? No, solitamente Y basso è bianco)
-    // Hue API: 0-65535. Sat API: 0-254.
-    //const posX = pickerX + (hue / 65535) * pickerSize;
-    //const posY = pickerY + ((254 - sat) / 254) * pickerSize; // 254 (Vivido) in alto
     const cursorSize = px(28);
     // Mappa Hue API (0-65535) su X (0-pickerSize)
     const posX = pickerX + Math.max(0, Math.min(pickerSize, (hue / HUE_RANGE) * pickerSize));
@@ -142,7 +132,7 @@ function renderCTPicker(pageContext, state, callbacks) {
     const ctPickerW = cursorSize*2;
 
     pageContext.createTrackedWidget(widget.IMG, {
-        x: (DEVICE_WIDTH - ctPickerW) / 2,//pickerX,
+        x: (DEVICE_WIDTH - ctPickerW) / 2,
         y: pickerY,
         w: ctPickerW,
         h: pickerSize,
@@ -152,8 +142,8 @@ function renderCTPicker(pageContext, state, callbacks) {
     })
 
     // Mappa CT su Y
-    const validCt = Math.max(153, Math.min(500, ct));
-    const normalizedY = (validCt - 153) / (500 - 153);
+    const validCt = Math.max(CT_MIN, Math.min(CT_MAX, ct));
+    const normalizedY = (validCt - CT_MIN) / (CT_MAX - CT_MIN);
     const posY = pickerY + (normalizedY * pickerSize);
     const posX = pickerX + (pickerSize / 2); // Centrato orizzontalmente
 
@@ -180,7 +170,7 @@ function renderBrightnessSlider(pageContext, state, callbacks) {
     const { sliderX, sliderY, sliderW, sliderH } = LAYOUT_CONFIG;
     const { bri } = state;
     const { onDragBri } = callbacks;
-    const brightnessPercent = Math.round(bri / 254 * 100)
+    const brightnessPercent = Math.round(bri / BRI_RANGE * 100)
 
     // Track
     pageContext.createTrackedWidget(widget.FILL_RECT, {
@@ -189,7 +179,7 @@ function renderBrightnessSlider(pageContext, state, callbacks) {
     });
 
     // Fill
-    const fillW = Math.max(px(20), (bri / 254) * sliderW);
+    const fillW = Math.max(px(20), (bri / BRI_RANGE) * sliderW);
     const fill = pageContext.createTrackedWidget(widget.FILL_RECT, {
         x: sliderX, y: sliderY, w: fillW, h: sliderH,
         radius: sliderH / 2, color: COLORS.sliderFill
