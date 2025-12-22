@@ -18,17 +18,16 @@ Page(
       currentTab: 'ROOMS',
       isLoading: false,
       error: null,
-      scrollPos_y: null
+      scrollPos_y: 0
     },
     
     widgets: [],
     
     onInit(p) {
       logger.debug('Groups page onInit')
-      this.state.currentTab = app.getCurrentTab()
-      this.state.scrollPos_y = app.getGroupsY()
-      //logger.debug('Restored tab:', this.state.currentTab)
       
+      this.state.currentTab = app.getCurrentTab()
+      this.state.scrollPos_y = app.getGroupsScrollY()
       // 1. Controlla se dobbiamo ricaricare
       const needsRefresh = app.globalData.needsGroupsRefresh
       
@@ -221,8 +220,13 @@ Page(
     
     switchTab(tabName) {
       if (this.state.currentTab === tabName) return
+      app.setGroupsScrollY(this.state.scrollPos_y)
+      
       this.state.currentTab = tabName
       app.setCurrentTab(tabName)
+      
+      // 👇 RECUPERA scroll position del nuovo tab
+      this.state.scrollPos_y = app.getGroupsScrollY()
       this.renderPage()
     },
     
@@ -264,8 +268,8 @@ Page(
           if (data_key === 'on_off') {
             this.toggleGroup(item.raw)
           } else {
+            app.setGroupsScrollY(this.state.scrollPos_y)
             app.setCurrentTab(this.state.currentTab)
-            
             const paramsString = JSON.stringify({
               groupId: item.raw.id,
               groupType: item.raw.type,
@@ -283,7 +287,7 @@ Page(
     
     onDestroy() {
       app.setCurrentTab(this.state.currentTab)
-      app.setGroupsY(y)
+      app.setGroupsScrollY(this.state.scrollPos_y)
       this.clearAllWidgets()
     }
   })

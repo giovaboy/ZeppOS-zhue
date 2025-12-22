@@ -20,7 +20,7 @@ Page(
       scenes: [],
       isLoading: false,
       error: null,
-      scrollPos_y: null
+      scrollPos_y: 0
     },
     
     widgets: [],
@@ -44,7 +44,7 @@ Page(
         this.state.groupId = params.groupId
         this.state.groupType = params.groupType
         this.state.groupName = params.groupName
-        this.state.scrollPos_y = app.getGroupDetailY(this.state.groupId)
+        this.state.scrollPos_y = app.getGroupDetailScrollY(this.state.groupId)
       }
       
       // 1. Controlla se dobbiamo ricaricare
@@ -248,6 +248,7 @@ Page(
     },
     
     navigateToLightDetail(light) {
+      app.setGroupDetailScrollY(this.state.groupId, this.state.scrollPos_y)
       app.setLightData(light.id, light)
       
       const paramsString = JSON.stringify({
@@ -355,7 +356,7 @@ Page(
     
     onDestroy() {
       this.clearAllWidgets()
-      app.setGroupDetailY(this.state.groupId, this.state.scrollPos_y)
+      app.setGroupDetailScrollY(this.state.groupId, this.state.scrollPos_y)
     }
   })
 )
