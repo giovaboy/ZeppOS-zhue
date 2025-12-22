@@ -1,5 +1,5 @@
 import { BaseSideService, settingsLib } from '@zeppos/zml/base-side'
-import { HUE_RANGE, SAT_RANGE, BRI_RANGE, CT_MIN, CT_MAX, DEFAULT_PRESETS, PRESET_TYPES, DEMO_DATA } from '../utils/constants.js'
+import { DEFAULT_USER_SETTINGS, HUE_RANGE, SAT_RANGE, BRI_RANGE, CT_MIN, CT_MAX, DEFAULT_PRESETS, PRESET_TYPES, DEMO_DATA } from '../utils/constants.js'
 
 const BRIDGE_IP_KEY = 'hue_bridge_ip'
 const USERNAME_KEY = 'hue_username'
@@ -11,12 +11,13 @@ const DISPLAY_ORDER = 'hue_display_order'
 const FAVORITE_COLORS = 'hue_favorite_colors'
 
 // Valori predefiniti per le impostazioni utente
-const DEFAULT_USER_SETTINGS = {
+/*const DEFAULT_USER_SETTINGS = {
   show_global_toggle: false,
+  default_tab: 'ROOMS',
   show_scenes: true,
   display_order: 'LIGHTS_FIRST',
   favorite_colors: DEFAULT_PRESETS
-}
+}*/
 
 /*PrioritàModeParametriPrecisioneNote
 1 xy  | x, y, bri     | ***** | Standard CIE 1931, massima accuratezza
@@ -719,6 +720,7 @@ class HueBridgeManager {
       const groupObj = {
         id,
         name: g.name,
+        class: g.class,
         type: g.type === 'Room' ? 'room' : 'zone',
         lights: g.lights || [],
         anyOn: isAnyOn

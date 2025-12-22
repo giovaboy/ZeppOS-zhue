@@ -51,10 +51,29 @@ export const BRI_RANGE = 254;   // 1-254
 export const CT_MIN = 153;      // 153 (6500K)
 export const CT_MAX = 500;      // 500 (2000K)
 
+export const PRESET_TYPES = {
+  COLOR: 'COLOR', // Preset che usano HUE e SAT (per luci colorate)
+  CT: 'CT', // Preset che usano CT (per luci CT o colorate)
+  WHITE: 'WHITE' // Preset che usano solo BRI (per luci bianche)
+};
+
+export const DEFAULT_PRESETS = [
+  { id: '1', hex: '#FFA500', bri: 200, hue: 8000, sat: 200, type: PRESET_TYPES.COLOR },
+  { id: '2', hex: '#87CEEB', bri: 220, hue: 32000, sat: 150, type: PRESET_TYPES.COLOR },
+  { id: '3', hex: '#FF6B6B', bri: 180, hue: 0, sat: 254, type: PRESET_TYPES.COLOR },
+  { id: '4', hex: '#CCDDFF', bri: 254, ct: 153, type: PRESET_TYPES.CT },
+  { id: '5', hex: '#FFB044', bri: 254, ct: 500, type: PRESET_TYPES.CT },
+  { id: '6', hex: '#4A148C', bri: 100, hue: 48000, sat: 254, type: PRESET_TYPES.COLOR },
+  { id: '7', hex: '#FFFFFF', bri: 50, type: PRESET_TYPES.WHITE }
+];
+
+
 export const DEFAULT_USER_SETTINGS = {
   show_global_toggle: true,
+  default_tab: 'ROOMS',
   show_scenes: true,
-  display_order: 'LIGHTS_FIRST'
+  display_order: 'LIGHTS_FIRST',
+  favorite_colors: DEFAULT_PRESETS
 }
 
 export const DEMO_DATA = {
@@ -148,6 +167,7 @@ export const DEMO_DATA = {
       id: '1',
       name: 'Soggiorno',
       type: 'Room',
+      class: 'Living room',
       lights: ['1', '3'],
       state: { all_on: false, any_on: true }
     },
@@ -345,23 +365,6 @@ export const LIGHT_MODELS = {
   // --------------------------------------------------------------------------------
   'default': { name: 'Light', icon: 'classic' }
 }
-
-
-export const PRESET_TYPES = {
-  COLOR: 'COLOR', // Preset che usano HUE e SAT (per luci colorate)
-  CT: 'CT', // Preset che usano CT (per luci CT o colorate)
-  WHITE: 'WHITE' // Preset che usano solo BRI (per luci bianche)
-};
-
-export const DEFAULT_PRESETS = [
-  { id: '1', hex: '#FFA500', bri: 200, hue: 8000, sat: 200, type: PRESET_TYPES.COLOR },
-  { id: '2', hex: '#87CEEB', bri: 220, hue: 32000, sat: 150, type: PRESET_TYPES.COLOR },
-  { id: '3', hex: '#FF6B6B', bri: 180, hue: 0, sat: 254, type: PRESET_TYPES.COLOR },
-  { id: '4', hex: '#CCDDFF', bri: 254, ct: 153, type: PRESET_TYPES.CT },
-  { id: '5', hex: '#FFB044', bri: 254, ct: 500, type: PRESET_TYPES.CT },
-  { id: '6', hex: '#4A148C', bri: 100, hue: 48000, sat: 254, type: PRESET_TYPES.COLOR },
-  { id: '7', hex: '#FFFFFF', bri: 50, type: PRESET_TYPES.WHITE }
-];
 
 // Utility HSB to Hex (Visuale)
 export function hsb2hex(h, s, v) {

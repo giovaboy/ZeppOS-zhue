@@ -16,7 +16,7 @@ App(
       },
       needsGroupDetailRefresh: false,
       groupDetailCache: {},
-      currentTab: 'ROOMS',
+      currentTab: null,
       scrollPositions: {
         groups: {
           ROOMS: 0,
@@ -113,7 +113,22 @@ App(
     },
     
     getCurrentTab() {
-      return this.globalData.currentTab || 'ROOMS'
+      // 1. Priorità alla sessione corrente: se l'utente ha già navigato, manteniamo la sua scelta
+      if (this.globalData.currentTab) {
+        return this.globalData.currentTab
+      }
+      
+      // 2. Se è il primo avvio, controlliamo le Settings dell'utente
+      if (this.globalData.settings && this.globalData.settings.default_tab) {
+        // Un piccolo controllo di sicurezza non guasta
+        const pref = this.globalData.settings.default_tab
+        if (pref === 'ROOMS' || pref === 'ZONES') {
+          return pref
+        }
+      }
+      
+      // 3. Fallback finale (se le settings mancano o sono corrotte)
+      return 'ROOMS'
     },
     
     setGroupsScrollY(y) {
