@@ -17,6 +17,8 @@ App(
       needsGroupDetailRefresh: false,
       groupDetailCache: {},
       currentTab: 'ROOMS',
+      groupsY: {},
+      groupDetailY: {},
       needsGroupsRefresh: false,
       settingsLoaded: false,
       settings: {
@@ -107,6 +109,22 @@ App(
 
     getCurrentTab() {
       return this.globalData.currentTab || 'ROOMS'
+    },
+    
+    setGroupsY(y){
+      this.globalData.groupsY[getCurrentTab()].y = y
+    },
+    
+    getGroupsY() {
+      return this.globalData.groupsY[getCurrentTab].y || 0
+    },
+    
+    setGroupDetailY(groupId,y){
+      this.globalData.groupDetailY[groupId].y = y
+    },
+    
+    getGroupDetailY(groupId) {
+      return this.globalData.groupDetailY[groupId].y || 0
     },
 
     setGroupDetailCache(groupId, data) {
