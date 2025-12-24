@@ -366,6 +366,56 @@ export const LIGHT_MODELS = {
   'default': { name: 'Light', icon: 'classic' }
 }
 
+export const GROUP_ICONS = {
+    'Living room': 'living_room',
+    'Kitchen': 'kitchen',
+    'Dining': 'dining',
+    'Bedroom': 'bedroom',
+    'Kids bedroom': 'kids_bedroom',
+    'Bathroom': 'bathroom',
+    'Nursery': 'kids_bedroom', // Riciclo
+    'Recreation': 'game',
+    'Office': 'office',
+    'Gym': 'gym',
+    'Hallway': 'hallway',
+    'Toilet': 'toilet',
+    'Front door': 'door',
+    'Garage': 'garage',
+    'Terrace': 'terrace',
+    'Garden': 'garden',
+    'Driveway': 'car',
+    'Carport': 'car',
+    'Other': 'other',
+    'Home': 'home',
+    'Downstairs': 'downstairs',
+    'Upstairs': 'upstairs',
+    'Top floor': 'upstairs',
+    'Attic': 'attic',
+    'Guest room': 'bedroom',
+    'Staircase': 'stairs',
+    'Lounge': 'sofa',
+    'Man cave': 'game',
+    'Computer': 'pc',
+    'Studio': 'music',
+    'Music': 'music',
+    'TV': 'tv',
+    'Reading': 'book',
+    'Closet': 'wardrobe',
+    'Storage': 'box',
+    'Laundry room': 'washing_machine',
+    'Balcony': 'balcony',
+    'Porch': 'porch',
+    'Barbecue': 'bbq',
+    'Pool': 'pool'
+}
+
+// Helper per ottenere il path
+export function getGroupIconPath(className) {
+    const filename = GROUP_ICONS[className] || 'other'
+    return `icons/groups/${filename}.png`
+}
+
+
 // Utility HSB to Hex (Visuale)
 export function hsb2hex(h, s, v) {
   if (s === 0) {

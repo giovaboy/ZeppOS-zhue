@@ -135,44 +135,6 @@ Page(
         })
     },
     
-    toggleGroupold(groupRaw) {
-      logger.log('Toggle group:', groupRaw.name)
-      
-      const currentOnState = !!(groupRaw.on_off || groupRaw.anyOn)
-      const newState = !currentOnState
-      
-      this.request({
-          method: 'TOGGLE_GROUP',
-          params: {
-            groupId: groupRaw.id,
-            state: newState
-          }
-        })
-        .then(result => {
-          if (result.success) {
-            // ✅ Aggiorna stato locale
-            groupRaw.on_off = newState
-            if (groupRaw.hasOwnProperty('anyOn')) {
-              groupRaw.anyOn = newState
-            }
-            
-            // ✅ Aggiorna anche global store
-            const globalData = app.getGroupsData()
-            
-            // Trova e aggiorna nel global store
-            const list = groupRaw.type === 'room' ? globalData.rooms : globalData.zones
-            const item = list.find(g => g.id === groupRaw.id)
-            if (item) {
-              item.anyOn = newState
-              item.on_off = newState
-            }
-            
-            this.renderPage()
-          }
-        })
-        .catch(err => logger.error('Toggle group error:', err))
-    },
-    
     toggleGroup(groupRaw) {
       logger.log('Toggle group:', groupRaw.name)
       

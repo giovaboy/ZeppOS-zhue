@@ -225,22 +225,7 @@ Page(
       this.setState(STATES.SEARCHING_BRIDGE)
       this.startBridgeSearch()
     },
-
-    navigateToGroups_old() {
-      logger.log('Navigating to groups page with preloaded data')
-      this.stopBluetoothMonitoring()
-
-      // ✅ Passa i dati come parametro
-      const params = this.state.groupsData ? JSON.stringify({
-        preloadedData: this.state.groupsData
-      }) : '{}'
-
-      push({
-        url: 'page/groups',
-        params: params
-      })
-    },
-
+    
     navigateToGroups() {
       logger.log('Navigating to groups page')
       this.stopBluetoothMonitoring()
