@@ -187,11 +187,12 @@ Page(
             // ✅ Aggiorna stato locale
             this.state.lights.forEach(light => {
               light.ison = newState
+              app.setLightData(light.id, { ...light, ison: newState })
+              app.updateLightStatusInGroupsCache(light.id, newState)
             })
 
             // ✅ Invalida cache detail
             app.setGroupDetailCache(this.state.groupId, null)
-
             // ✅ Flag per ricaricare groups
             app.globalData.needsGroupsRefresh = true
             this.renderPage()
@@ -220,7 +221,7 @@ Page(
             //app.setGroupDetailCache(this.state.groupId, null)
             app.setLightData(light.id, { ...light, ison: newState })
             // ✅ Flag per ricaricare groups
-            app.updateLightStatusInGroupsCache(light.id, light.ison)
+            app.updateLightStatusInGroupsCache(light.id, newState)
             //  app.globalData.needsGroupsRefresh = true
             this.renderPage()
           }
@@ -274,6 +275,8 @@ Page(
         btnColor = ct2hex(light.ct)
       } else if (light.colormode === 'xy' && light.xy) {
         btnColor = xy2hex(light.xy, light.bri || 254)
+      } else if (light.hex) {
+        btnColor = parseInt(light.hex.replace('#', '0x'), 16)
       } else {
         btnColor = COLORS.white
       }

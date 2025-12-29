@@ -11,8 +11,8 @@ export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
 export const LAYOUT_CONFIG = {
     tabY: px(20),
-    gapY: px(10),
     tabH: px(60),
+    gapY: px(10),
     tabW: px(180),
     tabXGap: px(5)
 }

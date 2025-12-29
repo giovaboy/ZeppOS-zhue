@@ -329,7 +329,7 @@ Page(
                 if (light) {
                     light.bri = val;
                     app.setLightData(this.state.lightId, light);
-                    app.updateLightStatusInGroupsCache(this.state.lightId, { bri: val });
+                    app.updateLightStatusInGroupsCache(this.state.lightId, light);
                 }
             }).catch(e => logger.error(e));
         },

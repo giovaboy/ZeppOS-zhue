@@ -329,20 +329,20 @@ AppSettingsPage({
               }
             },
             [
-              Toggle({
+              /*Toggle({
                 label: 'Show global toggle',
                 value: props.settingsStorage.getItem('hue_show_global_toggle') === 'true',
                 onChange: (value) => {
                   props.settingsStorage.setItem('hue_show_global_toggle', value ? 'true' : 'false')
                 }
-              }),
+              }),*/
               // Default tab
               Select({
                 title: 'Default tab',
                 options: [{ name: 'ROOMS', value: 'ROOMS' },
                 { name: 'ZONES', value: 'ZONES' }
                 ],
-                value: props.settingsStorage.getItem('default_tab'),
+                value: props.settingsStorage.getItem('default_tab') ,
                 onChange: (value) => {
                   props.settingsStorage.setItem('default_tab', value)
                 }
@@ -363,6 +363,7 @@ AppSettingsPage({
                 { name: 'Scenes first', value: 'SCENES_FIRST' }
                 ],
                 value: props.settingsStorage.getItem('hue_display_order'),
+                selectedValue: props.settingsStorage.getItem('hue_display_order'),
                 onChange: (value) => {
                   props.settingsStorage.setItem('hue_display_order', value)
                 }

@@ -1,23 +1,14 @@
 import { BaseSideService, settingsLib } from '@zeppos/zml/base-side'
-import { DEFAULT_USER_SETTINGS, HUE_RANGE, SAT_RANGE, BRI_RANGE, CT_MIN, CT_MAX, DEFAULT_PRESETS, PRESET_TYPES, DEMO_DATA } from '../utils/constants.js'
+import { DEFAULT_USER_SETTINGS, HUE_RANGE, SAT_RANGE, BRI_RANGE, DEFAULT_PRESETS, PRESET_TYPES, DEMO_DATA } from '../utils/constants.js'
 
 const BRIDGE_IP_KEY = 'hue_bridge_ip'
 const USERNAME_KEY = 'hue_username'
 const API_VERSION_KEY = 'hue_api_version'
 const DEMO_MODE = 'hue_demo_mode'
-const SHOW_GLOBAL_TOGGLE = 'hue_show_global_toggle'
+//const SHOW_GLOBAL_TOGGLE = 'hue_show_global_toggle'
 const SHOW_SCENES = 'hue_show_scenes'
 const DISPLAY_ORDER = 'hue_display_order'
 const FAVORITE_COLORS = 'hue_favorite_colors'
-
-// Valori predefiniti per le impostazioni utente
-/*const DEFAULT_USER_SETTINGS = {
-  show_global_toggle: false,
-  default_tab: 'ROOMS',
-  show_scenes: true,
-  display_order: 'LIGHTS_FIRST',
-  favorite_colors: DEFAULT_PRESETS
-}*/
 
 /*PrioritàModeParametriPrecisioneNote
 1 xy  | x, y, bri     | ***** | Standard CIE 1931, massima accuratezza
@@ -358,7 +349,7 @@ class HueBridgeManager {
 
   //carica le impostazioni utente
   _loadUserSettings() {
-    const show_global_toggle_str = settingsLib.getItem(SHOW_GLOBAL_TOGGLE)
+    //const show_global_toggle_str = settingsLib.getItem(SHOW_GLOBAL_TOGGLE)
     const show_scenes_str = settingsLib.getItem(SHOW_SCENES)
     const display_order_str = settingsLib.getItem(DISPLAY_ORDER)
     const favorite_colors_str = settingsLib.getItem(FAVORITE_COLORS)
@@ -374,9 +365,9 @@ class HueBridgeManager {
     }
 
     return {
-      show_global_toggle: show_global_toggle_str !== null ?
+      /*show_global_toggle: show_global_toggle_str !== null ?
         show_global_toggle_str === 'true' :
-        DEFAULT_USER_SETTINGS.show_global_toggle,
+        DEFAULT_USER_SETTINGS.show_global_toggle,*/
 
       show_scenes: show_scenes_str !== null ?
         show_scenes_str === 'true' :
@@ -1356,7 +1347,6 @@ AppSideService(
         //break
         // AGGIUNTO: Forziamo il ricaricamento delle impostazioni utente in caso di un cambio rilevante
         case DEMO_MODE:
-        case SHOW_GLOBAL_TOGGLE:
         case SHOW_SCENES:
         case DISPLAY_ORDER:
         case FAVORITE_COLORS:
