@@ -20,27 +20,27 @@ Page(
       error: null,
       scrollPos_y: 0
     },
-    
+
     widgets: [],
-    
+
     onInit(p) {
       logger.debug('Groups page onInit')
-      
+
       this.state.currentTab = app.getCurrentTab()
       this.state.scrollPos_y = app.getGroupsScrollY()
       // 1. Controlla se dobbiamo ricaricare
       const needsRefresh = app.globalData.needsGroupsRefresh
-      
+
       if (needsRefresh) {
         logger.debug('Refresh flag set, will reload from API')
         app.globalData.needsGroupsRefresh = false
         // Non carichiamo qui, lo farà build()
         return
       }
-      
+
       // 2. Prova a usare dati dal global store
       const globalData = app.getGroupsData()
-      
+
       if (globalData.hasLoadedOnce) {
         logger.log('Using global store data')
         this.state.rooms = globalData.rooms
@@ -51,10 +51,10 @@ Page(
         // build() caricherà i dati
       }
     },
-    
+
     build() {
       setPageBrightTime({ brightTime: 60000 })
-      
+
       // Setup gesture di uscita
       onGesture({
         callback: (event) => {
@@ -64,7 +64,7 @@ Page(
           return true
         }
       })
-      
+
       onKey({
         callback: (key, keyEvent) => {
           if (key === KEY_BACK && keyEvent === KEY_EVENT_CLICK) {
@@ -73,7 +73,7 @@ Page(
           return true
         }
       })
-      
+
       // Carica SOLO se non abbiamo dati
       if (this.state.rooms.length === 0 && this.state.zones.length === 0) {
         logger.log('No data in state, loading from API...')
@@ -83,16 +83,16 @@ Page(
         this.renderPage()
       }
     },
-    
+
     // --- HELPER WIDGET ---
-    
+
     createTrackedWidget(type, props) {
       const w = createWidget(type, props)
       if (!this.widgets) this.widgets = []
       this.widgets.push(w)
       return w
     },
-    
+
     clearAllWidgets() {
       this.widgets.forEach(w => {
         try { deleteWidget(w) } catch (e) {
@@ -101,25 +101,25 @@ Page(
       })
       this.widgets = []
     },
-    
+
     // --- DATA LOGIC ---
-    
+
     loadGroupsData() {
       this.state.isLoading = true
       this.state.error = null
       this.renderPage()
-      
+
       this.request({ method: 'GET_GROUPS' })
         .then(result => {
           this.state.isLoading = false
           if (result.success && result.data) {
             // ✅ Salva nel global store
             app.setGroupsData(result.data)
-            
+
             // ✅ Aggiorna anche lo stato locale per il render
             this.state.rooms = result.data.rooms || []
             this.state.zones = result.data.zones || []
-            
+
             logger.log(`Loaded ${this.state.rooms.length} rooms, ${this.state.zones.length} zones`)
             this.renderPage()
           } else {
@@ -134,14 +134,14 @@ Page(
           this.renderPage()
         })
     },
-    
+
     toggleGroup(groupRaw) {
       logger.log('Toggle group:', groupRaw.name)
-      
+
       // Calcolo ottimistico
       const currentOnState = !!(groupRaw.on_off || groupRaw.anyOn)
       const newState = !currentOnState
-      
+
       this.request({
           method: 'TOGGLE_GROUP',
           params: {
@@ -156,7 +156,7 @@ Page(
             if (groupRaw.hasOwnProperty('anyOn')) {
               groupRaw.anyOn = newState
             }
-            
+
             // 2. Aggiorna la lista nel Global Store (per coerenza se cambi tab)
             const globalData = app.getGroupsData()
             const list = groupRaw.type === 'room' ? globalData.rooms : globalData.zones
@@ -165,7 +165,7 @@ Page(
               item.anyOn = newState
               item.on_off = newState
             }
-            
+
             // 3. ✅ IL PEZZO MANCANTE: Aggiorna la cache del dettaglio!
             // Questo usa la funzione che abbiamo aggiunto in app.js
             if (typeof app.updateGroupStatusInCache === 'function') {
@@ -173,50 +173,50 @@ Page(
             } else {
               logger.warn('app.updateGroupStatusInCache is missing!')
             }
-            
+
             this.renderPage()
           }
         })
         .catch(err => logger.error('Toggle group error:', err))
     },
-    
+
     switchTab(tabName) {
       if (this.state.currentTab === tabName) return
       app.setGroupsScrollY(this.state.scrollPos_y)
-      
+
       this.state.currentTab = tabName
       app.setCurrentTab(tabName)
-      
+
       // 👇 RECUPERA scroll position del nuovo tab
       this.state.scrollPos_y = app.getGroupsScrollY()
       this.renderPage()
     },
-    
+
     onScrollChange(y) {
       // Questa funzione viene chiamata dal VIEW_CONTAINER nel layout
       if (this.state.scrollPos_y !== y) {
         this.state.scrollPos_y = y
-        
+
         // Nota: Non chiamiamo renderPage() qui per evitare un ciclo infinito
         // e un consumo eccessivo di risorse. Lo stato viene solo aggiornato.
         //logger.debug(`Scroll Y saved: ${y}`)
       }
     },
-    
+
     // --- RENDERING ---
-    
+
     renderPage() {
       this.clearAllWidgets()
-      
+
       const rawList = this.state.currentTab === 'ROOMS' ? this.state.rooms : this.state.zones
-      
+
       const viewData = rawList.map(item => ({
         name: item.name,
         status: `${item.lights?.length || 0} ${item.lights?.length === 1 ? getText('LIGHT') : getText('LIGHTS')}`,
         on_off: (item.anyOn === true || item.on_off === true) ? getText('ON') : getText('OFF'),
         raw: item
       }))
-      
+
       renderGroupsPage(this, this.state, viewData, {
         switchTab: (tab) => this.switchTab(tab),
         refresh: () => this.loadGroupsData(),
@@ -224,9 +224,9 @@ Page(
         handleListItemClick: (index, data_key) => {
           const item = viewData[index]
           if (!item) return
-          
+
           logger.debug('List click:', item.raw.name, 'key:', data_key)
-          
+
           if (data_key === 'on_off') {
             this.toggleGroup(item.raw)
           } else {
@@ -237,7 +237,7 @@ Page(
               groupType: item.raw.type,
               groupName: item.raw.name
             })
-            
+
             push({
               url: 'page/group-detail',
               params: paramsString
@@ -246,7 +246,7 @@ Page(
         }
       })
     },
-    
+
     onDestroy() {
       app.setCurrentTab(this.state.currentTab)
       app.setGroupsScrollY(this.state.scrollPos_y)

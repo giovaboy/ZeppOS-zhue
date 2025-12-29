@@ -25,18 +25,15 @@ Page(
   BasePage({
     state: {
       currentState: STATES.LOADING,
-      error: null,
-      progress: {
-        rooms: 0,
-        zones: 0
-      },
-      bridgeInfo: null,
-      groupsData: null // ← Nuovo: per salvare i dati da passare
+      error: null
     },
 
     widgets: [],
     progressInterval: null,
     btCheckInterval: null,
+    
+    // 🐛 Debug flag - imposta true per vedere logs dettagliati
+    DEBUG_MODE: false,
 
     onInit() {
       logger.debug('index page onInit')
@@ -91,12 +88,13 @@ Page(
     // --- STATE MANAGEMENT ---
 
     setState(newState, data = {}) {
-      logger.log(`State transition: ${this.state.currentState} -> ${newState}`)
+      if (this.DEBUG_MODE) {
+        logger.log(`State transition: ${this.state.currentState} -> ${newState}`)
+      }
+      
       this.state.currentState = newState
 
       if (data.error) this.state.error = data.error
-      if (data.progress) this.state.progress = { ...this.state.progress, ...data.progress }
-      if (data.bridgeInfo) this.state.bridgeInfo = data.bridgeInfo
 
       this.renderPage()
     },
@@ -162,7 +160,6 @@ Page(
       this.request({ method: 'DISCOVER_BRIDGES' })
         .then(result => {
           if (result.success && result.bridges?.length > 0) {
-            this.state.bridgeInfo = { ip: result.autoSelected, bridges: result.bridges }
             this.setState(STATES.WAITING_FOR_PRESS)
             this.startPairing()
           } else {
@@ -193,12 +190,11 @@ Page(
       this.request({ method: 'GET_GROUPS' })
         .then(result => {
           if (result.success && result.data) {
-
-            // 🔥 MODIFICA QUI: Salviamo nel Global Store invece che nello stato locale
+            // Salva nel Global Store
             app.setGroupsData(result.data)
 
             const totalGroups = (result.data.rooms?.length || 0) + (result.data.zones?.length || 0)
-            logger.log(`Loaded and stored ${totalGroups} groups globally`)
+            logger.log(`Loaded ${totalGroups} groups (${result.data.rooms?.length || 0} rooms, ${result.data.zones?.length || 0} zones)`)
 
             this.setState(STATES.SUCCESS)
           } else {
@@ -220,8 +216,6 @@ Page(
       }
 
       this.state.error = null
-      this.state.progress = { rooms: 0, zones: 0 }
-      this.state.groupsData = null
       this.setState(STATES.SEARCHING_BRIDGE)
       this.startBridgeSearch()
     },
@@ -230,8 +224,6 @@ Page(
       logger.log('Navigating to groups page')
       this.stopBluetoothMonitoring()
 
-      // 🔥 MODIFICA QUI: Nessun parametro pesante!
-      // Il router ringrazia.
       push({
         url: 'page/groups'
       })
@@ -272,7 +264,7 @@ Page(
         try {
           spinner.setProperty(prop.ALPHA, alpha)
         } catch {
-          logger.error('spinner.setProperty')
+          logger.error('spinner.setProperty failed')
         }
       }, 100)
     },
@@ -289,7 +281,7 @@ Page(
         try {
           progressBar.setProperty(prop.W, px(10 + 2 * progress))
         } catch {
-          logger.error('progressBar.setProperty')
+          logger.error('progressBar.setProperty failed')
         }
       }, 150)
     },

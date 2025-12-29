@@ -3,18 +3,18 @@ import { px } from '@zos/utils'
 import { widget, align, text_style, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { getLogger } from '../utils/logger.js'
-import { COLORS, btnPressColor } from '../utils/constants.js'
+import { COLORS, btnPressColor, getGroupIconPath } from '../utils/constants.js'
 
 const logger = getLogger('zhue-group-detail-page')
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
 export const LAYOUT_CONFIG = {
-    headerY: px(20),
-    headerH: px(40),
+    tabY: px(20),
     gapY: px(10),
-    tabH: px(40),
-    tabW: px(180)
+    tabH: px(60),
+    tabW: px(180),
+    tabXGap: px(5)
 }
 
 export function renderGroupsPage(pageContext, state, listData, callbacks) {
@@ -58,30 +58,15 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
         return
     }
 
-    // 3. Header: Titolo
-    pageContext.createTrackedWidget(widget.TEXT, {
-        x: 0,
-        y: LAYOUT_CONFIG.headerY,
-        w: DEVICE_WIDTH,
-        h: LAYOUT_CONFIG.headerH,
-        text: getText('GROUPS'),
-        text_size: px(36),
-        color: COLORS.text,
-        align_h: align.CENTER_H,
-        align_v: align.CENTER_V
-    })
-
-    // 4. Tabs
-    const tabY = LAYOUT_CONFIG.headerY + LAYOUT_CONFIG.headerH + LAYOUT_CONFIG.gapY
-    const gap = px(10)
-    const totalW = (LAYOUT_CONFIG.tabW * 2) + gap;
+    // 3. Tabs
+    const totalW = (LAYOUT_CONFIG.tabW * 2) + LAYOUT_CONFIG.tabXGap;
     const startX = (DEVICE_WIDTH - totalW) / 2;
     const isRooms = currentTab === 'ROOMS'
 
     // Tab Rooms
     pageContext.createTrackedWidget(widget.BUTTON, {
         x: startX,
-        y: tabY,
+        y: LAYOUT_CONFIG.tabY,
         w: LAYOUT_CONFIG.tabW,
         h: LAYOUT_CONFIG.tabH,
         text: getText('ROOMS'),
@@ -96,8 +81,8 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
     // Tab Zones
     const isZones = currentTab === 'ZONES'
     pageContext.createTrackedWidget(widget.BUTTON, {
-        x: startX + LAYOUT_CONFIG.tabW + gap,
-        y: tabY,
+        x: startX + LAYOUT_CONFIG.tabW + LAYOUT_CONFIG.tabXGap,
+        y: LAYOUT_CONFIG.tabY,
         w: LAYOUT_CONFIG.tabW,
         h: LAYOUT_CONFIG.tabH,
         text: getText('ZONES'),
@@ -109,8 +94,8 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
         click_func: () => switchTab('ZONES')
     })
 
-    // 5. Lista con VIEW_CONTAINER
-    const listStartY = tabY + LAYOUT_CONFIG.tabH + LAYOUT_CONFIG.gapY
+    // 4. Lista con VIEW_CONTAINER
+    const listStartY = LAYOUT_CONFIG.tabY + LAYOUT_CONFIG.tabH + LAYOUT_CONFIG.gapY
     const noun = currentTab === 'ROOMS' ? 'ROOM' : 'ZONE';
 
     if (isLoading || listData.length === 0) {
@@ -137,9 +122,6 @@ function renderGroupsList(pageContext, state, listData, startY, callbacks) {
     const { scrollPos_y } = state
     const itemHeight = px(100)
     const itemSpacing = px(10)
-
-    // Calcola altezza totale contenuto
-    //const totalContentHeight = listData.length * (itemHeight + itemSpacing) + px(20)
 
     // Crea VIEW_CONTAINER scrollabile
     const containerHeight = DEVICE_HEIGHT - startY
@@ -177,8 +159,11 @@ function renderGroupsList(pageContext, state, listData, startY, callbacks) {
 
 // ✅ Render singolo gruppo
 function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick) {
-
+    const isOn = group.on_off === 'ON'
     const startX = px(30)
+    const itemSpacing = px(15)
+    const iconSize = px(70)
+
     // Background card
     container.createWidget(widget.FILL_RECT, {
         x: startX,
@@ -189,19 +174,28 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
         radius: px(10)
     })
 
-    // Icon/Indicator (colored circle per tipo gruppo)
-    const circleRadius = px(15)
-    const iconColor = group.raw?.type === 'room' ? COLORS.roomIndicator : COLORS.zoneIndicator
-    container.createWidget(widget.CIRCLE, {
-        center_x: startX + circleRadius + px(15),
-        center_y: yPos + itemHeight / 2,
-        radius: circleRadius,
-        color: iconColor || COLORS.highlight
-    })
+     container.createWidget(widget.FILL_RECT, {
+            x: startX + itemSpacing,
+            y: yPos + ((itemHeight - iconSize) / 2),
+            w: iconSize,
+            h:  iconSize,
+            color: isOn ? COLORS.white : COLORS.inactive
+        })
+
+    const iconClass = group.raw?.class || 'Other'
+    container.createWidget(widget.IMG, {
+            x: startX + itemSpacing,
+            y: yPos + ((itemHeight - iconSize) / 2),
+            w:  iconSize,
+            h:  iconSize,
+            src:  getGroupIconPath(iconClass),
+            auto_scale: true
+        })
+
 
     // Nome gruppo
     container.createWidget(widget.TEXT, {
-        x: startX + px(15) + circleRadius * 2 + px(15),
+        x: startX + itemSpacing + iconSize + itemSpacing,
         y: yPos + px(20),
         w: px(250),
         h: px(30),
@@ -214,7 +208,7 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
 
     // Status (numero luci)
     container.createWidget(widget.TEXT, {
-        x: startX + px(15) + circleRadius * 2 + px(15),
+        x: startX + itemSpacing + iconSize + itemSpacing,
         y: yPos + px(55),
         w: px(200),
         h: px(25),
@@ -245,7 +239,6 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
     overlay1.setAlpha(0)
 
     // ON/OFF badge (right side)
-    const isOn = group.on_off === 'ON'
     const badgeColor = isOn ? COLORS.success : COLORS.inactive
 
     container.createWidget(widget.BUTTON, {

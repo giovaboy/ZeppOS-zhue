@@ -1,6 +1,29 @@
 import { gettext } from 'i18n'
 import { DEFAULT_PRESETS, PRESET_TYPES } from '../utils/constants'
 
+function getPresetTypePriority(type) {
+  switch (type) {
+    case PRESET_TYPES.WHITE:
+      return 1
+    case PRESET_TYPES.CT:
+      return 2
+    case PRESET_TYPES.COLOR:
+      return 3
+    default:
+      return 99
+  }
+}
+
+function comparePresets(a, b) {
+  const priorityA = getPresetTypePriority(a.type)
+  const priorityB = getPresetTypePriority(b.type)
+  if (priorityA !== priorityB) return priorityA - priorityB
+  if (a.type === PRESET_TYPES.WHITE) return a.bri - b.bri
+  if (a.type === PRESET_TYPES.CT) return a.ct - b.ct
+  if (a.type === PRESET_TYPES.COLOR) return a.hue - b.hue
+  return 0
+}
+
 AppSettingsPage({
   build(props) {
     return Section({}, [
@@ -29,7 +52,7 @@ AppSettingsPage({
             ['🎨 zhue']
           )
         ]),
-      
+
       // ===== SUBTITLE =====
       View(
         {
@@ -54,7 +77,7 @@ AppSettingsPage({
           )
         ]
       ),
-      
+
       // ===== BRIDGE CONFIGURATION SECTION =====
       View(
         {
@@ -78,7 +101,7 @@ AppSettingsPage({
             },
             ['Bridge Configuration']
           ),
-          
+
           // Bridge IP Input
           TextInput({
             label: gettext('BRIDGE_IP') || 'Bridge IP Address',
@@ -97,7 +120,7 @@ AppSettingsPage({
               marginRight: '5px'
             }
           }),
-          
+
           // Username (Read-only display)
           View(
             {
@@ -136,7 +159,7 @@ AppSettingsPage({
               )
             ]
           ),
-          
+
           // API Version Display
           View(
             {
@@ -175,7 +198,7 @@ AppSettingsPage({
           )
         ]
       ),
-      
+
       // ===== CONNECTION STATUS SECTION =====
       View(
         {
@@ -199,7 +222,7 @@ AppSettingsPage({
             },
             ['Connection Status']
           ),
-          
+
           View(
             {
               style: {
@@ -234,15 +257,15 @@ AppSettingsPage({
                 },
                 [
                   props.settingsStorage.getItem('hue_username') ?
-                  'Bridge is configured and paired' :
-                  'Bridge not configured. Use the app to pair.'
+                    'Bridge is configured and paired' :
+                    'Bridge not configured. Use the app to pair.'
                 ]
               )
             ]
           )
         ]
       ),
-      
+
       // ===== ADVANCED SETTINGS SECTION =====
       View(
         {
@@ -266,7 +289,7 @@ AppSettingsPage({
             },
             ['Advanced Settings']
           ),
-          
+
           // Manual API Version Override
           /*View(
             {
@@ -317,7 +340,7 @@ AppSettingsPage({
               Select({
                 title: 'Default tab',
                 options: [{ name: 'ROOMS', value: 'ROOMS' },
-                          { name: 'ZONES', value: 'ZONES' }
+                { name: 'ZONES', value: 'ZONES' }
                 ],
                 value: props.settingsStorage.getItem('default_tab'),
                 onChange: (value) => {
@@ -332,19 +355,19 @@ AppSettingsPage({
                   props.settingsStorage.setItem('hue_show_scenes', value ? 'true' : 'false')
                 }
               }),
-              
+
               // Display Order
               Select({
                 title: 'Display Order',
                 options: [{ name: 'Light first', value: 'LIGHTS_FIRST' },
-                  { name: 'Scenes first', value: 'SCENES_FIRST' }
+                { name: 'Scenes first', value: 'SCENES_FIRST' }
                 ],
                 value: props.settingsStorage.getItem('hue_display_order'),
                 onChange: (value) => {
                   props.settingsStorage.setItem('hue_display_order', value)
                 }
               }),
-              
+
               // Debug Mode Toggle
               Toggle({
                 label: '🐛 DEMO Mode',
@@ -357,7 +380,7 @@ AppSettingsPage({
             ])
         ]
       ),
-      
+
       // ===== FAVORITE COLORS SECTION =====
       View(
         {
@@ -381,7 +404,7 @@ AppSettingsPage({
             },
             ['🎨 Favorite Colors']
           ),
-          
+
           Text(
             {
               paragraph: true,
@@ -393,7 +416,7 @@ AppSettingsPage({
             },
             ['Manage your favorite color presets. You can add colors from the light detail page on your watch.']
           ),
-          
+
           // Display current presets
           View(
             {
@@ -413,15 +436,15 @@ AppSettingsPage({
             (() => {
               const favColorsStr = props.settingsStorage.getItem('hue_favorite_colors')
               let colors = DEFAULT_PRESETS
-              
+
               if (favColorsStr) {
                 try {
-                  colors = JSON.parse(favColorsStr)
+                  colors = [...JSON.parse(favColorsStr)].sort(comparePresets)
                 } catch (e) {
                   console.error('Failed to parse favorite colors')
                 }
               }
-              
+
               return colors.map((color, i) =>
                 View(
                   {
@@ -444,7 +467,7 @@ AppSettingsPage({
               )
             })()
           ),
-          
+
           Text(
             {
               style: {
@@ -465,8 +488,8 @@ AppSettingsPage({
               return DEFAULT_PRESETS.length
             })()}`]
           ),
-          
-          Button({
+
+          /*Button({
             label: '🔄 Reset to Default Presets',
             color: 'secondary',
             style: {
@@ -479,10 +502,37 @@ AppSettingsPage({
               //window.location.reload()
               //}
             }
-          })
+          }),*/
+
+          View({
+            style: {
+              //fontSize: '12px',
+              //fontWeight: '500',
+              lineHeight: '35px',
+              borderRadius: '8px',
+              background: '#db2c2c',
+              color: 'white',
+              textAlign: 'left',
+              padding: '0 15px',
+              //margin: '0 5px 0 0',
+            }
+          },
+            [TextInput({
+              label: '🔄 Reset to Default Presets',
+              labelStyle: { textAlign: 'center' },
+              subStyle: { display: 'none' },
+              disabled: true,
+              placeholder: '🔄 Reset to Default Presets' + '?',
+              value: undefined,
+              onChange: () => {
+                props.settingsStorage.setItem('hue_favorite_colors', JSON.stringify(DEFAULT_PRESETS))
+              }
+            })])
+
+
         ]
       ),
-      
+
       // ===== ACTIONS SECTION =====
       View(
         {
@@ -506,7 +556,7 @@ AppSettingsPage({
             },
             ['Actions']
           ),
-          
+
           // Test Connection Button
           /*Button({
             label: '🔄 Test Connection',
@@ -527,9 +577,9 @@ AppSettingsPage({
               alert('Testing connection to ' + bridgeIp + '...\n\n(Feature coming soon)')
             },
           }),*/
-          
+
           // Clear Configuration Button
-          Button({
+          /*Button({
             label: '🗑️ Clear All Configuration',
             color: 'secondary',
             style: {
@@ -544,11 +594,42 @@ AppSettingsPage({
                 window.location.reload()
               }
             },
-          })
+          }),*/
+
+          View({
+            style: {
+              //fontSize: '12px',
+              //fontWeight: '500',
+              lineHeight: '35px',
+              borderRadius: '8px',
+              background: '#db2c2c',
+              color: 'white',
+              textAlign: 'left',
+              padding: '0 15px',
+              //margin: '0 5px 0 0',
+            }
+          },
+            [TextInput({
+              label: '🗑️ Clear All Configuration',
+              labelStyle: { textAlign: 'center' },
+              subStyle: { display: 'none' },
+              disabled: true,
+              placeholder: '🗑️ Clear All Configuration' + '?',
+              value: undefined,
+              onChange: () => {
+                props.settingsStorage.removeItem('hue_bridge_ip')
+                props.settingsStorage.removeItem('hue_username')
+                props.settingsStorage.removeItem('hue_api_version')
+              }
+            })])
+
+
+
+
         ]
       ),
-      
-      
+
+
       // ===== HELP SECTION =====
       View(
         {
@@ -592,7 +673,7 @@ AppSettingsPage({
           )
         ]
       ),
-      
+
       // ===== FOOTER =====
       View(
         {
