@@ -192,7 +192,7 @@ Page(
             })
 
             // ✅ Invalida cache detail
-            app.setGroupDetailCache(this.state.groupId, null)
+            //app.setGroupDetailCache(this.state.groupId, null)
             // ✅ Flag per ricaricare groups
             app.globalData.needsGroupsRefresh = true
             this.renderPage()
@@ -240,7 +240,7 @@ Page(
         .then(result => {
           if (result.success) {
             // ✅ Invalida cache e ricarica
-            app.setGroupDetailCache(this.state.groupId, null)
+            //app.setGroupDetailCache(this.state.groupId, null)
             app.globalData.needsGroupsRefresh = true
             setTimeout(() => this.loadGroupDetail(), 300)
           }
