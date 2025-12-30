@@ -5,7 +5,7 @@ import { getText } from '@zos/i18n'
 import { createWidget, deleteWidget } from '@zos/ui'
 import { push } from '@zos/router'
 import { renderGroupDetailPage } from 'zosLoader:./group-detail.[pf].layout.js'
-import { DEFAULT_USER_SETTINGS, COLORS, LIGHT_MODELS, ct2hex, xy2hex } from '../utils/constants.js'
+import { DEFAULT_USER_SETTINGS, COLORS, LIGHT_MODELS, ct2hex, xy2hex, hsb2hex} from '../utils/constants.js'
 
 const logger = getLogger('zhue-group-detail-page')
 const app = getApp()
@@ -230,50 +230,50 @@ Page(
     },
     
     toggleLight(light) {
-  const currentOnState = light.ison
-  const newState = !currentOnState
-
-  this.request({
-      method: 'TOGGLE_LIGHT',
-      params: {
-        lightId: light.id,
-        state: newState
-      }
-    })
-    .then(result => {
-      if (result.success) {
-        // ✅ Usa dati aggiornati dal backend se disponibili
-        if (result.updatedState) {
-          logger.debug('Applying updated state from backend:', result.updatedState)
-          
-          // Aggiorna oggetto luce locale
-          Object.assign(light, result.updatedState)
-          
-          // Aggiorna cache globale
-          app.setLightData(light.id, { ...light, ...result.updatedState })
-          
-          // Sincronizza con tutti i gruppi
-          app.updateLightStatusInGroupsCache(light.id, result.updatedState)
-        } else {
-          // Fallback: aggiornamento ottimistico base
-          logger.warn('No updatedState from backend, using optimistic update')
-          light.ison = newState
-          app.setLightData(light.id, { ...light, ison: newState })
-          app.updateLightStatusInGroupsCache(light.id, { ison: newState })
-        }
-        
-        this.renderPage()
-      }
-    })
-    .catch(err => {
-      // Ripristina stato in caso di errore
-      light.ison = currentOnState
-      this.renderPage()
-      logger.error('Toggle light error:', err)
-    })
-},
-
-
+      const currentOnState = light.ison
+      const newState = !currentOnState
+      
+      this.request({
+          method: 'TOGGLE_LIGHT',
+          params: {
+            lightId: light.id,
+            state: newState
+          }
+        })
+        .then(result => {
+          if (result.success) {
+            // ✅ Usa dati aggiornati dal backend se disponibili
+            if (result.updatedState) {
+              logger.debug('Applying updated state from backend:', result.updatedState)
+              
+              // Aggiorna oggetto luce locale
+              Object.assign(light, result.updatedState)
+              
+              // Aggiorna cache globale
+              app.setLightData(light.id, { ...light, ...result.updatedState })
+              
+              // Sincronizza con tutti i gruppi
+              app.updateLightStatusInGroupsCache(light.id, result.updatedState)
+            } else {
+              // Fallback: aggiornamento ottimistico base
+              logger.warn('No updatedState from backend, using optimistic update')
+              light.ison = newState
+              app.setLightData(light.id, { ...light, ison: newState })
+              app.updateLightStatusInGroupsCache(light.id, { ison: newState })
+            }
+            
+            this.renderPage()
+          }
+        })
+        .catch(err => {
+          // Ripristina stato in caso di errore
+          light.ison = currentOnState
+          this.renderPage()
+          logger.error('Toggle light error:', err)
+        })
+    },
+    
+    
     applyScene(scene) {
       this.request({
           method: 'APPLY_SCENE',
