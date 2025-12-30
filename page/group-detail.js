@@ -308,7 +308,7 @@ Page(
       })
     },
     
-    getLightSwatchColor_old(light) {
+    getLightSwatchColor(light) {
       if (!light.ison || light.reachable === false) {
         return COLORS.inactive
       }
@@ -328,7 +328,7 @@ Page(
       return btnColor
     },
     
-    getLightSwatchColor(light) {
+    getLightSwatchColor_kk(light) {
       if (!light.ison || light.reachable === false) {
         return COLORS.inactive
       }
