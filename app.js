@@ -297,8 +297,52 @@ App(
       this.globalData.lightData[lightId] = null
     },
 
-    onDestroy(options) {
-      logger.debug('Hue On-Off App Destroyed')
+    // ✅ NUOVO: Metodo per ripulire completamente la cache
+clearAllCache() {
+    logger.debug('Global Store: Clearing all cache data')
+    
+    // Resetta dati runtime
+    this.globalData.data = {
+      rooms: [],
+      zones: [],
+      hasLoadedOnce: false
     }
-  })
+    
+    // Resetta cache
+    this.globalData.groupDetailCache = {}
+    this.globalData.lightData = {}
+    
+    // Resetta flags refresh
+    this.globalData.needsGroupDetailRefresh = false
+    this.globalData.needsGroupsRefresh = false
+    
+    // Resetta scroll positions
+    this.globalData.scrollPositions = {
+      groups: {
+        ROOMS: 0,
+        ZONES: 0
+      },
+      groupDetail: {}
+    }
+    
+    // Resetta current items
+    this.globalData.currentTab = null
+    this.globalData.currentLightId = null
+    
+    //settings
+    this.globalData.settingsLoaded = false
+    this.globalData.settings = { ...DEFAULT_USER_SETTINGS }
+    
+    logger.debug('Global Store: Cache cleared successfully')
+  },
+  
+  onDestroy(options) {
+    logger.debug('Hue On-Off App Destroyed - Cleaning up...')
+    
+    // ✅ Pulizia completa della globalData
+    this.clearAllCache()
+    
+    logger.debug('Hue On-Off App cleanup completed')
+  }
+})
 )
