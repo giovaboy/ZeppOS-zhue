@@ -74,7 +74,7 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
         color: isRooms ? COLORS.activeTabText : COLORS.inactiveTabText,
         normal_color: isRooms ? COLORS.activeTab : COLORS.inactiveTab,
         press_color: btnPressColor(COLORS.activeTab, 0.8),
-        radius: LAYOUT_CONFIG.tabH / 2,
+        radius: px(8),//LAYOUT_CONFIG.tabH / 2,
         click_func: () => switchTab('ROOMS')
     })
 
@@ -90,7 +90,7 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
         color: isZones ? COLORS.activeTabText : COLORS.inactiveTabText,
         normal_color: isZones ? COLORS.activeTab : COLORS.inactiveTab,
         press_color: btnPressColor(COLORS.activeTab, 0.8),
-        radius: LAYOUT_CONFIG.tabH / 2,
+        radius: px(8),//LAYOUT_CONFIG.tabH / 2,
         click_func: () => switchTab('ZONES')
     })
 

@@ -47,7 +47,8 @@ Page(
       tempBrightness: 0,
       brightnessSliderFillWidget: null,
       brightnessLabel: null,
-      error: null
+      error: null,
+      scrollPos_y: 0,
     },
 
     widgets: [],
@@ -102,7 +103,7 @@ Page(
       logger.debug('Initial state - light:', !!this.state.light, 'isLoading:', this.state.isLoading)
 
       setPageBrightTime({ brightTime: 60000 })
-      setScrollLock({ lock: false })
+      setScrollLock({ lock: true })
       this.unlockExitGesture()
 
       if (this.state.isLoading) {
@@ -235,7 +236,8 @@ Page(
         deleteFavoriteFunc: (fav) => this.deletePreset(fav),
         retryFunc: () => this.loadLightDetail(),
         getLightBgColor: (hex) => this.getLightBgColor(hex),
-        capabilities: this.getLightCapabilities(this.state.light)
+        capabilities: this.getLightCapabilities(this.state.light),
+        onScrollChange: (y) => this.onScrollChange(y)
       })
     },
 
@@ -334,7 +336,8 @@ Page(
       }).then(res => {
         if (res.success) {
           this.updateLight({ bri: brightness })
-          //this.renderPage()
+          //app.setLightData(this.state.lightId, light);
+          //app.updateLightStatusInGroupsCache(this.state.lightId, light);
         }
       }).catch(e => logger.error(e))
     },
@@ -477,13 +480,6 @@ Page(
         })
     },
 
-    // 👇 RIMOSSO: Metodo loadFavoriteColors() non più necessario
-    /*
-    loadFavoriteColors() {
-      // Non serve più, usiamo globalData.settings.favorite_colors
-    }
-    */
-
     toggleLight() {
       const newState = !this.state.light.ison
 
@@ -493,11 +489,22 @@ Page(
       })
         .then(result => {
           if (result.success) {
-            this.updateLight({ ison: newState })
-            //this.state.light.ison = newState
-            //app.setLightData(this.state.lightId, this.state.light)
-            // ✅ Flag per ricaricare group detail
-            // app.globalData.needsGroupDetailRefresh = true
+            if (result.updatedState) {
+              logger.debug('Applying updated state from backend:', result.updatedState)
+
+              // Aggiorna oggetto luce locale
+              Object.assign(this.state.light, result.updatedState)
+
+              // Aggiorna cache globale
+              app.setLightData(this.state.light.id, { ...this.state.light, ...result.updatedState })
+
+              // Sincronizza con tutti i gruppi
+              app.updateLightStatusInGroupsCache(this.state.light.id, result.updatedState)
+            } else {
+              this.updateLight({ ison: newState })
+              app.setLightData(this.state.light.id, { ...this.state.light, ison: newState })
+              app.updateLightStatusInGroupsCache(this.state.light.id, { ison: newState })
+            }
             this.renderPage()
           }
         })
@@ -546,6 +553,8 @@ Page(
         bri: light.bri || BRI_RANGE
       }
 
+      logger.debug('Adding current light color to favorites:', light)
+
       const colormode = light.colormode
 
       if (colormode === 'hs' && (light.sat > 0 || light.hue > 0)) {
@@ -567,7 +576,10 @@ Page(
       } else if (colormode === 'ct' || light.ct === 0 || colormode === 'none' || !colormode) {
         newFavorite.type = PRESET_TYPES.WHITE
         newFavorite.hex = '#FFFFFF'
-
+      } else if (colormode === 'bri') {
+        newFavorite.type = PRESET_TYPES.WHITE
+        newFavorite.bri = light.bri
+        newFavorite.hex = '#FFFFFF'
       } else {
         newFavorite.type = PRESET_TYPES.WHITE
         newFavorite.bri = BRI_RANGE
@@ -657,13 +669,17 @@ Page(
       }
 
       // Sincronizza con globalData
-      app.updateLightStatusInGroupsCache(this.state.lightId, updates)
       app.setLightData(this.state.lightId, this.state.light)
+      app.updateLightStatusInGroupsCache(this.state.lightId, this.state.light)
     },
 
     getFreshLightData() {
       const cached = app.getLightData(this.state.lightId)
       return cached || this.state.light
+    },
+
+    onScrollChange(y) {
+      this.state.scrollPos_y = y
     },
 
     onDestroy() {

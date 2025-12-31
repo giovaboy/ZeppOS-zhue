@@ -82,7 +82,7 @@ function renderHueSatPicker(pageContext, state, callbacks) {
         w: pickerSize,
         h: pickerSize,
         auto_scale: true,
-        src: 'color-picker.png'
+        src: 'color-picker-grid.png'
     })
 
     // B. Cursore
