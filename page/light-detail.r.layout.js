@@ -518,6 +518,7 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
     w: DEVICE_WIDTH,
     h: containerHeight,
     scroll_enable: true,
+    bounce: false,
     pos_y: scrollPos_y || 0,
     scroll_frame_func: (FrameParams) => {
       if (FrameParams.yoffset !== undefined && callbacks.onScrollChange) {
