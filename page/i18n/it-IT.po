@@ -135,3 +135,27 @@ msgstr "Favorite Colors"
 
 msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "Preset already exists"
+
+msgid "NOT_CONFIGURED"
+msgstr "---"
+
+msgid "TOGGLING"
+msgstr "Cambio stato..."
+
+msgid "ADD_TO_WIDGET"
+msgstr "☆ Aggiungi a Widget"
+
+msgid "REMOVE_FROM_WIDGET"
+msgstr "★ Nel Widget"
+
+msgid "ADDED_TO_WIDGET"
+msgstr "Aggiunto al widget!"
+
+msgid "REMOVED_FROM_WIDGET"
+msgstr "Rimosso dal widget"
+
+msgid "ALREADY_IN_WIDGET"
+msgstr "Già nel widget"
+
+msgid "WIDGET_SLOTS_FULL"
+msgstr "Widget pieno! Rimuovi prima una luce"
