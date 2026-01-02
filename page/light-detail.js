@@ -237,7 +237,7 @@ Page(
         deleteFavoriteFunc: (fav) => this.deletePreset(fav),
         retryFunc: () => this.loadLightDetail(),
         getLightBgColor: (hex) => this.getLightBgColor(hex),
-        capabilities: this.getLightCapabilities(this.state.light),
+        capabilities: (light) => this.getLightCapabilities(light),
         onScrollChange: (y) => this.onScrollChange(y)
       })
     },
@@ -671,6 +671,8 @@ Page(
     },
 
     onDestroy() {
+      this.state.isLoading = false
+      this.clearAllWidgets()
       if (this.exitGestureListener) this.exitGestureListener()
       if (this.currentModal) {
         try {
@@ -680,7 +682,6 @@ Page(
         }
         this.currentModal = null
       }
-      this.clearAllWidgets()
     }
   })
 )
