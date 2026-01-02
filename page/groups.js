@@ -29,11 +29,10 @@ Page(
       this.state.currentTab = app.getCurrentTab()
       this.state.scrollPos_y = app.getGroupsScrollY()
       // 1. Controlla se dobbiamo ricaricare
-      const needsRefresh = app.globalData.needsGroupsRefresh
+      const shouldRefresh = app.shouldRefreshGroups()
 
-      if (needsRefresh) {
+      if (shouldRefresh) {
         logger.debug('Refresh flag set, will reload from API')
-        app.globalData.needsGroupsRefresh = false
         // Non carichiamo qui, lo farà build()
         return
       }
@@ -41,8 +40,8 @@ Page(
       // 2. Prova a usare dati dal global store
       const globalData = app.getGroupsData()
 
-      if (globalData.hasLoadedOnce) {
-        logger.log('Using global store data')
+      if (globalData.hasLoadedOnce && !globalData._isExpired) {
+        logger.log('Using valid cached data')
         this.state.rooms = globalData.rooms
         this.state.zones = globalData.zones
         this.state.isLoading = false
@@ -75,7 +74,10 @@ Page(
       })
 
       // Carica SOLO se non abbiamo dati
-      if (this.state.rooms.length === 0 && this.state.zones.length === 0 || app.shouldRefreshGroups()) {
+      const shouldRefresh = app.shouldRefreshGroups()
+      const hasData = this.state.rooms.length > 0 || this.state.zones.length > 0
+
+      if (shouldRefresh || !hasData) {
         logger.log('No data in state, loading from API...')
         this.loadGroupsData()
       } else {
@@ -143,12 +145,12 @@ Page(
       const newState = !currentOnState
 
       this.request({
-          method: 'TOGGLE_GROUP',
-          params: {
-            groupId: groupRaw.id,
-            state: newState
-          }
-        })
+        method: 'TOGGLE_GROUP',
+        params: {
+          groupId: groupRaw.id,
+          state: newState
+        }
+      })
         .then(result => {
           if (result.success) {
             // 1. Aggiorna l'oggetto locale (per la UI immediata)
@@ -166,18 +168,23 @@ Page(
               item.on_off = newState
             }
 
-            // 3. ✅ IL PEZZO MANCANTE: Aggiorna la cache del dettaglio!
-            // Questo usa la funzione che abbiamo aggiunto in app.js
-            if (typeof app.updateGroupStatusInCache === 'function') {
-              app.updateGroupStatusInCache(groupRaw.id, newState)
-            } else {
-              logger.warn('app.updateGroupStatusInCache is missing!')
-            }
+            // 3. ✅ Aggiorna la cache del dettaglio!
+            app.updateGroupStatusInCache(groupRaw.id, newState)
+            globalData._timestamp = Date.now()
 
             this.renderPage()
           }
         })
-        .catch(err => logger.error('Toggle group error:', err))
+        .catch(err => {
+          logger.error('Toggle group error:', err)
+
+          // ✅ Ripristina stato in caso di errore
+          groupRaw.on_off = currentOnState
+          if (groupRaw.hasOwnProperty('anyOn')) {
+            groupRaw.anyOn = currentOnState
+          }
+          this.renderPage()
+        })
     },
 
     switchTab(tabName) {
@@ -196,10 +203,6 @@ Page(
       // Questa funzione viene chiamata dal VIEW_CONTAINER nel layout
       if (this.state.scrollPos_y !== y) {
         this.state.scrollPos_y = y
-
-        // Nota: Non chiamiamo renderPage() qui per evitare un ciclo infinito
-        // e un consumo eccessivo di risorse. Lo stato viene solo aggiornato.
-        //logger.debug(`Scroll Y saved: ${y}`)
       }
     },
 

@@ -5,7 +5,7 @@ import { createWidget, deleteWidget, prop } from '@zos/ui'
 import { back } from '@zos/router'
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import { getLogger } from '../utils/logger.js'
-import { HUE_RANGE, SAT_RANGE, BRI_RANGE, CT_MIN, CT_MAX, hsb2hex, ct2hex } from '../utils/constants.js'
+import { HUE_RANGE, SAT_RANGE, BRI_RANGE, CT_MIN, CT_MAX, hsb2hex, ct2hex, ct2hexString } from '../utils/constants.js'
 
 // Import Layout
 import { renderColorPickerPage, LAYOUT_CONFIG } from 'zosLoader:./color-picker.[pf].layout.js'
@@ -17,18 +17,14 @@ Page(
     BasePage({
         state: {
             lightId: null,
-            // Valori correnti
             hue: 0,
             sat: 0,
             bri: 0,
             ct: 370,
-            // Capabilities
             supportsColor: false,
             supportsCT: false,
-            // UI State
-            mode: 'color', // 'color' o 'ct'
+            mode: 'color',
             isDragging: false,
-            // Widget refs (popolati dal layout)
             cursorWidget: null,
             ctCursorWidget: null,
             briFillWidget: null,
@@ -37,6 +33,8 @@ Page(
 
         widgets: [],
         exitGestureListener: null, // Riferimento al listener per lo swipe di uscita
+        _lastApiCall: 0,  // ✅ AGGIUNTO: Throttle API calls
+        _apiThrottle: 200, // ✅ AGGIUNTO: 200ms between calls
 
         onInit(p) {
             logger.log('Color Picker Init', p);
@@ -64,12 +62,21 @@ Page(
             } else {
                 this.state.mode = this.state.supportsColor ? 'color' : 'ct';
             }
+
+            // ✅ AGGIUNTO: Carica light data per sincronizzazione
+            const cachedLight = app.getLightData(this.state.lightId)
+            if (cachedLight) {
+                logger.debug('Color picker using cached light data')
+                // Sincronizza valori se diversi da params
+                if (!params.hue && cachedLight.hue) this.state.hue = cachedLight.hue
+                if (!params.sat && cachedLight.sat) this.state.sat = cachedLight.sat
+                if (!params.bri && cachedLight.bri) this.state.bri = cachedLight.bri
+                if (!params.ct && cachedLight.ct) this.state.ct = cachedLight.ct
+            }
         },
 
         build() {
-            // BLOCCA SCROLLING
             setScrollLock({ lock: true });
-            // Imposta la gesture di uscita standard
             this.unlockExitGesture();
             this.render();
         },
@@ -164,7 +171,7 @@ Page(
             } else if (evt === 'MOVE' && this.state.isDragging) {
                 const vals = calcValues(info.x, info.y);
                 this.updateColorUI(vals.hue, vals.sat);
-                // Throttle API calls here usually, or send only on UP
+                this.sendColor(vals.hue, vals.sat, false)
             } else if (evt === 'UP') {
                 this.unlockExitGesture(); // SBLOCCA GESTURE
                 this.state.isDragging = false;
@@ -192,28 +199,34 @@ Page(
         },
 
         sendColor(h, s, force) {
+            const now = Date.now()
             // Se non è force (MOVE), magari saltiamo per non floodare, oppure usiamo throttle
-            if (!force) return;
+            if (!force && (now - this._lastApiCall) < this._apiThrottle) {
+                return
+            }
 
+            this._lastApiCall = now
+
+            // ✅ SEMPRE aggiorna cache locale (UI feedback immediato)
+            const light = app.getLightData(this.state.lightId)
+            if (light) {
+                const nBri = Math.round((this.state.bri / BRI_RANGE) * 100)
+                const nHue = Math.round((h / HUE_RANGE) * 360)
+                const nSat = Math.round((s / SAT_RANGE) * 100)
+                const rgb = hsb2hex(nHue, nSat, nBri)
+                const newHex = '#' + rgb.toString(16).padStart(6, '0').toUpperCase()
+
+                light.hue = h
+                light.sat = s
+                light.bri = this.state.bri
+                light.colormode = 'hs'
+                light.hex = newHex
+
+                this.updateLight(light)
+            }
             this.request({
                 method: 'SET_HS',
                 params: { lightId: this.state.lightId, hue: h, sat: s, bri: this.state.bri }
-            }).then(() => {
-                // ✅ AGGIORNA LA CACHE PRIMA DI TORNARE
-                const light = app.getLightData(this.state.lightId)
-                if (light) {
-                    const nBri = Math.round((this.state.bri / BRI_RANGE) * 100)
-                    const nHue = Math.round((h / HUE_RANGE) * 360)
-                    const nSat = Math.round((s / SAT_RANGE) * 100)
-                    const rgb = hsb2hex(nHue, nSat, nBri)
-                    const newHex = '#' + rgb.toString(16).padStart(6, '0').toUpperCase()
-                    light.hue = h;
-                    light.sat = s;
-                    light.colormode = 'hs';
-                    light.hex = newHex;
-
-                    this.updateLight(light)
-                }
             }).catch(e => logger.error(e));
         },
 
@@ -230,22 +243,25 @@ Page(
 
             if (evt === 'DOWN') {
                 this.lockExitGesture(); // BLOCCA GESTURE
-                this.state.isDragging = true;
-                const val = calcCT(info.y);
-                this.updateCTUI(val);
+                this.state.isDragging = true
+                const val = calcCT(info.y)
+                this.updateCTUI(val)
+                this.sendCT(val, false)
             } else if (evt === 'MOVE' && this.state.isDragging) {
-                const val = calcCT(info.y);
-                this.updateCTUI(val);
+                const val = calcCT(info.y)
+                this.updateCTUI(val)
+                this.sendCT(val, false)
             } else if (evt === 'UP') {
                 this.unlockExitGesture(); // SBLOCCA GESTURE
                 this.state.isDragging = false;
                 const val = calcCT(info.y);
-                this.sendCT(val);
+                this.sendCT(val, true);
             }
         },
 
         updateCTUI(ctVal) {
-            this.state.ct = ctVal;
+            this.state.ct = ctVal
+
             if (this.state.ctCursorWidget) {
                 const { pickerY, pickerSize } = LAYOUT_CONFIG;
                 const nY = (ctVal - CT_MIN) / (CT_MAX - CT_MIN);
@@ -254,7 +270,28 @@ Page(
             }
         },
 
-        sendCT(ctVal) {
+        sendCT(ctVal, force) {
+            const now = Date.now()
+
+            if (!force && (now - this._lastApiCall) < this._apiThrottle) {
+                return
+            }
+
+            this._lastApiCall = now
+
+            // ✅ SEMPRE aggiorna cache locale
+            const light = app.getLightData(this.state.lightId)
+            if (light) {
+                const newHex = ct2hexString(ctVal)
+
+                light.ct = ctVal
+                light.bri = this.state.bri
+                light.colormode = 'ct'
+                light.hex = newHex
+
+                this.updateLight(light)
+            }
+
             this.request({
                 method: 'SET_COLOR', // General method usually handles ct too
                 params: {
@@ -262,22 +299,9 @@ Page(
                     ct: ctVal,
                     bri: this.state.bri,
                     hue: null,
-                    sat: null // Reset color mode logic in API handler if needed
+                    sat: null
                 }
-            }).then(() => {
-                // ✅ AGGIORNA LA CACHE PRIMA DI TORNARE
-                const light = app.getLightData(this.state.lightId)
-                if (light) {
-                    const rgb = ct2hex(ctVal)
-                    const newHex = '#' + rgb.toString(16).padStart(6, '0').toUpperCase()
-
-                    light.ct = ctVal
-                    light.colormode = 'ct'
-                    light.hex = newHex
-
-                    this.updateLight(light)
-                }
-            }).catch(e => logger.error(e));
+            }).catch(e => logger.error('Set CT error:', e))
         },
 
         // --- LOGICA DRAG BRI (Luminosità) ---
@@ -292,17 +316,19 @@ Page(
 
             if (evt === 'DOWN') {
                 this.lockExitGesture(); // BLOCCA GESTURE
-                this.state.isDragging = true;
-                const val = calcBri(info.x);
-                this.updateBriUI(val);
+                this.state.isDragging = true
+                const val = calcBri(info.x)
+                this.updateBriUI(val)
+                this.sendBri(val, false)
             } else if (evt === 'MOVE' && this.state.isDragging) {
-                const val = calcBri(info.x);
-                this.updateBriUI(val);
+                const val = calcBri(info.x)
+                this.updateBriUI(val)
+                this.sendBri(val, false)
             } else if (evt === 'UP') {
                 this.unlockExitGesture(); // SBLOCCA GESTURE
-                this.state.isDragging = false;
-                const val = calcBri(info.x);
-                this.sendBri(val);
+                this.state.isDragging = false
+                const val = calcBri(info.x)
+                this.sendBri(val, true)
             }
         },
 
@@ -318,18 +344,26 @@ Page(
             }
         },
 
-        sendBri(val) {
+        sendBri(val, force) {
+            const now = Date.now()
+            
+            if (!force && (now - this._lastApiCall) < this._apiThrottle) {
+                return
+            }
+
+            this._lastApiCall = now
+
+            // ✅ SEMPRE aggiorna cache locale
+            const light = app.getLightData(this.state.lightId)
+            if (light) {
+                light.bri = val
+                this.updateLight(light)
+            }
+
             this.request({
                 method: 'SET_BRIGHTNESS',
                 params: { lightId: this.state.lightId, bri: val }
-            }).then(() => {
-                // ✅ AGGIORNA LA CACHE PRIMA DI TORNARE
-                const light = app.getLightData(this.state.lightId)
-                if (light) {
-                    light.bri = val
-                    this.updateLight(light)
-                }
-            }).catch(e => logger.error(e));
+            }).catch(e => logger.error('Set brightness error:', e))
         },
 
         updateLight(light) {

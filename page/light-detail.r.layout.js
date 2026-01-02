@@ -278,19 +278,20 @@ function renderNormalState(pageContext, state, callbacks) {
   // Toggle Button
   const toggleColor = lightOn ? COLORS.success : COLORS.inactive
   pageContext.createTrackedWidget(widget.BUTTON, {
-    x: px(10),
-    y: LAYOUT_CONFIG.headerY, w: DEVICE_WIDTH - px(20), h: LAYOUT_CONFIG.headerH,
+    x: px(20),
+    y: LAYOUT_CONFIG.headerY, w: DEVICE_WIDTH - px(40),
+    h: lightOn ? LAYOUT_CONFIG.headerH : DEVICE_HEIGHT - LAYOUT_CONFIG.headerY * 2,
     text: lightName,// || lightOn ? getText('LIGHT_ON') : getText('LIGHT_OFF'),
     text_size: px(34),
     normal_color: toggleColor,
     press_color: btnPressColor(toggleColor, 0.8),
-    radius: px(8),
+    radius: lightOn ? px(8) : DEVICE_HEIGHT - LAYOUT_CONFIG.headerY * 2,
     click_func: toggleLightFunc
   })
 
   let currentY = LAYOUT_CONFIG.headerY + LAYOUT_CONFIG.headerH + px(10)
 
-  const caps = callbacks.capabilities || ['brightness']
+  const caps = callbacks.capabilities(light) || ['brightness']
 
   // Presets
   if (lightOn && favoriteColors) {
@@ -475,7 +476,7 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
 
 function renderPresets(pageContext, state, yPos, applyCallback, addCallback, deleteCallback, callbacks) {
   const { presetsW, presetsX, presetsTitleH, presetItemSize } = LAYOUT_CONFIG
-  const { favoriteColors, scrollPos_y } = state
+  const { light, favoriteColors, scrollPos_y } = state
 
   // Header
   pageContext.createTrackedWidget(widget.TEXT, {
@@ -538,7 +539,7 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
   const COLS = Math.floor(ROW_WIDTH / (ITEM_SIZE + ITEM_MARGIN))
   const startX = presetsX + (ROW_WIDTH - (COLS * (ITEM_SIZE + ITEM_MARGIN) - ITEM_MARGIN)) / 2
 
-  const caps = callbacks.capabilities || []
+  const caps = callbacks.capabilities(light) || []
   const isColorLight = caps.includes('color')
   const isCtLight = caps.includes('ct')
 

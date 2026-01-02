@@ -72,8 +72,15 @@ export const DEFAULT_USER_SETTINGS = {
   default_tab: 'ROOMS',
   show_scenes: true,
   display_order: 'LIGHTS_FIRST',
-  favorite_colors: DEFAULT_PRESETS
+  favorite_colors: DEFAULT_PRESETS,
+  widget_shortcuts: [
+    { lightId: null, lightName: null },
+    { lightId: null, lightName: null },
+    { lightId: null, lightName: null }
+  ]
 }
+
+export const MAX_WIDGET_SHORTCUTS = 3
 
 export const DEMO_DATA = {
   lights: {
@@ -489,52 +496,52 @@ export const LIGHT_MODELS = {
 }
 
 export const GROUP_ICONS = {
-    'Attic': 'attic',
-    'Bathroom': 'bathroom',
-    'Balcony': 'balcony',
-    'Barbecue': 'bbq',
-    'Bedroom': 'bedroom',
-    'Carport': 'car',
-    'Closet': 'wardrobe',
-    'Computer': 'computer',
-    'Dining': 'dining',
-    'Downstairs': 'downstairs',
-    'Driveway': 'car',
-    'Front door': 'front-door',
-    'Garage': 'garage',
-    'Garden': 'outdoors',
-    'Guest room': 'bedroom',
-    'Gym': 'gym',
-    'Hallway': 'hallway',
-    'Home': 'home',
-    'Kids bedroom': 'kids_bedroom',
-    'Kitchen': 'kitchen',
-    'Laundry room': 'laundry',
-    'Living room': 'living',
-    'Lounge': 'lounge',
-    'Man cave': 'games',
-    'Music': 'music',
-    'Nursery': 'nursery',
-    'Office': 'office',
-    'Other': 'other',
-    'Pool': 'pool',
-    'Porch': 'porch',
-    'Reading': 'book',
-    'Recreation': 'recreation',
-    'Staircase': 'stairs',
-    'Storage': 'storage',
-    'Studio': 'studio',
-    'Toilet': 'toilet',
-    'Top floor': 'upstairs',
-    'Terrace': 'terrace',
-    'TV': 'tv',
-    'Upstairs': 'upstairs'
+  'Attic': 'attic',
+  'Bathroom': 'bathroom',
+  'Balcony': 'balcony',
+  'Barbecue': 'bbq',
+  'Bedroom': 'bedroom',
+  'Carport': 'car',
+  'Closet': 'wardrobe',
+  'Computer': 'computer',
+  'Dining': 'dining',
+  'Downstairs': 'downstairs',
+  'Driveway': 'car',
+  'Front door': 'front-door',
+  'Garage': 'garage',
+  'Garden': 'outdoors',
+  'Guest room': 'bedroom',
+  'Gym': 'gym',
+  'Hallway': 'hallway',
+  'Home': 'home',
+  'Kids bedroom': 'kids_bedroom',
+  'Kitchen': 'kitchen',
+  'Laundry room': 'laundry',
+  'Living room': 'living',
+  'Lounge': 'lounge',
+  'Man cave': 'games',
+  'Music': 'music',
+  'Nursery': 'nursery',
+  'Office': 'office',
+  'Other': 'other',
+  'Pool': 'pool',
+  'Porch': 'porch',
+  'Reading': 'book',
+  'Recreation': 'recreation',
+  'Staircase': 'stairs',
+  'Storage': 'storage',
+  'Studio': 'studio',
+  'Toilet': 'toilet',
+  'Top floor': 'upstairs',
+  'Terrace': 'terrace',
+  'TV': 'tv',
+  'Upstairs': 'upstairs'
 }
 
 // Helper per ottenere il path
 export function getGroupIconPath(className) {
-    const filename = GROUP_ICONS[className] || 'other'
-    return `icons/groups/${filename}.png`
+  const filename = GROUP_ICONS[className] || 'other'
+  return `icons/groups/${filename}.png`
 }
 
 

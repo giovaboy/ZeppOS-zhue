@@ -1,5 +1,5 @@
 import { BaseSideService, settingsLib } from '@zeppos/zml/base-side'
-import { DEFAULT_USER_SETTINGS, HUE_RANGE, SAT_RANGE, BRI_RANGE, DEFAULT_PRESETS, PRESET_TYPES, DEMO_DATA } from '../utils/constants.js'
+import { DEFAULT_USER_SETTINGS, MAX_WIDGET_SHORTCUTS, HUE_RANGE, SAT_RANGE, BRI_RANGE, DEFAULT_PRESETS, PRESET_TYPES, DEMO_DATA } from '../utils/constants.js'
 
 const BRIDGE_IP_KEY = 'hue_bridge_ip'
 const USERNAME_KEY = 'hue_username'
@@ -9,6 +9,7 @@ const DEMO_MODE = 'hue_demo_mode'
 const SHOW_SCENES = 'hue_show_scenes'
 const DISPLAY_ORDER = 'hue_display_order'
 const FAVORITE_COLORS = 'hue_favorite_colors'
+const WIDGET_SHORTCUTS = 'hue_widget_shortcuts'
 
 /*PrioritàModeParametriPrecisioneNote
 1 xy  | x, y, bri     | ***** | Standard CIE 1931, massima accuratezza
@@ -360,6 +361,7 @@ class HueBridgeManager {
     const show_scenes_str = settingsLib.getItem(SHOW_SCENES)
     const display_order_str = settingsLib.getItem(DISPLAY_ORDER)
     const favorite_colors_str = settingsLib.getItem(FAVORITE_COLORS)
+    const widget_shortcuts_str = settingsLib.getItem(WIDGET_SHORTCUTS)
 
     // Parse favorite colors
     let favorite_colors = DEFAULT_USER_SETTINGS.favorite_colors
@@ -370,6 +372,16 @@ class HueBridgeManager {
         console.error('Failed to parse favorite colors:', e)
       }
     }
+
+    // Parse widget shortcuts
+  let widget_shortcuts = DEFAULT_USER_SETTINGS.widget_shortcuts
+  if (widget_shortcuts_str) {
+    try {
+      widget_shortcuts = JSON.parse(widget_shortcuts_str)
+    } catch (e) {
+      console.error('Failed to parse widget shortcuts:', e)
+    }
+  }
 
     return {
       /*show_global_toggle: show_global_toggle_str !== null ?
@@ -382,7 +394,8 @@ class HueBridgeManager {
       display_order: display_order_str !== null ?
         display_order_str : DEFAULT_USER_SETTINGS.display_order,
 
-      favorite_colors: favorite_colors
+      favorite_colors: favorite_colors,
+      widget_shortcuts: widget_shortcuts
     }
   }
 
@@ -450,6 +463,72 @@ class HueBridgeManager {
   // Reset ai preset di default
   resetFavoriteColors() {
     return this.saveFavoriteColors(DEFAULT_PRESETS)
+  }
+
+  // ==========================================
+  // WIDGET SHORTCUTS MANAGEMENT
+  // ==========================================
+
+  getWidgetShortcuts() {
+    return this.user_settings.widget_shortcuts || DEFAULT_USER_SETTINGS.widget_shortcuts
+  }
+
+  saveWidgetShortcuts(shortcuts) {
+    try {
+      const shortcutsJson = JSON.stringify(shortcuts)
+      settingsLib.setItem(WIDGET_SHORTCUTS, shortcutsJson)
+      this.user_settings.widget_shortcuts = shortcuts
+      console.log('Widget shortcuts saved:', shortcuts)
+      return { success: true }
+    } catch (e) {
+      console.error('Failed to save widget shortcuts:', e)
+      throw new Error('Failed to save widget shortcuts')
+    }
+  }
+
+  addWidgetShortcut(lightId, lightName) {
+    const shortcuts = this.getWidgetShortcuts()
+
+    // Check if light is already in shortcuts
+    const existingIndex = shortcuts.findIndex(s => s.lightId === lightId)
+    if (existingIndex !== -1) {
+      console.log('Light already in widget shortcuts')
+      return { success: true, added: false, reason: 'already_exists' }
+    }
+
+    // Find first empty slot
+    const emptyIndex = shortcuts.findIndex(s => s.lightId === null)
+    if (emptyIndex === -1) {
+      console.log('No empty slots available')
+      return { success: false, added: false, reason: 'slots_full' }
+    }
+
+    // Add to empty slot
+    shortcuts[emptyIndex] = { lightId, lightName }
+    this.saveWidgetShortcuts(shortcuts)
+
+    return { success: true, added: true, slotIndex: emptyIndex }
+  }
+
+  removeWidgetShortcut(lightId) {
+    const shortcuts = this.getWidgetShortcuts()
+
+    const index = shortcuts.findIndex(s => s.lightId === lightId)
+    if (index === -1) {
+      console.log('Light not found in widget shortcuts')
+      return { success: false, removed: false }
+    }
+
+    // Clear the slot
+    shortcuts[index] = { lightId: null, lightName: null }
+    this.saveWidgetShortcuts(shortcuts)
+
+    return { success: true, removed: true }
+  }
+
+  isLightInWidgetShortcuts(lightId) {
+    const shortcuts = this.getWidgetShortcuts()
+    return shortcuts.some(s => s.lightId === lightId)
   }
 
   // --- Funzioni per lo stato DEMO ---
@@ -1429,6 +1508,7 @@ AppSideService(
         case SHOW_SCENES:
         case DISPLAY_ORDER:
         case FAVORITE_COLORS:
+        case WIDGET_SHORTCUTS:
           hueBridge.getUserSettings() // Ricarica le impostazioni
           break
       }
@@ -1532,6 +1612,26 @@ AppSideService(
 
         case 'APPLY_SCENE':
           this.handleApplyScene(req, res)
+          break
+
+        case 'GET_WIDGET_SHORTCUTS':
+          this.handleGetWidgetShortcuts(res)
+          break
+
+        case 'ADD_WIDGET_SHORTCUT':
+          this.handleAddWidgetShortcut(req, res)
+          break
+
+        case 'REMOVE_WIDGET_SHORTCUT':
+          this.handleRemoveWidgetShortcut(req, res)
+          break
+
+        case 'IS_LIGHT_IN_WIDGET':
+          this.handleIsLightInWidget(req, res)
+          break
+
+        case 'WIDGET_TOGGLE_LIGHT':
+          this.handleWidgetToggleLight(req, res)
           break
 
         default:
@@ -1959,7 +2059,98 @@ AppSideService(
         console.error('Get light detail error:', error)
         res({ error: error.message })
       }
-    }
+    },
+
+    // ==========================================
+    // WIDGET SHORTCUTS HANDLERS
+    // ==========================================
+
+    async handleGetWidgetShortcuts(res) {
+      try {
+        console.log('Getting widget shortcuts...')
+        const shortcuts = hueBridge.getWidgetShortcuts()
+        res(null, { success: true, shortcuts })
+      } catch (error) {
+        console.error('Get widget shortcuts error:', error)
+        res({ error: error.message })
+      }
+    },
+
+    async handleAddWidgetShortcut(req, res) {
+      try {
+        const { lightId, lightName } = req.params
+        console.log('Adding widget shortcut:', lightId, lightName)
+        
+        const result = hueBridge.addWidgetShortcut(lightId, lightName)
+        res(null, result)
+      } catch (error) {
+        console.error('Add widget shortcut error:', error)
+        res({ error: error.message })
+      }
+    },
+
+    async handleRemoveWidgetShortcut(req, res) {
+      try {
+        const { lightId } = req.params
+        console.log('Removing widget shortcut:', lightId)
+        
+        const result = hueBridge.removeWidgetShortcut(lightId)
+        res(null, result)
+      } catch (error) {
+        console.error('Remove widget shortcut error:', error)
+        res({ error: error.message })
+      }
+    },
+
+    async handleIsLightInWidget(req, res) {
+      try {
+        const { lightId } = req.params
+        const isInWidget = hueBridge.isLightInWidgetShortcuts(lightId)
+        res(null, { success: true, isInWidget })
+      } catch (error) {
+        console.error('Is light in widget error:', error)
+        res({ error: error.message })
+      }
+    },
+
+    async handleWidgetToggleLight(req, res) {
+      try {
+        const { lightId } = req.params
+        console.log('Widget toggle light:', lightId)
+        
+        // Simple toggle without checking current state
+        // We just send ON, but the bridge will handle it
+        // For a true toggle, we'd need to check state first
+        // But per requirements, we don't care about current state
+        
+        if (!hueBridge.bridgeIp || !hueBridge.username) {
+          res({ error: 'Bridge not configured' })
+          return
+        }
+
+        // Get current state to toggle
+        const url = `http://${hueBridge.bridgeIp}/api/${hueBridge.username}/lights/${lightId}`
+        const stateRes = await fetch({ url, method: 'GET' })
+        const lightData = typeof stateRes.body === 'string' ? JSON.parse(stateRes.body) : stateRes.body
+        
+        const currentState = lightData?.state?.on || false
+        const newState = !currentState
+
+        // Toggle
+        const toggleUrl = `http://${hueBridge.bridgeIp}/api/${hueBridge.username}/lights/${lightId}/state`
+        await fetch({
+          url: toggleUrl,
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ on: newState })
+        })
+
+        res(null, { success: true, newState })
+      } catch (error) {
+        console.error('Widget toggle light error:', error)
+        res({ error: error.message })
+      }
+    },
 
 
   })
