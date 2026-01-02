@@ -2,7 +2,7 @@
 import { createWidget, widget,prop, align, text_style, px, getAppWidgetSize } from '@zos/ui'
 import { push } from '@zos/router'
 import { LocalStorage } from '@zos/storage'
-import { COLORS, PRESET_TYPES, btnPressColor, ct2hex } from '../utils/constants'
+import { COLORS, MAX_WIDGET_SHORTCUTS, PRESET_TYPES, btnPressColor, ct2hex } from '../utils/constants'
 import { getText } from '@zos/i18n'
 import { getLogger } from '../utils/logger.js'
 
@@ -14,7 +14,7 @@ const BUTTON_GAP = px(8)
 const BUTTON_H = px(50)
 const PADDING_X = px(10)
 const AVAILABLE_W = WIDGET_W - (PADDING_X * 2)
-const BUTTON_W = Math.floor((AVAILABLE_W - (BUTTON_GAP * 2)) / 3)
+const BUTTON_W = Math.floor((AVAILABLE_W - (BUTTON_GAP * 2)) / MAX_WIDGET_SHORTCUTS)
 
 // Colors
 const COLOR_CONFIGURED = COLORS.activeTab || 0x984ce5
@@ -80,7 +80,7 @@ AppWidget({
 
       const startY = (WIDGET_H - BUTTON_H) / 2
 
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < MAX_WIDGET_SHORTCUTS; i++) {
         const shortcut = this.state.shortcuts[i]
         const isConfigured = shortcut && shortcut.lightId !== null
 
