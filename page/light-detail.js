@@ -75,8 +75,7 @@ Page(
       if (!targetId) {
         // Se non lo troviamo nemmeno qui, siamo fritti. Torniamo indietro o mostriamo errore.
         logger.error('CRITICAL: No lightId found!')
-        showToast({ text: 'Error: No Light ID' })
-        // Potresti forzare un back() qui se vuoi
+        this.state.error = getText('LIGHT_NOT_FOUND')
         return
       }
 
@@ -105,6 +104,11 @@ Page(
       setPageBrightTime({ brightTime: 60000 })
       setScrollLock({ lock: true })
       this.unlockExitGesture()
+
+      if (this.state.error && !this.state.lightId) {
+        this.renderPage()
+        return
+      }
 
       if (this.state.isLoading) {
         logger.log('Rendering loading state, then loading data...')
@@ -172,17 +176,14 @@ Page(
     renderPage() {
       this.clearAllWidgets()
 
-      // 👇 MODIFICATO: Ottieni favorite colors dal global store
       const favoriteColors = this.getFavoriteColors()
-
-      // Ordina i preset
       const sortedPresets = [...favoriteColors].sort(comparePresets)
 
       logger.debug('Rendering page - isLoading:', this.state.isLoading, 'error:', this.state.error, 'hasLight:', !!this.state.light)
       logger.debug('Favorite colors count:', favoriteColors.length)
 
       // Pre-calcola hex se necessario
-      if (this.state.light && !this.state.isLoading) {
+      if (this.state.light && !this.state.isLoading && !this.state.light.hex) {
         logger.debug('Pre-calculating light hex color...')
         const light = this.state.light
         let rgb = null
@@ -218,11 +219,6 @@ Page(
 
         if (Number.isInteger(rgb)) {
           this.updateLight({hex: normalizeHex('#' + rgb.toString(16).padStart(6, '0').toUpperCase())})
-          //this.state.light = {
-          //  ...light,
-          //  hex: normalizeHex('#' + rgb.toString(16).padStart(6, '0').toUpperCase())
-          //}
-          //app.setLightData(this.state.lightId, this.state.light)
           logger.debug('Calculated light hex color:', this.state.light.hex)
         }
       }
@@ -283,7 +279,7 @@ Page(
         if (newBri === this.state.tempBrightness) return
 
         this.state.tempBrightness = newBri
-        this.setBrightness(newBri, false)
+        this.setBrightness(newBri, true)
 
       } else if (evtType === 'MOVE') {
         if (!this.state.isDraggingBrightness) return
@@ -292,7 +288,7 @@ Page(
         if (newBri === this.state.tempBrightness) return
 
         this.state.tempBrightness = newBri
-        this.setBrightness(newBri, false)
+        this.setBrightness(newBri, true)
 
       } else if (evtType === 'UP') {
         if (!this.state.isDraggingBrightness) return
@@ -337,8 +333,6 @@ Page(
       }).then(res => {
         if (res.success) {
           this.updateLight({ bri: brightness })
-          //app.setLightData(this.state.lightId, light);
-          //app.updateLightStatusInGroupsCache(this.state.lightId, light);
         }
       }).catch(e => logger.error(e))
     },
@@ -437,10 +431,10 @@ Page(
       logger.log('Loading light detail...')
       logger.debug('Light ID:', this.state.lightId)
 
-      if (this.state.isLoading) {
+      /*if (this.state.isLoading) {
         logger.debug('Already loading, skipping duplicate request')
         return
-      }
+      }*/
 
       this.state.isLoading = true
       this.state.error = null
@@ -455,8 +449,6 @@ Page(
       })
         .then(result => {
           if (result.success) {
-            //this.state.light = result.data.light
-            //app.setLightData(this.state.lightId, this.state.light)
             this.updateLight(result.data.light)
             this.state.tempBrightness = this.state.light.bri || 0
             this.state.isLoading = false
@@ -464,8 +456,6 @@ Page(
 
             logger.log('Light detail loaded successfully')
 
-            // 👇 RIMOSSO: Non serve più caricare favorite colors
-            // Renderizza direttamente
             this.renderPage()
           } else {
             this.state.isLoading = false
@@ -482,6 +472,7 @@ Page(
     },
 
     toggleLight() {
+      const currentState = this.state.light.ison
       const newState = !this.state.light.ison
 
       this.request({
@@ -502,6 +493,9 @@ Page(
         })
         .catch(err => {
           logger.error('Toggle light error:', err)
+          // ✅ Ripristina stato
+          this.updateLight({ ison: currentState }, false)
+          this.renderPage()
         })
     },
 
@@ -536,6 +530,9 @@ Page(
             })
             this.loadLightDetail()
           }
+        })
+        .catch(err => {
+          logger.error('Apply preset error:', err)
         })
     },
 
@@ -585,15 +582,7 @@ Page(
         .then(result => {
           logger.debug('Add favorite color result:', result)
           if (result.success && result.added) {
-            // Il backend ha già aggiunto l'ID, quindi ricarica le settings
-            this.request({ method: 'GET_USER_SETTINGS' })
-              .then(settingsResult => {
-                if (settingsResult.success && settingsResult.settings) {
-                  app.updateSettings(settingsResult.settings)
-                  this.renderPage() // Re-render con i nuovi preset
-                }
-              })
-
+            this.reloadFavoriteColors()
           } else if (result.success && !result.added) {
             showToast({ text: getText('DUPLICATE_FAVORITE_COLOR') })
           }
@@ -631,14 +620,7 @@ Page(
             })
               .then(result => {
                 if (result.success) {
-                  // Ricarica settings dal backend
-                  this.request({ method: 'GET_USER_SETTINGS' })
-                    .then(settingsResult => {
-                      if (settingsResult.success && settingsResult.settings) {
-                        app.updateSettings(settingsResult.settings)
-                        this.renderPage() // Re-render senza il preset eliminato
-                      }
-                    })
+                  this.reloadFavoriteColors()
                 }
               })
           }
@@ -650,20 +632,30 @@ Page(
       dialog.show(true)
     },
 
-    updateLight(updates) {
+     reloadFavoriteColors() {
+      this.request({ method: 'GET_USER_SETTINGS' })
+        .then(settingsResult => {
+          if (settingsResult.success && settingsResult.settings) {
+            app.updateSettings(settingsResult.settings)
+            this.renderPage()
+          }
+        })
+        .catch(err => {
+          logger.error('Failed to reload settings:', err)
+        })
+    },
+
+    updateLight(updates, syncWithGlobal = true) {
       this.state.light = {
         ...this.state.light,
         ...updates
       }
 
-      // Sincronizza con globalData
-      app.setLightData(this.state.lightId, this.state.light)
-      app.updateLightStatusInGroupsCache(this.state.lightId, this.state.light)
-    },
-
-    getFreshLightData() {
-      const cached = app.getLightData(this.state.lightId)
-      return cached || this.state.light
+      if (syncWithGlobal) {
+        // Sincronizza con globalData
+        app.setLightData(this.state.lightId, this.state.light)
+        app.updateLightStatusInGroupsCache(this.state.lightId, this.state.light)
+      }
     },
 
     onScrollChange(y) {

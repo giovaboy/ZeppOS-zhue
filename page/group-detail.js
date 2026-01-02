@@ -5,7 +5,7 @@ import { getText } from '@zos/i18n'
 import { createWidget, deleteWidget } from '@zos/ui'
 import { push } from '@zos/router'
 import { renderGroupDetailPage } from 'zosLoader:./group-detail.[pf].layout.js'
-import { DEFAULT_USER_SETTINGS, COLORS, LIGHT_MODELS, ct2hex, xy2hex, hsb2hex} from '../utils/constants.js'
+import { DEFAULT_USER_SETTINGS, COLORS, LIGHT_MODELS, ct2hex, xy2hex } from '../utils/constants.js'
 
 const logger = getLogger('zhue-group-detail-page')
 const app = getApp()
@@ -48,14 +48,14 @@ Page(
       }
 
       // 1. Controlla se dobbiamo ricaricare
-      const needsRefresh = app.globalData.needsGroupDetailRefresh
+      /*const needsRefresh = app.globalData.needsGroupDetailRefresh
 
       if (needsRefresh) {
         logger.debug('Refresh flag set, will reload from API')
         app.globalData.needsGroupDetailRefresh = false
         // Non carichiamo qui, lo farà build()
         return
-      }
+      }*/
 
       // ✅ Prova a usare la cache
       const cachedData = app.getGroupDetailCache(this.state.groupId)
@@ -76,7 +76,6 @@ Page(
       if (this.state.lights.length === 0 && !this.state.isLoading && !this.state.error) {
         this.loadGroupDetail()
       } else if (this.state.lights.length > 0) {
-        // Abbiamo già i dati (da cache)
         this.renderPage()
       }
     },
@@ -160,13 +159,8 @@ Page(
     },
 
     onScrollChange(y) {
-      // Questa funzione viene chiamata dal VIEW_CONTAINER nel layout
       if (this.state.scrollPos_y !== y) {
         this.state.scrollPos_y = y
-
-        // Nota: Non chiamiamo renderPage() qui per evitare un ciclo infinito
-        // e un consumo eccessivo di risorse. Lo stato viene solo aggiornato.
-        //logger.debug(`Scroll Y saved: ${y}`)
       }
     },
 
@@ -188,17 +182,30 @@ Page(
             this.state.lights.forEach(light => {
               light.ison = newState
               app.setLightData(light.id, { ...light, ison: newState })
-              app.updateLightStatusInGroupsCache(light.id, newState)
+              app.updateLightStatusInGroupsCache(light.id, { ison: newState })
             })
 
-            // ✅ Invalida cache detail
-            //app.setGroupDetailCache(this.state.groupId, null)
-            // ✅ Flag per ricaricare groups
-            app.globalData.needsGroupsRefresh = true
+            const cachedGroup = app.getGroupDetailCache(this.state.groupId)
+            if (cachedGroup) {
+              cachedGroup.anyOn = newState
+              cachedGroup._timestamp = Date.now()
+            }
+
+            // ✅ Flag refresh lista gruppi
+            app.invalidateGroupsCache()
+
             this.renderPage()
           }
         })
-        .catch(err => logger.error('Toggle group error:', err))
+        .catch(err => {
+          logger.error('Toggle group error:', err)
+          
+          // ✅ Ripristina stato in caso di errore
+          this.state.lights.forEach(light => {
+            light.ison = !newState
+          })
+          this.renderPage()
+        })
     },
 
     toggleLight(light) {
@@ -229,9 +236,14 @@ Page(
             } else {
               // Fallback: aggiornamento ottimistico base
               logger.warn('No updatedState from backend, using optimistic update')
-              light.ison = newState
               app.setLightData(light.id, { ...light, ison: newState })
               app.updateLightStatusInGroupsCache(light.id, { ison: newState })
+            }
+
+            // ✅ Refresh timestamp cache gruppo
+            const cachedGroup = app.getGroupDetailCache(this.state.groupId)
+            if (cachedGroup) {
+              cachedGroup._timestamp = Date.now()
             }
 
             this.renderPage()
@@ -257,8 +269,8 @@ Page(
         .then(result => {
           if (result.success) {
             // ✅ Invalida cache e ricarica
-            //app.setGroupDetailCache(this.state.groupId, null)
-            app.globalData.needsGroupsRefresh = true
+            app.invalidateGroupDetailCache(this.state.groupId)
+            app.invalidateGroupsCache()
             setTimeout(() => this.loadGroupDetail(), 300)
           }
         })
@@ -304,7 +316,6 @@ Page(
       this.clearAllWidgets()
       const data = []
 
-      // ✅ Usa settings dal global store (CORRETTO)
       const settings = app.globalData.settings || DEFAULT_USER_SETTINGS
 
       const addScenes = () => {
