@@ -971,19 +971,6 @@ class HueBridgeManager {
     }*/
   }
 
-  async toggleLightV1_old(id, state) {
-    const url = `http://${this.bridgeIp}/api/${this.username}/lights/${id}/state`
-    const res = await fetch({
-      url,
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ on: state })
-    })
-    const result = await safeJson(res)
-    if (result[0]?.error) throw new Error(result[0].error.description)
-    return { success: true }
-  }
-
   async toggleLightV1(id, state) {
     const url = `http://${this.bridgeIp}/api/${this.username}/lights/${id}/state`
     const res = await fetch({

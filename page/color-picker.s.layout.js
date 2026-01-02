@@ -129,7 +129,7 @@ function renderCTPicker(pageContext, state, callbacks) {
 
     // Cursore (Barra orizzontale o pallino?) Pallino
     const cursorSize = px(36);
-    const ctPickerW = cursorSize*2;
+    const ctPickerW = cursorSize * 2;
 
     pageContext.createTrackedWidget(widget.IMG, {
         x: (DEVICE_WIDTH - ctPickerW) / 2,
@@ -179,7 +179,7 @@ function renderBrightnessSlider(pageContext, state, callbacks) {
     });
 
     // Fill
-    const fillW = Math.max(px(20), (bri / BRI_RANGE) * sliderW);
+    const fillW = Math.max(px(10), (bri / BRI_RANGE) * sliderW);
     const fill = pageContext.createTrackedWidget(widget.FILL_RECT, {
         x: sliderX, y: sliderY, w: fillW, h: sliderH,
         radius: sliderH / 2, color: COLORS.sliderFill
@@ -212,10 +212,16 @@ function renderBrightnessSlider(pageContext, state, callbacks) {
     })
 
     // Hitbox
+    const HITBOX_PADDING = px(20)
     const hitbox = pageContext.createTrackedWidget(widget.FILL_RECT, {
-        x: sliderX - 20, y: sliderY - 20, w: sliderW + 40, h: sliderH + 40, // Area touch estesa
-        color: 0, alpha: 0
-    });
+        x: sliderX - HITBOX_PADDING,
+        y: sliderY - HITBOX_PADDING,
+        w: sliderW + (HITBOX_PADDING * 2),
+        h: sliderH + (HITBOX_PADDING * 2),
+        color: 0,
+        alpha: 0
+    })
+
     hitbox.addEventListener(event.CLICK_DOWN, (info) => onDragBri('DOWN', info));
     hitbox.addEventListener(event.MOVE, (info) => onDragBri('MOVE', info));
     hitbox.addEventListener(event.CLICK_UP, (info) => onDragBri('UP', info));

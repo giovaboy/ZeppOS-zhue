@@ -201,34 +201,6 @@ Page(
         .catch(err => logger.error('Toggle group error:', err))
     },
 
-    toggleLight_old(light) {
-      const currentOnState = light.ison
-      const newState = !currentOnState
-
-      this.request({
-          method: 'TOGGLE_LIGHT',
-          params: {
-            lightId: light.id,
-            state: newState
-          }
-        })
-        .then(result => {
-          if (result.success) {
-            // ✅ Aggiorna stato locale
-            light.ison = newState
-
-            // ✅ Invalida cache detail
-            //app.setGroupDetailCache(this.state.groupId, null)
-            app.setLightData(light.id, { ...light, ison: newState })
-            // ✅ Flag per ricaricare groups
-            app.updateLightStatusInGroupsCache(light.id, newState)
-            //  app.globalData.needsGroupsRefresh = true
-            this.renderPage()
-          }
-        })
-        .catch(err => logger.error('Toggle light error:', err))
-    },
-
     toggleLight(light) {
       const currentOnState = light.ison
       const newState = !currentOnState
@@ -327,50 +299,6 @@ Page(
       }
       return btnColor
     },
-/*
-    getLightSwatchColor_kk(light) {
-      if (!light.ison || light.reachable === false) {
-        return COLORS.inactive
-      }
-
-      const colormode = light.colormode || ''
-
-      // Priorità 1: XY (più accurato)
-      if (colormode === 'xy' && light.xy && Array.isArray(light.xy)) {
-        return xy2hex(light.xy, light.bri || 254)
-      }
-
-      // Priorità 2: HSB (Hue/Saturation)
-      if ((colormode === 'hs' || light.hue !== undefined) && light.hue !== null) {
-        const hue = light.hue || 0
-        const sat = light.sat || 0
-        const bri = light.bri || 254
-        return hsb2hex(hue, sat, bri)
-      }
-
-      // Priorità 3: Color Temperature
-      if (colormode === 'ct' && light.ct) {
-        return ct2hex(light.ct)
-      }
-
-      // Priorità 4: Hex precalcolato (se disponibile)
-      if (light.hex) {
-        try {
-          return parseInt(light.hex.replace('#', '0x'), 16)
-        } catch (e) {
-          logger.error('Invalid hex color:', light.hex)
-        }
-      }
-
-      // Fallback: Bianco/Grigio basato su brightness
-      if (light.bri !== undefined) {
-        const val = Math.round((light.bri / 254) * 255)
-        return (val << 16) | (val << 8) | val
-      }
-
-      // Fallback finale: Bianco
-      return COLORS.white
-    },*/
 
     renderPage() {
       this.clearAllWidgets()

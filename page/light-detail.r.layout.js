@@ -1,6 +1,6 @@
 import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
-import { widget, align, text_style, prop, event } from '@zos/ui'
+import { widget, align, prop, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { BRI_RANGE, COLORS, PRESET_TYPES, btnPressColor, ct2hex, xy2hex } from '../utils/constants'
 import { getLogger } from '../utils/logger'
@@ -252,7 +252,7 @@ function renderNormalState(pageContext, state, callbacks) {
   logger.debug('Determined background color:', bgColor.toString(16).padStart(6, '0').toUpperCase())
 
   // Sfondo
-  const background = pageContext.createTrackedWidget(widget.FILL_RECT, {
+  pageContext.createTrackedWidget(widget.FILL_RECT, {
     x: 0,
     y: 0,
     w: DEVICE_WIDTH,
@@ -307,9 +307,6 @@ function renderNormalState(pageContext, state, callbacks) {
   if (lightOn && (caps.includes('color') || caps.includes('ct'))) {
     currentY = renderColorButton(pageContext, state, currentY, openColorPickerFunc)
   }
-
-
-  background.setProperty(prop.H, currentY > DEVICE_HEIGHT ? currentY : DEVICE_HEIGHT)
 
   return currentY
 }
@@ -527,8 +524,15 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
     }
   })
 
-  let currentY = yPos + px(40)
-  const ITEM_SIZE = presetItemSize//px(60)
+   /*presetContainer.createWidget(widget.FILL_RECT, {
+    x: 0,
+    y: 0,
+    w: DEVICE_WIDTH,
+    h: containerHeight + px(20),
+    color: COLORS.background
+  })*/
+
+  const ITEM_SIZE = presetItemSize
   const ITEM_MARGIN = px(10)
   const ROW_WIDTH = presetsW
   const COLS = Math.floor(ROW_WIDTH / (ITEM_SIZE + ITEM_MARGIN))

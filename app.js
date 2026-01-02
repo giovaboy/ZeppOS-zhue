@@ -3,18 +3,17 @@ import { DEFAULT_USER_SETTINGS } from './utils/constants.js'
 import { getLogger } from './utils/logger.js'
 
 const logger = getLogger('zhue-app')
-const TTL = 1000 * 300 // 30 secondi
+const TTL = 1000 * 5 // 5 secondi
 
 App(
   BaseApp({
     globalData: {
-      // Dati Applicativi (Runtime)
-      data: {
+      groupsData: {
         rooms: [],
         zones: [],
-        hasLoadedOnce: false // Flag per sapere se abbiamo dati validi
+        hasLoadedOnce: false, // Flag per sapere se abbiamo dati validi
+        _timestamp: 0
       },
-      needsGroupDetailRefresh: false,
       groupDetailCache: {},
       currentTab: null,
       scrollPositions: {
@@ -22,8 +21,9 @@ App(
           ROOMS: 0,
           ZONES: 0
         },
-        groupDetail: {} // { groupId: yPosition }
+        groupDetail: {}
       },
+      needsGroupDetailRefresh: false,
       needsGroupsRefresh: false,
       settingsLoaded: false,
       settings: {
@@ -42,8 +42,8 @@ App(
 
       // Richiesta al backend per ottenere le settings
       this.request({
-          method: 'GET_USER_SETTINGS'
-        })
+        method: 'GET_USER_SETTINGS'
+      })
         .then(result => {
           if (result.success && result.settings) {
             logger.debug('User settings loaded:', result.settings)
@@ -89,9 +89,10 @@ App(
     setGroupsData(apiData) {
       logger.debug('Global Store: Updating Groups Data')
       logger.debug('API Data:', JSON.stringify(apiData))
-      this.globalData.data.rooms = apiData.rooms || []
-      this.globalData.data.zones = apiData.zones || []
-      this.globalData.data.hasLoadedOnce = true
+      this.globalData.groupsData.rooms = apiData.rooms || []
+      this.globalData.groupsData.zones = apiData.zones || []
+      this.globalData.groupsData.hasLoadedOnce = true
+      this.globalData.groupsData._timestamp = Date.now()
 
       // 👇 NUOVO: Aggiorna anche settings se presenti
       if (apiData.userSettings) {
@@ -104,7 +105,37 @@ App(
     },
 
     getGroupsData() {
-      return this.globalData.data
+      const data = this.globalData.groupsData
+
+      // ✅ SEMPLIFICATO: Ritorna sempre, ma segnala se scaduto
+      const age = Date.now() - (data._timestamp || 0)
+      const isExpired = age > TTL
+
+      if (isExpired && data.hasLoadedOnce) {
+        logger.debug(`Groups cache expired (age: ${Math.round(age/1000)}s)`)
+        // ✅ Setta flag invece di invalidare subito
+        this.globalData.needsGroupsRefresh = true
+      }
+
+      return {
+        ...data,
+        _isExpired: isExpired  // ✅ Info utile per le pagine
+      }
+    },
+
+    invalidateGroupsCache() {
+      logger.debug('Global Store: Invalidating groups cache')
+      this.globalData.groupsData._timestamp = 0
+      this.globalData.needsGroupsRefresh = true
+    },
+
+    shouldRefreshGroups() {
+      const needsRefresh = this.globalData.needsGroupsRefresh
+      const data = this.globalData.groupsData
+      const age = Date.now() - (data._timestamp || 0)
+      const isExpired = age > TTL
+
+      return needsRefresh || isExpired || !data.hasLoadedOnce
     },
 
     setCurrentTab(tabName) {
@@ -158,8 +189,12 @@ App(
     },
 
     setGroupDetailCache(groupId, data) {
+      if (data) {
+        data._timestamp = Date.now()  // ✅ Timestamp aggiunto
+      }
       // Salviamo i dati associandoli all'ID
       this.globalData.groupDetailCache[groupId] = data
+      logger.debug(`Group detail cache set for ${groupId}`)
     },
 
     updateGroupStatusInCache(groupId, isOn) {
@@ -185,7 +220,6 @@ App(
             if (cachedLight) {
               logger.debug(`Global Store: Syncing individual light ${individualLightId} to ${isOn}`)
               cachedLight.ison = isOn
-              // Aggiorna timestamp per tenerla valida
               cachedLight._timestamp = Date.now()
             }
           })
@@ -222,6 +256,7 @@ App(
             })
 
             cachedGroup.anyOn = anyOn
+            cachedGroup._timestamp = Date.now()
           }
         }
 
@@ -231,8 +266,9 @@ App(
 
       // Aggiorna anche la lista generale dei gruppi (quella di groups.js)
       // Aggiorna la lista generale dei gruppi
-      const gData = this.globalData.data
+      const gData = this.globalData.groupsData
       if (gData.hasLoadedOnce) {
+        let updated = false;
         [...gData.rooms, ...gData.zones].forEach(group => {
           logger.debug('group:', JSON.stringify(group))
           // Se abbiamo il dettaglio in cache, usiamo quello che è super preciso
@@ -240,21 +276,44 @@ App(
 
           if (detail) {
             group.anyOn = detail.anyOn
+            updated = true
           } else if (group.lights && group.lights.includes(lightId)) {
             // Se non abbiamo il dettaglio, usiamo la logica "optimistic" che hai scritto
             if (updates.ison) {
               group.anyOn = true
+              updated = true
             } else {
               // Se spegniamo, non sappiamo se altre luci sono accese senza il dettaglio.
               this.globalData.needsGroupsRefresh = true
             }
           }
         })
+        if (updated) {
+          gData._timestamp = Date.now()  // ✅ Refresh timestamp lista
+        }
       }
     },
 
     getGroupDetailCache(groupId) {
-      return this.globalData.groupDetailCache[groupId] || null
+      const cached = this.globalData.groupDetailCache[groupId]
+
+      if (!cached) return null
+
+      const age = Date.now() - (cached._timestamp || 0)
+
+      if (age > TTL) {
+        logger.debug(`Group detail cache expired for ${groupId} (age: ${Math.round(age/1000)}s)`)
+        this.globalData.groupDetailCache[groupId] = null
+        return null
+      }
+
+      logger.debug(`Using cached group detail for ${groupId} (age: ${Math.round(age/1000)}s)`)
+      return cached
+    },
+
+    invalidateGroupDetailCache(groupId) {
+      logger.debug(`Invalidating group detail cache for ${groupId}`)
+      this.globalData.groupDetailCache[groupId] = null
     },
 
     setCurrentLightId(id) {
@@ -270,8 +329,7 @@ App(
       logger.debug('Global Store: Setting current light data', lightData?.id)
       this.globalData.lightData[lightId] = {
         ...lightData,
-        _timestamp: Date.now(),
-        _ttl: TTL
+        _timestamp: Date.now()
       }
       this.globalData.currentLightId = lightId
     },
@@ -283,7 +341,7 @@ App(
 
       // Verifica se il cache è ancora valido
       const age = Date.now() - (data._timestamp || 0)
-      if (age > (data._ttl || TTL)) {
+      if (age > TTL) {
         logger.debug('Light data cache expired')
         this.clearLightData(lightId)
         return null
@@ -298,51 +356,50 @@ App(
     },
 
     // ✅ NUOVO: Metodo per ripulire completamente la cache
-clearAllCache() {
-    logger.debug('Global Store: Clearing all cache data')
-    
-    // Resetta dati runtime
-    this.globalData.data = {
-      rooms: [],
-      zones: [],
-      hasLoadedOnce: false
+    clearAllCache() {
+      logger.debug('Global Store: Clearing all cache data')
+
+      // Resetta dati runtime
+      this.globalData.groupsData = {
+        rooms: [],
+        zones: [],
+        hasLoadedOnce: false,
+        _timestamp: 0
+      }
+
+      // Resetta cache
+      this.globalData.groupDetailCache = {}
+      this.globalData.lightData = {}
+      this.globalData.needsGroupDetailRefresh = false
+      this.globalData.needsGroupsRefresh = false
+
+      // Resetta scroll positions
+      this.globalData.scrollPositions = {
+        groups: {
+          ROOMS: 0,
+          ZONES: 0
+        },
+        groupDetail: {}
+      }
+
+      // Resetta current items
+      this.globalData.currentTab = null
+      this.globalData.currentLightId = null
+
+      //settings
+      this.globalData.settingsLoaded = false
+      this.globalData.settings = { ...DEFAULT_USER_SETTINGS }
+
+      logger.debug('Global Store: Cache cleared successfully')
+    },
+
+    onDestroy(options) {
+      logger.debug('Hue On-Off App Destroyed - Cleaning up...')
+
+      // ✅ Pulizia completa della globalData
+      this.clearAllCache()
+
+      logger.debug('Hue On-Off App cleanup completed')
     }
-    
-    // Resetta cache
-    this.globalData.groupDetailCache = {}
-    this.globalData.lightData = {}
-    
-    // Resetta flags refresh
-    this.globalData.needsGroupDetailRefresh = false
-    this.globalData.needsGroupsRefresh = false
-    
-    // Resetta scroll positions
-    this.globalData.scrollPositions = {
-      groups: {
-        ROOMS: 0,
-        ZONES: 0
-      },
-      groupDetail: {}
-    }
-    
-    // Resetta current items
-    this.globalData.currentTab = null
-    this.globalData.currentLightId = null
-    
-    //settings
-    this.globalData.settingsLoaded = false
-    this.globalData.settings = { ...DEFAULT_USER_SETTINGS }
-    
-    logger.debug('Global Store: Cache cleared successfully')
-  },
-  
-  onDestroy(options) {
-    logger.debug('Hue On-Off App Destroyed - Cleaning up...')
-    
-    // ✅ Pulizia completa della globalData
-    this.clearAllCache()
-    
-    logger.debug('Hue On-Off App cleanup completed')
-  }
-})
+  })
 )

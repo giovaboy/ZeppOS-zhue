@@ -2,13 +2,13 @@ import { BasePage } from '@zeppos/zml/base-page'
 import { setPageBrightTime } from '@zos/display'
 import { setScrollLock } from '@zos/page'
 import { getText } from '@zos/i18n'
-import { createWidget, deleteWidget, widget, prop, align, showToast } from '@zos/ui'
+import { createWidget, deleteWidget, prop, showToast } from '@zos/ui'
 import { back, push } from '@zos/router'
 import { onGesture, GESTURE_RIGHT, createModal, MODAL_CONFIRM } from '@zos/interaction'
 import { px } from '@zos/utils'
 import { renderLightDetail, LAYOUT_CONFIG } from 'zosLoader:./light-detail.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
-import { HUE_RANGE, SAT_RANGE, BRI_RANGE, CT_MIN, CT_MAX, DEFAULT_PRESETS, PRESET_TYPES, hsb2hex, ct2hex, ct2hexString, xy2hex, xy2hexString, normalizeHex, DEFAULT_USER_SETTINGS } from '../utils/constants.js'
+import { HUE_RANGE, SAT_RANGE, BRI_RANGE, DEFAULT_PRESETS, PRESET_TYPES, hsb2hex, ct2hex, ct2hexString, xy2hex, normalizeHex, DEFAULT_USER_SETTINGS } from '../utils/constants.js'
 
 const logger = getLogger('zhue-light-detail-page')
 const app = getApp()
@@ -217,11 +217,12 @@ Page(
         }
 
         if (Number.isInteger(rgb)) {
-          this.state.light = {
-            ...light,
-            hex: normalizeHex('#' + rgb.toString(16).padStart(6, '0').toUpperCase())
-          }
-          app.setLightData(this.state.lightId, this.state.light)
+          this.updateLight({hex: normalizeHex('#' + rgb.toString(16).padStart(6, '0').toUpperCase())})
+          //this.state.light = {
+          //  ...light,
+          //  hex: normalizeHex('#' + rgb.toString(16).padStart(6, '0').toUpperCase())
+          //}
+          //app.setLightData(this.state.lightId, this.state.light)
           logger.debug('Calculated light hex color:', this.state.light.hex)
         }
       }
@@ -405,7 +406,6 @@ Page(
 
       // 3. Inferisci dal tipo/modello se disponibile
       const type = (light.type || '').toLowerCase()
-      const modelid = (light.modelid || '').toLowerCase()
 
       // Alcuni modelli noti
       if (type.includes('color') || type.includes('extended color')) {
@@ -455,8 +455,9 @@ Page(
       })
         .then(result => {
           if (result.success) {
-            this.state.light = result.data.light
-            app.setLightData(this.state.lightId, this.state.light)
+            //this.state.light = result.data.light
+            //app.setLightData(this.state.lightId, this.state.light)
+            this.updateLight(result.data.light)
             this.state.tempBrightness = this.state.light.bri || 0
             this.state.isLoading = false
             this.state.error = null
@@ -491,19 +492,10 @@ Page(
           if (result.success) {
             if (result.updatedState) {
               logger.debug('Applying updated state from backend:', result.updatedState)
-
-              // Aggiorna oggetto luce locale
-              Object.assign(this.state.light, result.updatedState)
-
-              // Aggiorna cache globale
-              app.setLightData(this.state.light.id, { ...this.state.light, ...result.updatedState })
-
-              // Sincronizza con tutti i gruppi
-              app.updateLightStatusInGroupsCache(this.state.light.id, result.updatedState)
+              // Aggiorna oggetto luce
+              this.updateLight({...result.updatedState})
             } else {
               this.updateLight({ ison: newState })
-              app.setLightData(this.state.light.id, { ...this.state.light, ison: newState })
-              app.updateLightStatusInGroupsCache(this.state.light.id, { ison: newState })
             }
             this.renderPage()
           }
@@ -593,10 +585,6 @@ Page(
         .then(result => {
           logger.debug('Add favorite color result:', result)
           if (result.success && result.added) {
-            // 👇 MODIFICATO: Aggiorna globalData invece di ricaricare
-
-            const currentSettings = app.getSettings()
-
             // Il backend ha già aggiunto l'ID, quindi ricarica le settings
             this.request({ method: 'GET_USER_SETTINGS' })
               .then(settingsResult => {

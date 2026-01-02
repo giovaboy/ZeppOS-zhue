@@ -2,7 +2,7 @@ import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
 import { widget, align, text_style } from '@zos/ui'
 import { getText } from '@zos/i18n'
-import { COLORS, btnPressColor } from '../utils/constants.js'
+import { btnPressColor } from '../utils/constants.js'
 import { getLogger } from '../utils/logger.js'
 
 const logger = getLogger('zhue-group-detail-page')
@@ -11,7 +11,7 @@ export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
 export const LAYOUT_CONFIG = {
     headerY: px(20),
-    headerH: px(40)
+    headerH: px(60)
 }
 
 // Funzione principale di rendering chiamata da group_detail.js
@@ -24,15 +24,19 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
         x: 0, y: 0, w: DEVICE_WIDTH, h: DEVICE_HEIGHT, color: COLORS.background
     })
 
-    // Header: Nome del Gruppo
-    pageContext.createTrackedWidget(widget.TEXT, {
-        x: 0, y: LAYOUT_CONFIG.headerY, w: DEVICE_WIDTH, h: LAYOUT_CONFIG.headerH,
-        text: groupName || getText('GROUP_DETAIL'),
-        text_size: px(34),
-        color: COLORS.text,
-        align_h: align.CENTER_H,
-        align_v: align.CENTER_V
-    })
+    // Header: Nome del Gruppo togglable
+    const anyOn = state.lights.some(light => !!light.ison)
+    const badgeColor =  anyOn ? COLORS.success : COLORS.inactive
+    pageContext.createTrackedWidget(widget.BUTTON, {
+            x: px(10),
+            y: LAYOUT_CONFIG.headerY, w: DEVICE_WIDTH - px(20), h: LAYOUT_CONFIG.headerH,
+            text: groupName || getText('GROUP_DETAIL'),
+            text_size: px(34),
+            radius: px(8),
+            normal_color: badgeColor,
+            press_color: btnPressColor(badgeColor, 0.8),
+            click_func: toggleGroup
+        });
 
     // 1. Gestione Errore
     if (error) {
@@ -70,56 +74,9 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
         return
     }
 
-    // 3. Pulsante Toggle Globale (condizionale su userSettings)
     let currentY = LAYOUT_CONFIG.headerY + LAYOUT_CONFIG.headerH + px(10)
 
-    if (userSettings.show_global_toggle && state.lights.length > 1) {
-        const anyOn = state.lights.some(light => !!light.ison)
-        const buttonColor = anyOn ? COLORS.toggleOn : COLORS.toggleOff
-
-        /*pageContext.createTrackedWidget(widget.BUTTON, {
-            x: px(80), y: currentY, w: px(320), h: px(60),
-            text: anyOn ? getText('GROUP_OFF') : getText('GROUP_ON'),
-            text_size: px(28),
-            normal_color: buttonColor,
-            press_color: 0x333333,
-            radius: px(30),
-            click_func: toggleGroup
-        })*/
-
-        /*pageContext.createTrackedWidget(widget.SLIDE_SWITCH, {
-            x: DEVICE_WIDTH / 2 - px(48),
-            y: currentY,
-            w: px(96),
-            h: px(64),
-            select_bg: 'switch_on.png',
-            un_select_bg: 'switch_off.png',
-            slide_src: 'radio_select.png',
-            slide_select_x: px(40),
-            slide_un_select_x: px(8),
-            checked: anyOn,
-            checked_change_func: toggleGroup
-        })*/
-
-        const badgeColor = anyOn ? COLORS.success : COLORS.inactive
-
-        pageContext.createTrackedWidget(widget.BUTTON, {
-            x: DEVICE_WIDTH / 2 - px(40),
-            y: currentY,
-            w: px(80),
-            h: px(50),
-            text: anyOn ? getText('ON') : getText('OFF'),
-            text_size: px(26),
-            radius: px(8),
-            normal_color: badgeColor,
-            press_color: btnPressColor(badgeColor, 0.8),
-            click_func: toggleGroup
-        });
-
-        currentY += px(60) // Spazio dopo toggle
-    }
-
-    // 4. Contenuto Scrollabile con VIEW_CONTAINER
+    // 3. Contenuto Scrollabile con VIEW_CONTAINER
     renderGroupContentWithViewContainer(pageContext, state, viewData, callbacks, COLORS, currentY)
 }
 
