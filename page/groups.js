@@ -75,7 +75,7 @@ Page(
       })
 
       // Carica SOLO se non abbiamo dati
-      if (this.state.rooms.length === 0 && this.state.zones.length === 0) {
+      if (this.state.rooms.length === 0 && this.state.zones.length === 0 || app.shouldRefreshGroups()) {
         logger.log('No data in state, loading from API...')
         this.loadGroupsData()
       } else {

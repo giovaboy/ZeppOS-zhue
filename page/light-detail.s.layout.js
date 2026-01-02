@@ -1,6 +1,6 @@
 import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
-import { widget, align, text_style, prop, event } from '@zos/ui'
+import { widget, align, prop, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { BRI_RANGE, COLORS, PRESET_TYPES, btnPressColor, ct2hex, xy2hex } from '../utils/constants'
 import { getLogger } from '../utils/logger'
@@ -11,10 +11,11 @@ export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
 export const LAYOUT_CONFIG = {
   headerY: px(20),
-  headerH: px(40),
-  sliderX: px(40),
-  sliderW: DEVICE_WIDTH - px(80),
-  sliderH: px(60),
+  headerH: px(60),
+  sliderX: (DEVICE_WIDTH - px(300)) / 2,
+  sliderY: DEVICE_HEIGHT - px(90),
+  sliderW: px(300),
+  sliderH: px(50),
   colorBtnX: px(60),
   colorBtnW: DEVICE_WIDTH - px(120),
   colorBtnH: px(50),
@@ -241,13 +242,17 @@ function renderNormalState(pageContext, state, callbacks) {
       bgColor = getLightBgColor(ct2hex(light.ct).toString(16).padStart(6, '0').toUpperCase())
     } else if (light.colormode === 'xy' && light.xy) {
       bgColor = getLightBgColor(xy2hex(light.xy, light.bri).toString(16).padStart(6, '0').toUpperCase())
+    } else if (light.hex) {
+      bgColor = getLightBgColor(light.hex)
+    } else {
+      bgColor = COLORS.white
     }
   }
 
   logger.debug('Determined background color:', bgColor.toString(16).padStart(6, '0').toUpperCase())
 
   // Sfondo
-  const background = pageContext.createTrackedWidget(widget.FILL_RECT, {
+  pageContext.createTrackedWidget(widget.FILL_RECT, {
     x: 0,
     y: 0,
     w: DEVICE_WIDTH,
@@ -256,7 +261,7 @@ function renderNormalState(pageContext, state, callbacks) {
   })
 
   // Header
-  pageContext.createTrackedWidget(widget.TEXT, {
+  /*pageContext.createTrackedWidget(widget.TEXT, {
     x: 0,
     y: LAYOUT_CONFIG.headerY,
     w: DEVICE_WIDTH,
@@ -268,26 +273,29 @@ function renderNormalState(pageContext, state, callbacks) {
     align_v: align.CENTER_V
   })
 
-  let currentY = px(80)
+  let currentY = px(80)*/
 
   // Toggle Button
-  const toggleColor = lightOn ? COLORS.success : COLORS.error
+  const toggleColor = lightOn ? COLORS.success : COLORS.inactive
   pageContext.createTrackedWidget(widget.BUTTON, {
-    x: (DEVICE_WIDTH - px(200)) / 2,
-    y: currentY,
-    w: px(200),
-    h: px(60),
-    text: lightOn ? getText('LIGHT_ON') : getText('LIGHT_OFF'),
-    text_size: px(28),
+    x: px(10),
+    y: LAYOUT_CONFIG.headerY, w: DEVICE_WIDTH - px(20), h: LAYOUT_CONFIG.headerH,
+    text: lightName,// || lightOn ? getText('LIGHT_ON') : getText('LIGHT_OFF'),
+    text_size: px(34),
     normal_color: toggleColor,
     press_color: btnPressColor(toggleColor, 0.8),
-    radius: 12,
+    radius: px(8),
     click_func: toggleLightFunc
   })
 
-  currentY += px(80)
+  let currentY = LAYOUT_CONFIG.headerY + LAYOUT_CONFIG.headerH + px(10)
 
   const caps = callbacks.capabilities || ['brightness']
+
+  // Presets
+  if (lightOn && favoriteColors) {
+    currentY = renderPresets(pageContext, state, currentY, applyPresetFunc, addFavoriteFunc, deleteFavoriteFunc, callbacks)
+  }
 
   // Brightness Slider (solo brightness-only)
   const showBrightnessSlider = lightOn && caps.includes('brightness') && !caps.includes('color') && !caps.includes('ct')
@@ -299,13 +307,6 @@ function renderNormalState(pageContext, state, callbacks) {
   if (lightOn && (caps.includes('color') || caps.includes('ct'))) {
     currentY = renderColorButton(pageContext, state, currentY, openColorPickerFunc)
   }
-
-  // Presets
-  if (lightOn && favoriteColors) {
-    currentY = renderPresets(pageContext, state, currentY, applyPresetFunc, addFavoriteFunc, deleteFavoriteFunc, callbacks)
-  }
-
-  background.setProperty(prop.H, currentY > DEVICE_HEIGHT ? currentY : DEVICE_HEIGHT)
 
   return currentY
 }
@@ -331,7 +332,7 @@ function renderBrightnessSlider(pageContext, state, yPos, dragCallback) {
   })
 
   // Fill
-  const fillWidth = Math.max(px(5), (brightness / BRI_RANGE) * sliderW)
+  const fillWidth = Math.max(px(10), (brightness / BRI_RANGE) * sliderW)
   const fillWidget = pageContext.createTrackedWidget(widget.FILL_RECT, {
     x: sliderX,
     y: sliderY,
@@ -406,7 +407,7 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
   //return btnColor
 
   // Border
-  pageContext.createTrackedWidget(widget.STROKE_RECT, {
+  /*pageContext.createTrackedWidget(widget.STROKE_RECT, {
     x: colorBtnX,
     y: yPos,
     w: colorBtnW,
@@ -414,29 +415,67 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
     radius: 12,
     line_width: 2,
     color: 0xFFFFFF
-  })
+  })*/
 
   // Button
-  pageContext.createTrackedWidget(widget.BUTTON, {
-    x: colorBtnX + 2,
-    y: yPos + 2,
-    w: colorBtnW - 4,
-    h: colorBtnH - 4,
-    text: getText('CHANGE'),
-    text_size: px(22),
-    color: 0x000000,
-    normal_color: btnColor,
-    press_color: btnPressColor(btnColor, 0.8),
-    radius: 12,
+  /* pageContext.createTrackedWidget(widget.BUTTON, {
+     x: colorBtnX + 2,
+     y: yPos + 2,
+     w: colorBtnW - 4,
+     h: colorBtnH - 4,
+     text: getText('CHANGE'),
+     text_size: px(22),
+     color: 0x000000,
+     normal_color: btnColor,
+     press_color: btnPressColor(btnColor, 0.8),
+     radius: 12,
+     click_func: openCallback
+   })
+ */
+
+  // color picker background
+  let iconSize = px(70)
+  const iconX = DEVICE_WIDTH / 2 - iconSize / 2
+  const iconY = DEVICE_HEIGHT - iconSize - px(20)
+  pageContext.createTrackedWidget(widget.FILL_RECT, {
+    x: iconX + px(10),
+    y: iconY + px(12),
+    w: iconSize - px(26),
+    h: iconSize - px(22),
+    radius: px(8),
+    color: btnColor
+  })
+  // color picker mask
+  pageContext.createTrackedWidget(widget.IMG, {
+    x: iconX,
+    y: iconY,
+    w: iconSize,
+    h: iconSize,
+    src: 'color-picker2.png',
+    auto_scale: true
+  })
+
+  // Clickable overlay for toggle
+  const toggleOverlay = pageContext.createTrackedWidget(widget.BUTTON, {
+    x: iconX - px(5),
+    y: iconY,
+    w: iconSize + px(10),
+    h: iconSize + px(30),
+    text: '',
+    normal_color: COLORS.black,
+    press_color: COLORS.white,
+    //radius: px(10),
     click_func: openCallback
   })
+
+  toggleOverlay.setAlpha(0)
 
   return yPos + colorBtnH + px(30)
 }
 
 function renderPresets(pageContext, state, yPos, applyCallback, addCallback, deleteCallback, callbacks) {
   const { presetsW, presetsX, presetsTitleH, presetItemSize } = LAYOUT_CONFIG
-  const { favoriteColors } = state
+  const { favoriteColors, scrollPos_y } = state
 
   // Header
   pageContext.createTrackedWidget(widget.TEXT, {
@@ -446,25 +485,54 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
     h: presetsTitleH,
     text: getText('PRESETS_TITLE'),
     text_size: px(24),
+    text_w: 50,
     color: COLORS.text,
     align_h: align.LEFT
   })
 
   // Add button
   pageContext.createTrackedWidget(widget.BUTTON, {
-    x: DEVICE_WIDTH - px(60),
+    x: presetsX + presetsW - px(40),
     y: yPos,
     w: px(40),
     h: presetsTitleH,
     text: '+',
+    text_size: px(24),
     normal_color: COLORS.highlight,
     press_color: btnPressColor(COLORS.highlight, 0.8),
-    radius: 6,
+    radius: px(6),
     click_func: addCallback
   })
 
-  let currentY = yPos + px(40)
-  const ITEM_SIZE = presetItemSize//px(60)
+  // Calcoliamo l'area rimanente per i bottoni
+  const gridY = yPos + presetsTitleH + px(10)
+  const containerHeight = DEVICE_HEIGHT - gridY - px(90) - px(10)// Arriva fino a poco prima del pulsante per i colori o slider bri
+
+  // 3. IL VIEW_CONTAINER (Solo per la griglia dei bottoni)
+  const presetContainer = pageContext.createTrackedWidget(widget.VIEW_CONTAINER, {
+    x: 0,
+    y: gridY,
+    w: DEVICE_WIDTH,
+    h: containerHeight,
+    scroll_enable: true,
+    bounce: false,
+    pos_y: scrollPos_y || 0,
+    scroll_frame_func: (FrameParams) => {
+      if (FrameParams.yoffset !== undefined && callbacks.onScrollChange) {
+        callbacks.onScrollChange(FrameParams.yoffset)
+      }
+    }
+  })
+
+   /*presetContainer.createWidget(widget.FILL_RECT, {
+    x: 0,
+    y: 0,
+    w: DEVICE_WIDTH,
+    h: containerHeight + px(20),
+    color: COLORS.background
+  })*/
+
+  const ITEM_SIZE = presetItemSize
   const ITEM_MARGIN = px(10)
   const ROW_WIDTH = presetsW
   const COLS = Math.floor(ROW_WIDTH / (ITEM_SIZE + ITEM_MARGIN))
@@ -489,18 +557,14 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
   })
 
   if (compatiblePresets.length === 0) {
-    pageContext.createTrackedWidget(widget.TEXT, {
-      x: presetsX,
-      y: currentY,
-      w: presetsW,
-      h: px(50),
+    presetContainer.createWidget(widget.TEXT, {
+      x: 0, y: px(20), w: DEVICE_WIDTH, h: px(50),
       text: getText('NO_PRESETS') || 'No presets',
       text_size: px(22),
       color: COLORS.inactive,
       align_h: align.CENTER_H
     })
-    currentY += px(60)
-    return currentY
+    return gridY + containerHeight
   }
 
   // Render presets
@@ -514,9 +578,9 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
       buttonText = `${briPercent}%`
     }
 
-    pageContext.createTrackedWidget(widget.BUTTON, {
+    presetContainer.createWidget(widget.BUTTON, {
       x: startX + col * (ITEM_SIZE + ITEM_MARGIN),
-      y: currentY + row * (ITEM_SIZE + ITEM_MARGIN),
+      y: row * (ITEM_SIZE + ITEM_MARGIN),
       w: ITEM_SIZE,
       h: ITEM_SIZE,
       color: 0x000000,
@@ -530,6 +594,13 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
     })
   })
 
+  // 5. Padding finale per lo scroll (invisibile)
   const numRows = Math.ceil(compatiblePresets.length / COLS)
-  return currentY + (numRows * (ITEM_SIZE + ITEM_MARGIN)) + px(20)
+  const contentHeight = numRows * (ITEM_SIZE + ITEM_MARGIN)
+
+  presetContainer.createWidget(widget.FILL_RECT, {
+    x: 0, y: contentHeight, w: DEVICE_WIDTH, h: px(20), alpha: 0
+  })
+
+  return gridY + containerHeight
 }

@@ -211,8 +211,8 @@ Page(
                     light.sat = s;
                     light.colormode = 'hs';
                     light.hex = newHex;
-                    app.setLightData(this.state.lightId, light);
-                    app.updateLightStatusInGroupsCache(this.state.lightId, light);
+
+                    this.updateLight(light)
                 }
             }).catch(e => logger.error(e));
         },
@@ -275,8 +275,7 @@ Page(
                     light.colormode = 'ct'
                     light.hex = newHex
 
-                    app.setLightData(this.state.lightId, light);
-                    app.updateLightStatusInGroupsCache(this.state.lightId, light);
+                    this.updateLight(light)
                 }
             }).catch(e => logger.error(e));
         },
@@ -327,11 +326,16 @@ Page(
                 // ✅ AGGIORNA LA CACHE PRIMA DI TORNARE
                 const light = app.getLightData(this.state.lightId)
                 if (light) {
-                    light.bri = val;
-                    app.setLightData(this.state.lightId, light);
-                    app.updateLightStatusInGroupsCache(this.state.lightId, light);
+                    light.bri = val
+                    this.updateLight(light)
                 }
             }).catch(e => logger.error(e));
+        },
+
+        updateLight(light) {
+            // Sincronizza con globalData
+            app.setLightData(this.state.lightId, light)
+            app.updateLightStatusInGroupsCache(this.state.lightId, light)
         },
 
         onDestroy() {

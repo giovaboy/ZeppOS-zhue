@@ -30,7 +30,7 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
     pageContext.createTrackedWidget(widget.BUTTON, {
             x: px(10),
             y: LAYOUT_CONFIG.headerY, w: DEVICE_WIDTH - px(20), h: LAYOUT_CONFIG.headerH,
-            text:groupName || getText('GROUP_DETAIL'),
+            text: groupName || getText('GROUP_DETAIL'),
             text_size: px(34),
             radius: px(8),
             normal_color: badgeColor,

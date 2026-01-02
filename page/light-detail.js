@@ -2,13 +2,13 @@ import { BasePage } from '@zeppos/zml/base-page'
 import { setPageBrightTime } from '@zos/display'
 import { setScrollLock } from '@zos/page'
 import { getText } from '@zos/i18n'
-import { createWidget, deleteWidget, widget, prop, align, showToast } from '@zos/ui'
+import { createWidget, deleteWidget, prop, showToast } from '@zos/ui'
 import { back, push } from '@zos/router'
 import { onGesture, GESTURE_RIGHT, createModal, MODAL_CONFIRM } from '@zos/interaction'
 import { px } from '@zos/utils'
 import { renderLightDetail, LAYOUT_CONFIG } from 'zosLoader:./light-detail.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
-import { HUE_RANGE, SAT_RANGE, BRI_RANGE, CT_MIN, CT_MAX, DEFAULT_PRESETS, PRESET_TYPES, hsb2hex, ct2hex, ct2hexString, xy2hex, xy2hexString, normalizeHex, DEFAULT_USER_SETTINGS } from '../utils/constants.js'
+import { HUE_RANGE, SAT_RANGE, BRI_RANGE, DEFAULT_PRESETS, PRESET_TYPES, hsb2hex, ct2hex, ct2hexString, xy2hex, normalizeHex, DEFAULT_USER_SETTINGS } from '../utils/constants.js'
 
 const logger = getLogger('zhue-light-detail-page')
 const app = getApp()
@@ -47,7 +47,8 @@ Page(
       tempBrightness: 0,
       brightnessSliderFillWidget: null,
       brightnessLabel: null,
-      error: null
+      error: null,
+      scrollPos_y: 0,
     },
 
     widgets: [],
@@ -102,7 +103,7 @@ Page(
       logger.debug('Initial state - light:', !!this.state.light, 'isLoading:', this.state.isLoading)
 
       setPageBrightTime({ brightTime: 60000 })
-      setScrollLock({ lock: false })
+      setScrollLock({ lock: true })
       this.unlockExitGesture()
 
       if (this.state.isLoading) {
@@ -216,11 +217,12 @@ Page(
         }
 
         if (Number.isInteger(rgb)) {
-          this.state.light = {
-            ...light,
-            hex: normalizeHex('#' + rgb.toString(16).padStart(6, '0').toUpperCase())
-          }
-          app.setLightData(this.state.lightId, this.state.light)
+          this.updateLight({hex: normalizeHex('#' + rgb.toString(16).padStart(6, '0').toUpperCase())})
+          //this.state.light = {
+          //  ...light,
+          //  hex: normalizeHex('#' + rgb.toString(16).padStart(6, '0').toUpperCase())
+          //}
+          //app.setLightData(this.state.lightId, this.state.light)
           logger.debug('Calculated light hex color:', this.state.light.hex)
         }
       }
@@ -235,7 +237,8 @@ Page(
         deleteFavoriteFunc: (fav) => this.deletePreset(fav),
         retryFunc: () => this.loadLightDetail(),
         getLightBgColor: (hex) => this.getLightBgColor(hex),
-        capabilities: this.getLightCapabilities(this.state.light)
+        capabilities: this.getLightCapabilities(this.state.light),
+        onScrollChange: (y) => this.onScrollChange(y)
       })
     },
 
@@ -334,7 +337,8 @@ Page(
       }).then(res => {
         if (res.success) {
           this.updateLight({ bri: brightness })
-          //this.renderPage()
+          //app.setLightData(this.state.lightId, light);
+          //app.updateLightStatusInGroupsCache(this.state.lightId, light);
         }
       }).catch(e => logger.error(e))
     },
@@ -402,7 +406,6 @@ Page(
 
       // 3. Inferisci dal tipo/modello se disponibile
       const type = (light.type || '').toLowerCase()
-      const modelid = (light.modelid || '').toLowerCase()
 
       // Alcuni modelli noti
       if (type.includes('color') || type.includes('extended color')) {
@@ -452,8 +455,9 @@ Page(
       })
         .then(result => {
           if (result.success) {
-            this.state.light = result.data.light
-            app.setLightData(this.state.lightId, this.state.light)
+            //this.state.light = result.data.light
+            //app.setLightData(this.state.lightId, this.state.light)
+            this.updateLight(result.data.light)
             this.state.tempBrightness = this.state.light.bri || 0
             this.state.isLoading = false
             this.state.error = null
@@ -477,13 +481,6 @@ Page(
         })
     },
 
-    // 👇 RIMOSSO: Metodo loadFavoriteColors() non più necessario
-    /*
-    loadFavoriteColors() {
-      // Non serve più, usiamo globalData.settings.favorite_colors
-    }
-    */
-
     toggleLight() {
       const newState = !this.state.light.ison
 
@@ -493,11 +490,13 @@ Page(
       })
         .then(result => {
           if (result.success) {
-            this.updateLight({ ison: newState })
-            //this.state.light.ison = newState
-            //app.setLightData(this.state.lightId, this.state.light)
-            // ✅ Flag per ricaricare group detail
-            // app.globalData.needsGroupDetailRefresh = true
+            if (result.updatedState) {
+              logger.debug('Applying updated state from backend:', result.updatedState)
+              // Aggiorna oggetto luce
+              this.updateLight({...result.updatedState})
+            } else {
+              this.updateLight({ ison: newState })
+            }
             this.renderPage()
           }
         })
@@ -546,6 +545,8 @@ Page(
         bri: light.bri || BRI_RANGE
       }
 
+      logger.debug('Adding current light color to favorites:', light)
+
       const colormode = light.colormode
 
       if (colormode === 'hs' && (light.sat > 0 || light.hue > 0)) {
@@ -567,7 +568,10 @@ Page(
       } else if (colormode === 'ct' || light.ct === 0 || colormode === 'none' || !colormode) {
         newFavorite.type = PRESET_TYPES.WHITE
         newFavorite.hex = '#FFFFFF'
-
+      } else if (colormode === 'bri') {
+        newFavorite.type = PRESET_TYPES.WHITE
+        newFavorite.bri = light.bri
+        newFavorite.hex = '#FFFFFF'
       } else {
         newFavorite.type = PRESET_TYPES.WHITE
         newFavorite.bri = BRI_RANGE
@@ -581,10 +585,6 @@ Page(
         .then(result => {
           logger.debug('Add favorite color result:', result)
           if (result.success && result.added) {
-            // 👇 MODIFICATO: Aggiorna globalData invece di ricaricare
-
-            const currentSettings = app.getSettings()
-
             // Il backend ha già aggiunto l'ID, quindi ricarica le settings
             this.request({ method: 'GET_USER_SETTINGS' })
               .then(settingsResult => {
@@ -657,13 +657,17 @@ Page(
       }
 
       // Sincronizza con globalData
-      app.updateLightStatusInGroupsCache(this.state.lightId, updates)
       app.setLightData(this.state.lightId, this.state.light)
+      app.updateLightStatusInGroupsCache(this.state.lightId, this.state.light)
     },
 
     getFreshLightData() {
       const cached = app.getLightData(this.state.lightId)
       return cached || this.state.light
+    },
+
+    onScrollChange(y) {
+      this.state.scrollPos_y = y
     },
 
     onDestroy() {

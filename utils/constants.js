@@ -88,7 +88,6 @@ export const DEMO_DATA = {
       ct: 0,
       colormode: 'hs',
       reachable: true,
-      capabilities: ['brightness', 'color', 'ct'],
       modelid: 'LCT015' // A19 Color Gen 3
     },
     '2': {
@@ -101,7 +100,6 @@ export const DEMO_DATA = {
       ct: 0,
       colormode: 'hs',
       reachable: true,
-      capabilities: ['brightness', 'color'],
       modelid: 'LJL001' // Play Bar
     },
     '3': {
@@ -114,7 +112,6 @@ export const DEMO_DATA = {
       ct: 366,
       colormode: 'ct',
       reachable: true,
-      capabilities: ['brightness', 'ct'], // White Ambiance
       modelid: 'LTW001'
     },
 
@@ -124,12 +121,9 @@ export const DEMO_DATA = {
       name: 'Cabinet Strip',
       ison: true,
       bri: 254,
-      hue: 0,
-      sat: 0,
       ct: 250, // Neutral white
       colormode: 'ct',
       reachable: true,
-      capabilities: ['brightness', 'color', 'ct'],
       modelid: 'LST002' // Lightstrip Plus
     },
     '5': {
@@ -137,12 +131,9 @@ export const DEMO_DATA = {
       name: 'Dining Table',
       ison: true,
       bri: 180,
-      hue: 0,
-      sat: 0,
       ct: 450, // Warm white
       colormode: 'ct',
       reachable: true,
-      capabilities: ['brightness', 'ct'],
       modelid: 'LTW001'
     },
 
@@ -156,7 +147,6 @@ export const DEMO_DATA = {
       sat: 200,
       colormode: 'hs',
       reachable: true,
-      capabilities: ['brightness', 'color', 'ct'],
       modelid: 'LCT015'
     },
     '7': {
@@ -169,7 +159,6 @@ export const DEMO_DATA = {
       ct: 400,
       colormode: 'ct',
       reachable: true,
-      capabilities: ['brightness', 'color', 'ct'],
       modelid: 'LCT015'
     },
 
@@ -181,7 +170,6 @@ export const DEMO_DATA = {
       bri: 254,
       colormode: 'bri',
       reachable: true,
-      capabilities: ['brightness'],
       modelid: 'LWB014' // Hue White
     },
     '9': {
@@ -191,7 +179,6 @@ export const DEMO_DATA = {
       bri: 254,
       colormode: 'bri',
       reachable: true,
-      capabilities: ['brightness'],
       modelid: 'LWB014'
     },
 
@@ -205,7 +192,6 @@ export const DEMO_DATA = {
       sat: 254,
       colormode: 'hs',
       reachable: true,
-      capabilities: ['brightness', 'color'],
       modelid: 'LCA007' // Calla Outdoor
     },
     '11': {
@@ -216,8 +202,7 @@ export const DEMO_DATA = {
       hue: 0,
       sat: 0,
       colormode: 'bri',
-      reachable: false, // ⚠️ UNREACHABLE
-      capabilities: ['brightness', 'color'],
+      reachable: false,
       modelid: 'LPA001'
     },
 
@@ -228,8 +213,7 @@ export const DEMO_DATA = {
       ison: true,
       bri: 254,
       colormode: 'bri',
-      reachable: false, // ⚠️ UNREACHABLE
-      capabilities: ['brightness'],
+      reachable: false,
       modelid: 'LWB006'
     },
 
@@ -243,7 +227,6 @@ export const DEMO_DATA = {
       sat: 254,
       colormode: 'hs',
       reachable: true,
-      capabilities: ['brightness', 'color'],
       modelid: 'LCG002' // Gradient Strip
     }
   },
