@@ -3,7 +3,7 @@ import { DEFAULT_USER_SETTINGS } from './utils/constants.js'
 import { getLogger } from './utils/logger.js'
 
 const logger = getLogger('zhue-app')
-const TTL = 1000 * 300 // 30 secondi
+const TTL = 1000 * 5 // 5 secondi
 
 App(
   BaseApp({
