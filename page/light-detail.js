@@ -9,15 +9,7 @@ import { onGesture, GESTURE_RIGHT, createModal, MODAL_CONFIRM } from '@zos/inter
 import { px } from '@zos/utils'
 import { renderLightDetail, LAYOUT_CONFIG } from 'zosLoader:./light-detail.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
-import { HUE_RANGE, SAT_RANGE, BRI_RANGE, DEFAULT_PRESETS, PRESET_TYPES, hsb2hex, ct2hex, ct2hexString, xy2hex, normalizeHex, DEFAULT_USER_SETTINGS } from '../utils/constants.js'
-
-const WIDGET_SHORTCUTS_KEY = 'widget_shortcuts'
-const MAX_WIDGET_SHORTCUTS = 3
-const DEFAULT_WIDGET_SHORTCUTS = [
-  { lightId: null, lightName: null },
-  { lightId: null, lightName: null },
-  { lightId: null, lightName: null }
-]
+import { HUE_RANGE, SAT_RANGE, BRI_RANGE, DEFAULT_PRESETS, PRESET_TYPES, WIDGET_SHORTCUTS_KEY, MAX_WIDGET_SHORTCUTS, DEFAULT_WIDGET_SHORTCUTS, hsb2hex, ct2hex, ct2hexString, xy2hex, normalizeHex, DEFAULT_USER_SETTINGS } from '../utils/constants.js'
 
 const logger = getLogger('zhue-light-detail-page')
 const app = getApp()

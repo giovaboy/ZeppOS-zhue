@@ -4,8 +4,10 @@ import { localStorage } from '@zos/storage'
 import { push } from '@zos/router'
 import { px } from '@zos/utils'
 import { getText } from '@zos/i18n'
-import { COLORS, btnPressColor } from '../utils/constants'
+import { COLORS, MAX_WIDGET_SHORTCUTS, WIDGET_SHORTCUTS_KEY, DEFAULT_WIDGET_SHORTCUTS, btnPressColor } from '../utils/constants'
+import { getLogger } from '../utils/logger.js'
 
+const logger = getLogger('zhue-app-widget')
 const { width: WIDGET_W, height: WIDGET_H } = getAppWidgetSize()
 
 // Layout constants
@@ -13,31 +15,21 @@ const BUTTON_GAP = px(8)
 const BUTTON_H = px(50)
 const PADDING_X = px(10)
 const AVAILABLE_W = WIDGET_W - (PADDING_X * 2)
-const BUTTON_W = Math.floor((AVAILABLE_W - (BUTTON_GAP * 2)) / 3)
-
-// Storage key (deve corrispondere a quello usato in light-detail.js)
-const WIDGET_SHORTCUTS_KEY = 'widget_shortcuts'
+const BUTTON_W = Math.floor((AVAILABLE_W - (BUTTON_GAP * 2)) / MAX_WIDGET_SHORTCUTS)
 
 // Colors
 const COLOR_CONFIGURED = COLORS.activeTab || 0x984ce5
 const COLOR_UNCONFIGURED = COLORS.inactive || 0x666666
 const COLOR_PRESS = btnPressColor ? btnPressColor(COLOR_CONFIGURED, 0.7) : 0x6a35a0
 
-// Default empty shortcuts
-const DEFAULT_SHORTCUTS = [
-  { lightId: null, lightName: null },
-  { lightId: null, lightName: null },
-  { lightId: null, lightName: null }
-]
-
 AppWidget({
   state: {
-    shortcuts: DEFAULT_SHORTCUTS,
+    shortcuts: DEFAULT_WIDGET_SHORTCUTS,
     buttons: []
   },
   
   build() {
-    console.log('Widget build')
+    logger.log('Widget build')
     
     // Load shortcuts from device localStorage
     this.loadShortcuts()
@@ -53,11 +45,11 @@ AppWidget({
         const parsed = JSON.parse(stored)
         if (Array.isArray(parsed) && parsed.length === 3) {
           this.state.shortcuts = parsed
-          console.log('Widget: Loaded shortcuts from localStorage')
+          logger.log('Widget: Loaded shortcuts from localStorage')
         }
       }
     } catch (e) {
-      console.error('Widget: Failed to load shortcuts:', e)
+      logger.error('Widget: Failed to load shortcuts:', e)
     }
   },
   
@@ -102,7 +94,7 @@ AppWidget({
   },
   
   onShortcutClick(shortcut) {
-    console.log('Widget: Shortcut clicked:', shortcut.lightId, shortcut.lightName)
+    logger.log('Widget: Shortcut clicked:', shortcut.lightId, shortcut.lightName)
     
     // Navigate to quick-toggle page which will handle the actual toggle
     push({
