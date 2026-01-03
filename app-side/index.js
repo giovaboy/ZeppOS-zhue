@@ -9,7 +9,7 @@ const DEMO_MODE = 'hue_demo_mode'
 const SHOW_SCENES = 'hue_show_scenes'
 const DISPLAY_ORDER = 'hue_display_order'
 const FAVORITE_COLORS = 'hue_favorite_colors'
-const WIDGET_SHORTCUTS = 'hue_widget_shortcuts'
+//const WIDGET_SHORTCUTS = 'hue_widget_shortcuts'
 
 /*PrioritàModeParametriPrecisioneNote
 1 xy  | x, y, bri     | ***** | Standard CIE 1931, massima accuratezza
@@ -361,7 +361,7 @@ class HueBridgeManager {
     const show_scenes_str = settingsLib.getItem(SHOW_SCENES)
     const display_order_str = settingsLib.getItem(DISPLAY_ORDER)
     const favorite_colors_str = settingsLib.getItem(FAVORITE_COLORS)
-    const widget_shortcuts_str = settingsLib.getItem(WIDGET_SHORTCUTS)
+    //const widget_shortcuts_str = settingsLib.getItem(WIDGET_SHORTCUTS)
 
     // Parse favorite colors
     let favorite_colors = DEFAULT_USER_SETTINGS.favorite_colors
@@ -372,16 +372,6 @@ class HueBridgeManager {
         console.error('Failed to parse favorite colors:', e)
       }
     }
-
-    // Parse widget shortcuts
-  let widget_shortcuts = DEFAULT_USER_SETTINGS.widget_shortcuts
-  if (widget_shortcuts_str) {
-    try {
-      widget_shortcuts = JSON.parse(widget_shortcuts_str)
-    } catch (e) {
-      console.error('Failed to parse widget shortcuts:', e)
-    }
-  }
 
     return {
       /*show_global_toggle: show_global_toggle_str !== null ?
@@ -394,8 +384,7 @@ class HueBridgeManager {
       display_order: display_order_str !== null ?
         display_order_str : DEFAULT_USER_SETTINGS.display_order,
 
-      favorite_colors: favorite_colors,
-      widget_shortcuts: widget_shortcuts
+      favorite_colors: favorite_colors
     }
   }
 
@@ -468,7 +457,7 @@ class HueBridgeManager {
   // ==========================================
   // WIDGET SHORTCUTS MANAGEMENT
   // ==========================================
-
+/*
   getWidgetShortcuts() {
     return this.user_settings.widget_shortcuts || DEFAULT_USER_SETTINGS.widget_shortcuts
   }
@@ -529,7 +518,7 @@ class HueBridgeManager {
   isLightInWidgetShortcuts(lightId) {
     const shortcuts = this.getWidgetShortcuts()
     return shortcuts.some(s => s.lightId === lightId)
-  }
+  }*/
 
   // --- Funzioni per lo stato DEMO ---
   _initDemoState() {
@@ -1508,7 +1497,6 @@ AppSideService(
         case SHOW_SCENES:
         case DISPLAY_ORDER:
         case FAVORITE_COLORS:
-        case WIDGET_SHORTCUTS:
           hueBridge.getUserSettings() // Ricarica le impostazioni
           break
       }
@@ -1614,7 +1602,7 @@ AppSideService(
           this.handleApplyScene(req, res)
           break
 
-        case 'GET_WIDGET_SHORTCUTS':
+        /*case 'GET_WIDGET_SHORTCUTS':
           this.handleGetWidgetShortcuts(res)
           break
 
@@ -1628,7 +1616,7 @@ AppSideService(
 
         case 'IS_LIGHT_IN_WIDGET':
           this.handleIsLightInWidget(req, res)
-          break
+          break*/
 
         case 'WIDGET_TOGGLE_LIGHT':
           this.handleWidgetToggleLight(req, res)
@@ -2064,7 +2052,7 @@ AppSideService(
     // ==========================================
     // WIDGET SHORTCUTS HANDLERS
     // ==========================================
-
+/*
     async handleGetWidgetShortcuts(res) {
       try {
         console.log('Getting widget shortcuts...')
@@ -2111,7 +2099,7 @@ AppSideService(
         console.error('Is light in widget error:', error)
         res({ error: error.message })
       }
-    },
+    },*/
 
     async handleWidgetToggleLight(req, res) {
       try {
