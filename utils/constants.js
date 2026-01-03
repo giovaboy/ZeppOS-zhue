@@ -72,15 +72,21 @@ export const DEFAULT_USER_SETTINGS = {
   default_tab: 'ROOMS',
   show_scenes: true,
   display_order: 'LIGHTS_FIRST',
-  favorite_colors: DEFAULT_PRESETS,
-  widget_shortcuts: [
-    { lightId: null, lightName: null },
-    { lightId: null, lightName: null },
-    { lightId: null, lightName: null }
-  ]
+  favorite_colors: DEFAULT_PRESETS
 }
 
+// Widget shortcuts storage key (device localStorage)
+export const WIDGET_SHORTCUTS_KEY = 'widget_shortcuts'
+
+// Max number of widget shortcuts
 export const MAX_WIDGET_SHORTCUTS = 3
+
+// Default widget shortcuts
+export const DEFAULT_WIDGET_SHORTCUTS = [
+  { lightId: null, lightName: null },
+  { lightId: null, lightName: null },
+  { lightId: null, lightName: null }
+]
 
 export const DEMO_DATA = {
   lights: {

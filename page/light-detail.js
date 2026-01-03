@@ -1,4 +1,5 @@
 import { BasePage } from '@zeppos/zml/base-page'
+import { localStorage } from '@zos/storage'
 import { setPageBrightTime } from '@zos/display'
 import { setScrollLock } from '@zos/page'
 import { getText } from '@zos/i18n'
@@ -9,6 +10,14 @@ import { px } from '@zos/utils'
 import { renderLightDetail, LAYOUT_CONFIG } from 'zosLoader:./light-detail.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
 import { HUE_RANGE, SAT_RANGE, BRI_RANGE, DEFAULT_PRESETS, PRESET_TYPES, hsb2hex, ct2hex, ct2hexString, xy2hex, normalizeHex, DEFAULT_USER_SETTINGS } from '../utils/constants.js'
+
+const WIDGET_SHORTCUTS_KEY = 'widget_shortcuts'
+const MAX_WIDGET_SHORTCUTS = 3
+const DEFAULT_WIDGET_SHORTCUTS = [
+  { lightId: null, lightName: null },
+  { lightId: null, lightName: null },
+  { lightId: null, lightName: null }
+]
 
 const logger = getLogger('zhue-light-detail-page')
 const app = getApp()
@@ -49,12 +58,13 @@ Page(
       brightnessLabel: null,
       error: null,
       scrollPos_y: 0,
+      isInWidgetShortcuts: false,
     },
-
+    
     widgets: [],
     currentModal: null,
     exitGestureListener: null,
-
+    
     onInit(p) {
       let params = {}
       try {
@@ -62,31 +72,31 @@ Page(
       } catch (e) {
         logger.error('Error parsing params', e)
       }
-
+      
       // 1. Cerchiamo l'ID nei parametri
       let targetId = params?.lightId
-
+      
       // 2. Se non c'è, chiediamo al Global Store (Salvagente per il Back)
       if (!targetId) {
         logger.warn('Missing lightId in params, checking global store...')
         targetId = app.getCurrentLightId()
       }
-
+      
       if (!targetId) {
         // Se non lo troviamo nemmeno qui, siamo fritti. Torniamo indietro o mostriamo errore.
         logger.error('CRITICAL: No lightId found!')
         this.state.error = getText('LIGHT_NOT_FOUND')
         return
       }
-
+      
       // 3. Salviamo lo stato e aggiorniamo il global store per il futuro
       this.state.lightId = targetId
       app.setCurrentLightId(targetId) // Rinforziamo il dato
       this.state.lightName = params?.lightName || getText('LIGHT')
-
+      
       // Prova a usare i dati dal global store
       const cachedLightData = app.getLightData(this.state.lightId)
-
+      
       if (cachedLightData) {
         logger.log('Using cached light data from global store')
         this.state.light = cachedLightData
@@ -96,29 +106,30 @@ Page(
         this.state.isLoading = true
       }
     },
-
+    
     build() {
       logger.log('Building Light Detail page')
       logger.debug('Initial state - light:', !!this.state.light, 'isLoading:', this.state.isLoading)
-
+      
       setPageBrightTime({ brightTime: 60000 })
       setScrollLock({ lock: true })
       this.unlockExitGesture()
-
+      
       if (this.state.error && !this.state.lightId) {
         this.renderPage()
         return
       }
-
+      
       if (this.state.isLoading) {
         logger.log('Rendering loading state, then loading data...')
         this.renderPage()
         setTimeout(() => this.loadLightDetail(), 10)
-
+        this.checkWidgetShortcutStatus()
+        
       } else if (this.state.light) {
         logger.log('Have cached data, rendering page...')
         this.renderPage()
-
+        
       } else {
         logger.warn('Unexpected state: no loading flag and no data')
         this.state.isLoading = true
@@ -126,7 +137,7 @@ Page(
         setTimeout(() => this.loadLightDetail(), 10)
       }
     },
-
+    
     clearAllWidgets() {
       this.widgets.forEach(w => {
         try { deleteWidget(w) } catch (e) {
@@ -137,13 +148,13 @@ Page(
       this.state.brightnessSliderFillWidget = null
       this.state.brightnessLabel = null
     },
-
+    
     createTrackedWidget(type, props) {
       const w = createWidget(type, props)
       this.widgets.push(w)
       return w
     },
-
+    
     unlockExitGesture() {
       if (this.exitGestureListener) {
         this.exitGestureListener()
@@ -158,7 +169,7 @@ Page(
         }
       })
     },
-
+    
     lockExitGesture() {
       if (this.exitGestureListener) {
         this.exitGestureListener()
@@ -167,48 +178,48 @@ Page(
         callback: (event) => true
       })
     },
-
+    
     getFavoriteColors() {
       const settings = app.getSettings() || DEFAULT_USER_SETTINGS
       return settings.favorite_colors || DEFAULT_PRESETS
     },
-
+    
     renderPage() {
       this.clearAllWidgets()
-
+      
       const favoriteColors = this.getFavoriteColors()
       const sortedPresets = [...favoriteColors].sort(comparePresets)
-
+      
       logger.debug('Rendering page - isLoading:', this.state.isLoading, 'error:', this.state.error, 'hasLight:', !!this.state.light)
       logger.debug('Favorite colors count:', favoriteColors.length)
-
+      
       // Pre-calcola hex se necessario
       if (this.state.light && !this.state.isLoading && !this.state.light.hex) {
         logger.debug('Pre-calculating light hex color...')
         const light = this.state.light
         let rgb = null
-
+        
         switch (light.colormode) {
           case 'hs': {
             const bri = light.bri ?? 100
             const hue = light.hue ?? 0
             const sat = light.sat ?? 0
-
+            
             const nBri = Math.round((bri / BRI_RANGE) * 100)
             const nHue = Math.round((hue / HUE_RANGE) * 360)
             const nSat = Math.round((sat / SAT_RANGE) * 100)
-
+            
             rgb = hsb2hex(nHue, nSat, nBri)
             break
           }
-
+          
           case 'xy': {
             if (Array.isArray(light.xy)) {
               rgb = xy2hex(light.xy, light.bri)
             }
             break
           }
-
+          
           case 'ct': {
             if (Number.isInteger(light.ct)) {
               rgb = ct2hex(light.ct)
@@ -216,13 +227,13 @@ Page(
             break
           }
         }
-
+        
         if (Number.isInteger(rgb)) {
-          this.updateLight({hex: normalizeHex('#' + rgb.toString(16).padStart(6, '0').toUpperCase())})
+          this.updateLight({ hex: normalizeHex('#' + rgb.toString(16).padStart(6, '0').toUpperCase()) })
           logger.debug('Calculated light hex color:', this.state.light.hex)
         }
       }
-
+      
       // 👇 MODIFICATO: Passa sortedPresets invece di this.state.favoriteColors
       renderLightDetail(this, { ...this.state, favoriteColors: sortedPresets }, {
         toggleLightFunc: () => this.toggleLight(),
@@ -234,19 +245,21 @@ Page(
         retryFunc: () => this.loadLightDetail(),
         getLightBgColor: (hex) => this.getLightBgColor(hex),
         capabilities: (light) => this.getLightCapabilities(light),
-        onScrollChange: (y) => this.onScrollChange(y)
+        onScrollChange: (y) => this.onScrollChange(y),
+        toggleWidgetShortcutFunc: () => this.toggleWidgetShortcut(),
+        isInWidgetShortcuts: this.state.isInWidgetShortcuts
       })
     },
-
+    
     openColorPicker() {
       const light = this.state.light
       const caps = this.getLightCapabilities(light)
-
+      
       let initialMode = 'color'
       if (((light.colormode === 'ct') && light.ct > 0) || !caps.includes('color')) {
         initialMode = 'ct'
       }
-
+      
       push({
         url: 'page/color-picker',
         params: JSON.stringify({
@@ -260,55 +273,55 @@ Page(
         })
       })
     },
-
+    
     handleBrightnessDrag(evtType, info) {
       const { sliderX, sliderW } = LAYOUT_CONFIG
-
+      
       const getBrightnessFromX = (x) => {
         let positionInTrack = x - sliderX
         positionInTrack = Math.max(0, Math.min(positionInTrack, sliderW))
         return Math.max(this.state.light.ison ? 1 : 0, Math.round((positionInTrack / sliderW) * BRI_RANGE))
       }
-
+      
       if (evtType === 'DOWN') {
         this.lockExitGesture()
         setScrollLock({ lock: true })
-
+        
         const newBri = getBrightnessFromX(info.x)
         this.state.isDraggingBrightness = true
         if (newBri === this.state.tempBrightness) return
-
+        
         this.state.tempBrightness = newBri
         this.setBrightness(newBri, true)
-
+        
       } else if (evtType === 'MOVE') {
         if (!this.state.isDraggingBrightness) return
-
+        
         const newBri = getBrightnessFromX(info.x)
         if (newBri === this.state.tempBrightness) return
-
+        
         this.state.tempBrightness = newBri
         this.setBrightness(newBri, true)
-
+        
       } else if (evtType === 'UP') {
         if (!this.state.isDraggingBrightness) return
-
+        
         this.unlockExitGesture()
         setScrollLock({ lock: false })
-
+        
         if (this.state.tempBrightness !== this.state.light.bri) {
           this.setBrightness(this.state.tempBrightness, false)
         }
-
+        
         this.state.isDraggingBrightness = false
       }
     },
-
+    
     setBrightness(brightness, skipApiCall = false) {
       const { sliderW } = LAYOUT_CONFIG
       const fillWidth = Math.max(px(5), Math.round(sliderW * brightness / BRI_RANGE))
       const percent = Math.round(brightness / BRI_RANGE * 100)
-
+      
       if (this.state.brightnessSliderFillWidget) {
         try {
           this.state.brightnessSliderFillWidget.setProperty(prop.W, fillWidth)
@@ -316,7 +329,7 @@ Page(
           logger.error('SetBri Fill Widget Error', e)
         }
       }
-
+      
       if (this.state.brightnessLabel) {
         try {
           this.state.brightnessLabel.setProperty(prop.TEXT, `${percent}%`)
@@ -324,9 +337,9 @@ Page(
           logger.error('SetBri Label Widget Error', e)
         }
       }
-
+      
       if (skipApiCall) return
-
+      
       this.request({
         method: 'SET_BRIGHTNESS',
         params: { lightId: this.state.lightId, bri: brightness }
@@ -336,13 +349,13 @@ Page(
         }
       }).catch(e => logger.error(e))
     },
-
+    
     getLightCapabilities(light) {
       if (!light) {
         logger.warn('getLightCapabilities called with no light')
         return ['brightness']
       }
-
+      
       logger.debug('getLightCapabilities input:', {
         id: light.id,
         type: light.type,
@@ -355,52 +368,52 @@ Page(
         ct: light.ct,
         xy: light.xy
       })
-
+      
       // 1. Se abbiamo già capabilities valide, usale
       if (light.capabilities && Array.isArray(light.capabilities) && light.capabilities.length > 0) {
         logger.debug('Using existing capabilities:', light.capabilities)
         return light.capabilities
       }
-
+      
       // 2. Inferisci dalle properties della luce
       let caps = ['brightness']
-
+      
       // Controlla colormode (più affidabile)
       const colormode = light.colormode || ''
-
+      
       // Se ha colormode 'hs' o 'xy', supporta colori
       if (colormode === 'hs' || colormode === 'xy') {
         caps.push('color')
         logger.debug('Detected color support from colormode:', colormode)
       }
-
+      
       // Se ha colormode 'ct', supporta temperatura colore
       if (colormode === 'ct') {
         caps.push('ct')
         logger.debug('Detected CT support from colormode')
       }
-
+      
       // Controlla se ha valori hue/sat/xy (fallback)
       const hasColorValues = (light.hue !== undefined && light.hue !== null) ||
         (light.sat !== undefined && light.sat !== null) ||
         (light.xy !== undefined && light.xy !== null)
-
+      
       if (hasColorValues && !caps.includes('color')) {
         caps.push('color')
         logger.debug('Detected color support from color values')
       }
-
+      
       // Controlla se ha valore ct (fallback)
       const hasCtValue = light.ct !== undefined && light.ct !== null && light.ct > 0
-
+      
       if (hasCtValue && !caps.includes('ct')) {
         caps.push('ct')
         logger.debug('Detected CT support from ct value')
       }
-
+      
       // 3. Inferisci dal tipo/modello se disponibile
       const type = (light.type || '').toLowerCase()
-
+      
       // Alcuni modelli noti
       if (type.includes('color') || type.includes('extended color')) {
         if (!caps.includes('color')) caps.push('color')
@@ -410,52 +423,52 @@ Page(
         if (!caps.includes('ct')) caps.push('ct')
         logger.debug('Detected CT support from type:', type)
       }
-
+      
       // 4. Fallback per luci senza info: se non ha CT né colori, è solo brightness
       if (caps.length === 1 && !colormode && !hasColorValues && !hasCtValue) {
         logger.debug('No color/CT detected, brightness-only light')
       }
-
+      
       logger.debug('Final capabilities:', caps)
       return caps
     },
-
+    
     getLightBgColor(hex) {
       const cleanHex = hex.replace('#', '')
       if (cleanHex === '000000') return 0x000000
       const color = parseInt(cleanHex, 16)
       return ((color >> 3) & 0x1f1f1f) + 0x0a0a0a
     },
-
+    
     loadLightDetail() {
       logger.log('Loading light detail...')
       logger.debug('Light ID:', this.state.lightId)
-
+      
       /*if (this.state.isLoading) {
         logger.debug('Already loading, skipping duplicate request')
         return
       }*/
-
+      
       this.state.isLoading = true
       this.state.error = null
-
+      
       if (this.widgets.length === 0) {
         this.renderPage()
       }
-
+      
       this.request({
-        method: 'GET_LIGHT_DETAIL',
-        params: { lightId: this.state.lightId }
-      })
+          method: 'GET_LIGHT_DETAIL',
+          params: { lightId: this.state.lightId }
+        })
         .then(result => {
           if (result.success) {
             this.updateLight(result.data.light)
             this.state.tempBrightness = this.state.light.bri || 0
             this.state.isLoading = false
             this.state.error = null
-
+            
             logger.log('Light detail loaded successfully')
-
+            
             this.renderPage()
           } else {
             this.state.isLoading = false
@@ -470,21 +483,21 @@ Page(
           this.renderPage()
         })
     },
-
+    
     toggleLight() {
       const currentState = this.state.light.ison
       const newState = !this.state.light.ison
-
+      
       this.request({
-        method: 'TOGGLE_LIGHT',
-        params: { lightId: this.state.lightId, state: newState }
-      })
+          method: 'TOGGLE_LIGHT',
+          params: { lightId: this.state.lightId, state: newState }
+        })
         .then(result => {
           if (result.success) {
             if (result.updatedState) {
               logger.debug('Applying updated state from backend:', result.updatedState)
               // Aggiorna oggetto luce
-              this.updateLight({...result.updatedState})
+              this.updateLight({ ...result.updatedState })
             } else {
               this.updateLight({ ison: newState })
             }
@@ -498,26 +511,26 @@ Page(
           this.renderPage()
         })
     },
-
+    
     applyPreset(favorite) {
       let method = 'SET_BRIGHTNESS'
-
+      
       if (favorite.type === PRESET_TYPES.COLOR || favorite.type === PRESET_TYPES.CT) {
         method = 'SET_COLOR'
       }
-
+      
       this.request({
-        method: method,
-        params: {
-          lightId: this.state.lightId,
-          hex: favorite.hex,
-          hue: favorite.hue,
-          sat: favorite.sat,
-          bri: favorite.bri,
-          xy: favorite.xy,
-          ct: favorite.ct
-        }
-      })
+          method: method,
+          params: {
+            lightId: this.state.lightId,
+            hex: favorite.hex,
+            hue: favorite.hue,
+            sat: favorite.sat,
+            bri: favorite.bri,
+            xy: favorite.xy,
+            ct: favorite.ct
+          }
+        })
         .then(res => {
           if (res.success) {
             this.updateLight({
@@ -535,33 +548,33 @@ Page(
           logger.error('Apply preset error:', err)
         })
     },
-
+    
     addCurrentColorToFavorites() {
       const light = this.state.light
       let newFavorite = {
         bri: light.bri || BRI_RANGE
       }
-
+      
       logger.debug('Adding current light color to favorites:', light)
-
+      
       const colormode = light.colormode
-
+      
       if (colormode === 'hs' && (light.sat > 0 || light.hue > 0)) {
         newFavorite.type = PRESET_TYPES.COLOR
         newFavorite.hue = light.hue || 0
         newFavorite.sat = light.sat || 0
         newFavorite.hex = normalizeHex(light.hex) || '#FF0000'
-
+        
       } else if (colormode === 'xy' && light.xy) {
         newFavorite.type = PRESET_TYPES.COLOR
         newFavorite.xy = light.xy
         newFavorite.hex = normalizeHex(light.hex) || '#FF0000'
-
+        
       } else if (colormode === 'ct' && light.ct > 0) {
         newFavorite.type = PRESET_TYPES.CT
         newFavorite.ct = light.ct
         newFavorite.hex = ct2hexString(light.ct) || '#FFFFFF'
-
+        
       } else if (colormode === 'ct' || light.ct === 0 || colormode === 'none' || !colormode) {
         newFavorite.type = PRESET_TYPES.WHITE
         newFavorite.hex = '#FFFFFF'
@@ -574,11 +587,11 @@ Page(
         newFavorite.bri = BRI_RANGE
         newFavorite.hex = '#FFFFFF'
       }
-
+      
       this.request({
-        method: 'ADD_FAVORITE_COLOR',
-        params: { colorData: newFavorite }
-      })
+          method: 'ADD_FAVORITE_COLOR',
+          params: { colorData: newFavorite }
+        })
         .then(result => {
           logger.debug('Add favorite color result:', result)
           if (result.success && result.added) {
@@ -592,13 +605,13 @@ Page(
           logger.error('Failed to add favorite color:', err)
         })
     },
-
+    
     deletePreset(favorite) {
       if (this.currentModal) {
         this.currentModal.show(false)
         this.currentModal = null
       }
-
+      
       let presetDescription = ''
       if (favorite.type === PRESET_TYPES.COLOR) {
         presetDescription = 'Color preset'
@@ -608,16 +621,16 @@ Page(
         const briPercent = Math.round((favorite.bri || BRI_RANGE) / BRI_RANGE * 100)
         presetDescription = `Brightness preset (${briPercent}%)`
       }
-
+      
       const dialog = createModal({
         content: `Delete this preset?\n\n${presetDescription}`,
         autoHide: false,
         onClick: (keyObj) => {
           if (keyObj.type === MODAL_CONFIRM) {
             this.request({
-              method: 'REMOVE_FAVORITE_COLOR',
-              params: { index: favorite.id }
-            })
+                method: 'REMOVE_FAVORITE_COLOR',
+                params: { index: favorite.id }
+              })
               .then(result => {
                 if (result.success) {
                   this.reloadFavoriteColors()
@@ -631,8 +644,8 @@ Page(
       this.currentModal = dialog
       dialog.show(true)
     },
-
-     reloadFavoriteColors() {
+    
+    reloadFavoriteColors() {
       this.request({ method: 'GET_USER_SETTINGS' })
         .then(settingsResult => {
           if (settingsResult.success && settingsResult.settings) {
@@ -644,24 +657,105 @@ Page(
           logger.error('Failed to reload settings:', err)
         })
     },
-
+    
     updateLight(updates, syncWithGlobal = true) {
       this.state.light = {
         ...this.state.light,
         ...updates
       }
-
+      
       if (syncWithGlobal) {
         // Sincronizza con globalData
         app.setLightData(this.state.lightId, this.state.light)
         app.updateLightStatusInGroupsCache(this.state.lightId, this.state.light)
       }
     },
-
+    
     onScrollChange(y) {
       this.state.scrollPos_y = y
     },
-
+    // ==========================================
+    // WIDGET SHORTCUTS METHODS
+    // ==========================================
+    
+    getWidgetShortcuts() {
+      try {
+        const stored = localStorage.getItem(WIDGET_SHORTCUTS_KEY)
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          if (Array.isArray(parsed) && parsed.length === MAX_WIDGET_SHORTCUTS) {
+            return parsed
+          }
+        }
+      } catch (e) {
+        logger.error('Failed to load widget shortcuts:', e)
+      }
+      return [...DEFAULT_WIDGET_SHORTCUTS]
+    },
+    
+    saveWidgetShortcuts(shortcuts) {
+      try {
+        localStorage.setItem(WIDGET_SHORTCUTS_KEY, JSON.stringify(shortcuts))
+        logger.debug('Widget shortcuts saved')
+        return true
+      } catch (e) {
+        logger.error('Failed to save widget shortcuts:', e)
+        return false
+      }
+    },
+    
+    checkWidgetShortcutStatus() {
+      if (!this.state.lightId) return
+      
+      const shortcuts = this.getWidgetShortcuts()
+      this.state.isInWidgetShortcuts = shortcuts.some(s => s.lightId === this.state.lightId)
+      logger.debug('Light in widget shortcuts:', this.state.isInWidgetShortcuts)
+    },
+    
+    toggleWidgetShortcut() {
+      const lightId = this.state.lightId
+      const lightName = this.state.lightName || this.state.light?.name || 'Light'
+      
+      const shortcuts = this.getWidgetShortcuts()
+      
+      if (this.state.isInWidgetShortcuts) {
+        // RIMUOVI dalla lista
+        const index = shortcuts.findIndex(s => s.lightId === lightId)
+        if (index !== -1) {
+          shortcuts[index] = { lightId: null, lightName: null }
+          this.saveWidgetShortcuts(shortcuts)
+          this.state.isInWidgetShortcuts = false
+          showToast({ text: getText('REMOVED_FROM_WIDGET') || 'Removed from widget' })
+          this.renderPage()
+        }
+      } else {
+        // AGGIUNGI alla lista
+        // Trova primo slot vuoto
+        const emptyIndex = shortcuts.findIndex(s => s.lightId === null)
+        
+        if (emptyIndex === -1) {
+          // Nessuno slot libero
+          showToast({ text: getText('WIDGET_SLOTS_FULL') || 'Widget full! Remove a light first.' })
+          return
+        }
+        
+        // Controlla se già presente (safety check)
+        if (shortcuts.some(s => s.lightId === lightId)) {
+          this.state.isInWidgetShortcuts = true
+          showToast({ text: getText('ALREADY_IN_WIDGET') || 'Already in widget' })
+          this.renderPage()
+          return
+        }
+        
+        // Aggiungi
+        shortcuts[emptyIndex] = { lightId, lightName }
+        this.saveWidgetShortcuts(shortcuts)
+        this.state.isInWidgetShortcuts = true
+        showToast({ text: getText('ADDED_TO_WIDGET') || 'Added to widget!' })
+        this.renderPage()
+      }
+    },
+    
     onDestroy() {
       this.state.isLoading = false
       this.clearAllWidgets()

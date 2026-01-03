@@ -308,6 +308,34 @@ function renderNormalState(pageContext, state, callbacks) {
   if (lightOn && (caps.includes('color') || caps.includes('ct'))) {
     currentY = renderColorButton(pageContext, state, currentY, openColorPickerFunc)
   }
+  
+  // ==========================================
+// WIDGET SHORTCUT BUTTON
+// ==========================================
+const isInWidget = callbacks.isInWidgetShortcuts || false
+const toggleWidgetFunc = callbacks.toggleWidgetShortcutFunc
+
+if (toggleWidgetFunc) {
+  const widgetBtnColor = isInWidget ? COLORS.warning || 0xff6600 : COLORS.highlight || 0x0055ff
+  const widgetBtnText = isInWidget ?
+    (getText('REMOVE_FROM_WIDGET') || '★ In Widget') :
+    (getText('ADD_TO_WIDGET') || '☆ Add to Widget')
+  
+  pageContext.createTrackedWidget(widget.BUTTON, {
+    x: px(30),
+    y: currentY,
+    w: DEVICE_WIDTH - px(60),
+    h: px(45),
+    text: widgetBtnText,
+    text_size: px(18),
+    normal_color: widgetBtnColor,
+    press_color: btnPressColor(widgetBtnColor, 0.8),
+    radius: px(8),
+    click_func: toggleWidgetFunc
+  })
+  
+  currentY += px(55)
+}
 
   return currentY
 }

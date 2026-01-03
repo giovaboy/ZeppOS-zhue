@@ -1,0 +1,143 @@
+// page/quick-toggle.js
+// Pagina "invisibile" per gestire il toggle dal widget
+// Si apre, fa il toggle, e torna indietro automaticamente
+
+import { BasePage } from '@zeppos/zml/base-page'
+import { back } from '@zos/router'
+import { createWidget, widget, align } from '@zos/ui'
+import { getDeviceInfo } from '@zos/device'
+import { px } from '@zos/utils'
+import { getText } from '@zos/i18n'
+import { COLORS } from '../utils/constants'
+import { getLogger } from '../utils/logger'
+
+const logger = getLogger('zhue-quick-toggle')
+const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
+
+Page(
+  BasePage({
+    state: {
+      lightId: null,
+      lightName: '',
+      status: 'loading' // 'loading' | 'success' | 'error'
+    },
+    
+    onInit(p) {
+      logger.debug('Quick toggle page onInit')
+      
+      // Parse params
+      let params = {}
+      try {
+        params = typeof p === 'string' ? JSON.parse(p) : (p || {})
+      } catch (e) {
+        logger.error('Failed to parse params:', e)
+      }
+      
+      this.state.lightId = params.lightId
+      this.state.lightName = params.lightName || 'Light'
+      
+      if (!this.state.lightId) {
+        logger.error('No lightId provided!')
+        this.state.status = 'error'
+      }
+    },
+    
+    build() {
+      // Mostra UI minimale
+      this.renderUI()
+      
+      // Se abbiamo un lightId, fai il toggle
+      if (this.state.lightId) {
+        this.doToggle()
+      } else {
+        // Errore - torna indietro dopo un breve delay
+        this.goBackAfterDelay(1000)
+      }
+    },
+    
+    renderUI() {
+      // Sfondo
+      createWidget(widget.FILL_RECT, {
+        x: 0,
+        y: 0,
+        w: DEVICE_WIDTH,
+        h: DEVICE_HEIGHT,
+        color: COLORS.background || 0x000000
+      })
+      
+      // Testo di stato
+      const statusText = this.state.status === 'error' ?
+        (getText('ERROR') || 'Error') :
+        (getText('TOGGLING') || 'Toggling...')
+      
+      createWidget(widget.TEXT, {
+        x: 0,
+        y: DEVICE_HEIGHT / 2 - px(30),
+        w: DEVICE_WIDTH,
+        h: px(60),
+        text: this.state.lightName,
+        text_size: px(28),
+        color: COLORS.text || 0xFFFFFF,
+        align_h: align.CENTER_H,
+        align_v: align.CENTER_V
+      })
+      
+      createWidget(widget.TEXT, {
+        x: 0,
+        y: DEVICE_HEIGHT / 2 + px(20),
+        w: DEVICE_WIDTH,
+        h: px(40),
+        text: statusText,
+        text_size: px(20),
+        color: COLORS.textSubtitle || 0xAAAAAA,
+        align_h: align.CENTER_H,
+        align_v: align.CENTER_V
+      })
+    },
+    
+    doToggle() {
+      logger.log('Toggling light:', this.state.lightId)
+      
+      // Usa ZML request per comunicare con app-side
+      this.request({
+          method: 'TOGGLE_LIGHT',
+          params: {
+            lightId: this.state.lightId,
+            // Non specifichiamo state, così l'app-side farà un vero toggle
+            // leggendo lo stato attuale e invertendolo
+          }
+        })
+        .then(result => {
+          logger.log('Toggle result:', result)
+          this.state.status = result.success ? 'success' : 'error'
+          // Torna indietro
+          this.goBackAfterDelay(300)
+        })
+        .catch(err => {
+          logger.error('Toggle error:', err)
+          this.state.status = 'error'
+          this.goBackAfterDelay(1000)
+        })
+    },
+    
+    goBackAfterDelay(ms) {
+      // ZeppOS non ha setTimeout standard, usiamo un workaround
+      // In realtà ZeppOS 3.0+ ha timer, ma per sicurezza facciamo back diretto
+      // con un piccolo delay visivo se possibile
+      
+      // Tentativo con timer se disponibile
+      try {
+        const timer = setTimeout(() => {
+          back()
+        }, ms)
+      } catch (e) {
+        // Se setTimeout non è disponibile, torna subito
+        back()
+      }
+    },
+    
+    onDestroy() {
+      logger.debug('Quick toggle page destroyed')
+    }
+  })
+)
