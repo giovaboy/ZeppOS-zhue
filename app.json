@@ -13,7 +13,8 @@
     "description": "Control your Philips Hue lights from your smartwatch"
   },
   "permissions": [
-    "data:os.device.info"
+    "data:os.device.info",
+    "device:os.local_storage"
   ],
   "runtime": {
     "apiVersion": {
