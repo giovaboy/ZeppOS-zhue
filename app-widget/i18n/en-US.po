@@ -1,2 +1,0 @@
-msgid "NOT_CONFIGURED"
-msgstr "Add a light to this shortcut by longpressing select button in app light page"

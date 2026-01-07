@@ -136,8 +136,8 @@ msgstr "Favorite Colors"
 msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "Preset already exists"
 
-msgid "NOT_CONFIGURED"
-msgstr "---"
+msgid "WIDGET_NOT_CONFIGURED"
+msgstr "Add a light to this shortcut by longpressing select button in app light page"
 
 msgid "TOGGLING"
 msgstr "Toggling..."

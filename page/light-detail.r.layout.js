@@ -222,7 +222,9 @@ function renderNormalState(pageContext, state, callbacks) {
     applyPresetFunc,
     addFavoriteFunc,
     deleteFavoriteFunc,
-    getLightBgColor
+    getLightBgColor,
+    isInWidgetShortcuts,
+    toggleWidgetShortcutFunc
   } = callbacks
 
   const lightOn = !!light.ison
@@ -261,20 +263,6 @@ function renderNormalState(pageContext, state, callbacks) {
   })
 
   // Header
-  /*pageContext.createTrackedWidget(widget.TEXT, {
-    x: 0,
-    y: LAYOUT_CONFIG.headerY,
-    w: DEVICE_WIDTH,
-    h: LAYOUT_CONFIG.headerH,
-    text: lightName,
-    text_size: px(34),
-    color: COLORS.text,
-    align_h: align.CENTER_H,
-    align_v: align.CENTER_V
-  })
-
-  let currentY = px(80)*/
-
   // Toggle Button
   const toggleColor = lightOn ? COLORS.success : COLORS.inactive
   pageContext.createTrackedWidget(widget.BUTTON, {
@@ -312,8 +300,8 @@ function renderNormalState(pageContext, state, callbacks) {
   // ==========================================
   // WIDGET SHORTCUT BUTTON
   // ==========================================
-  const isInWidget = callbacks.isInWidgetShortcuts || false
-  const toggleWidgetFunc = callbacks.toggleWidgetShortcutFunc
+  const isInWidget = isInWidgetShortcuts || false
+  const toggleWidgetFunc = toggleWidgetShortcutFunc
 
   if (toggleWidgetFunc) {
     const widgetBtnColor = isInWidget ? COLORS.warning || 0xff6600 : COLORS.highlight || 0x0055ff
@@ -325,11 +313,11 @@ function renderNormalState(pageContext, state, callbacks) {
       w: px(20),
       h: LAYOUT_CONFIG.headerY,//px(14),
       text: widgetBtnText,
-      text_size: px(12),
+      text_size: px(14),
       color: COLORS.white,
       normal_color: bgColor,// widgetBtnColor,
       press_color: bgColor,//btnPressColor(widgetBtnColor, 0.8),
-      radius: px(8),
+      //radius: px(8),
       click_func: toggleWidgetFunc
     })
 

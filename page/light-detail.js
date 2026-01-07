@@ -5,7 +5,7 @@ import { setScrollLock } from '@zos/page'
 import { getText } from '@zos/i18n'
 import { createWidget, deleteWidget, prop, showToast } from '@zos/ui'
 import { back, push } from '@zos/router'
-import { onGesture, GESTURE_RIGHT, createModal, MODAL_CONFIRM, onKey, KEY_SELECT, KEY_BACK, KEY_EVENT_LONG_PRESS } from '@zos/interaction'
+import { onGesture, GESTURE_RIGHT, createModal, MODAL_CONFIRM, onKey, KEY_SELECT, KEY_BACK, KEY_EVENT_LONG_PRESS, KEY_EVENT_CLICK } from '@zos/interaction'
 import { px } from '@zos/utils'
 import { renderLightDetail, LAYOUT_CONFIG } from 'zosLoader:./light-detail.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
@@ -114,12 +114,16 @@ Page(
                 }
                 dialog.show(false)
                 this.currentModal = null
+                this.checkWidgetShortcutStatus()
+                this.renderPage()
               }
             })
             this.currentModal = dialog
             dialog.show(true)
 
 
+          } else if (key === KEY_BACK && keyEvent === KEY_EVENT_CLICK) {
+            back()
           }
           return true
         },
@@ -134,6 +138,8 @@ Page(
       setScrollLock({ lock: true })
       this.unlockExitGesture()
 
+      this.checkWidgetShortcutStatus()
+
       if (this.state.error && !this.state.lightId) {
         this.renderPage()
         return
@@ -143,12 +149,10 @@ Page(
         logger.log('Rendering loading state, then loading data...')
         this.renderPage()
         setTimeout(() => this.loadLightDetail(), 10)
-        this.checkWidgetShortcutStatus()
 
       } else if (this.state.light) {
         logger.log('Have cached data, rendering page...')
         this.renderPage()
-
       } else {
         logger.warn('Unexpected state: no loading flag and no data')
         this.state.isLoading = true

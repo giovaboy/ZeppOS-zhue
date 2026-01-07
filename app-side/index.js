@@ -5,11 +5,9 @@ const BRIDGE_IP_KEY = 'hue_bridge_ip'
 const USERNAME_KEY = 'hue_username'
 const API_VERSION_KEY = 'hue_api_version'
 const DEMO_MODE = 'hue_demo_mode'
-//const SHOW_GLOBAL_TOGGLE = 'hue_show_global_toggle'
 const SHOW_SCENES = 'hue_show_scenes'
 const DISPLAY_ORDER = 'hue_display_order'
 const FAVORITE_COLORS = 'hue_favorite_colors'
-//const WIDGET_SHORTCUTS = 'hue_widget_shortcuts'
 
 /*PrioritàModeParametriPrecisioneNote
 1 xy  | x, y, bri     | ***** | Standard CIE 1931, massima accuratezza

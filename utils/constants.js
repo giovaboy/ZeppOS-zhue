@@ -77,16 +77,13 @@ export const DEFAULT_USER_SETTINGS = {
 
 // Widget shortcuts storage key (device localStorage)
 export const WIDGET_SHORTCUTS_KEY = 'widget_shortcuts'
-
-// Max number of widget shortcuts
-export const MAX_WIDGET_SHORTCUTS = 3
+export const MAX_WIDGET_SHORTCUTS = 9
 
 // Default widget shortcuts
-export const DEFAULT_WIDGET_SHORTCUTS = [
-  { lightId: null, lightName: null },
-  { lightId: null, lightName: null },
-  { lightId: null, lightName: null }
-]
+export const DEFAULT_WIDGET_SHORTCUTS = Array.from(
+  { length: MAX_WIDGET_SHORTCUTS },
+  () => ({ lightId: null, lightName: null })
+)
 
 export const DEMO_DATA = {
   lights: {
@@ -698,6 +695,21 @@ export function ct2hexString(mireds) {
   };
 
   return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+
+/**
+ * Converte una stringa hex (#RRGGBB) a intero esadecimale
+ */
+export function hexStringToInt(hexString) {
+  if (!hexString) return 0xFFFFFF
+  return parseInt(hexString.replace('#', '0x'), 16)
+}
+
+/**
+ * Converte un intero esadecimale a stringa hex (#RRGGBB)
+ */
+export function intToHexString(intColor) {
+  return '#' + intColor.toString(16).padStart(6, '0').toUpperCase()
 }
 
 

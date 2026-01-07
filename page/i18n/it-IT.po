@@ -136,8 +136,8 @@ msgstr "Favorite Colors"
 msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "Preset already exists"
 
-msgid "NOT_CONFIGURED"
-msgstr "---"
+msgid "WIDGET_NOT_CONFIGURED"
+msgstr "Aggiungi una luce a questo collegamento tenendo premuto il pulsante di selezione nella pagina della luce dell'app"
 
 msgid "TOGGLING"
 msgstr "Cambio stato..."
