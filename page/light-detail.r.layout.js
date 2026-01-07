@@ -308,34 +308,33 @@ function renderNormalState(pageContext, state, callbacks) {
   if (lightOn && (caps.includes('color') || caps.includes('ct'))) {
     currentY = renderColorButton(pageContext, state, currentY, openColorPickerFunc)
   }
-  
-  // ==========================================
-// WIDGET SHORTCUT BUTTON
-// ==========================================
-const isInWidget = callbacks.isInWidgetShortcuts || false
-const toggleWidgetFunc = callbacks.toggleWidgetShortcutFunc
 
-if (toggleWidgetFunc) {
-  const widgetBtnColor = isInWidget ? COLORS.warning || 0xff6600 : COLORS.highlight || 0x0055ff
-  const widgetBtnText = isInWidget ?
-    (getText('REMOVE_FROM_WIDGET') || '★ In Widget') :
-    (getText('ADD_TO_WIDGET') || '☆ Add to Widget')
-  
-  pageContext.createTrackedWidget(widget.BUTTON, {
-    x: px(30),
-    y: currentY,
-    w: DEVICE_WIDTH - px(60),
-    h: px(45),
-    text: widgetBtnText,
-    text_size: px(18),
-    normal_color: widgetBtnColor,
-    press_color: btnPressColor(widgetBtnColor, 0.8),
-    radius: px(8),
-    click_func: toggleWidgetFunc
-  })
-  
-  currentY += px(55)
-}
+  // ==========================================
+  // WIDGET SHORTCUT BUTTON
+  // ==========================================
+  const isInWidget = callbacks.isInWidgetShortcuts || false
+  const toggleWidgetFunc = callbacks.toggleWidgetShortcutFunc
+
+  if (toggleWidgetFunc) {
+    const widgetBtnColor = isInWidget ? COLORS.warning || 0xff6600 : COLORS.highlight || 0x0055ff
+    const widgetBtnText = isInWidget ?  '★' : '☆'
+
+    pageContext.createTrackedWidget(widget.BUTTON, {
+      x: DEVICE_WIDTH /2 - px(10),
+      y: 0,//px(3),
+      w: px(20),
+      h: LAYOUT_CONFIG.headerY,//px(14),
+      text: widgetBtnText,
+      text_size: px(12),
+      color: COLORS.white,
+      normal_color: bgColor,// widgetBtnColor,
+      press_color: bgColor,//btnPressColor(widgetBtnColor, 0.8),
+      radius: px(8),
+      click_func: toggleWidgetFunc
+    })
+
+    //currentY += px(55)
+  }
 
   return currentY
 }
@@ -553,13 +552,13 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
     }
   })
 
-   /*presetContainer.createWidget(widget.FILL_RECT, {
-    x: 0,
-    y: 0,
-    w: DEVICE_WIDTH,
-    h: containerHeight + px(20),
-    color: COLORS.background
-  })*/
+  /*presetContainer.createWidget(widget.FILL_RECT, {
+   x: 0,
+   y: 0,
+   w: DEVICE_WIDTH,
+   h: containerHeight + px(20),
+   color: COLORS.background
+ })*/
 
   const ITEM_SIZE = presetItemSize
   const ITEM_MARGIN = px(10)

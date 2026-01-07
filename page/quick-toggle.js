@@ -4,7 +4,7 @@
 
 import { BasePage } from '@zeppos/zml/base-page'
 import { back } from '@zos/router'
-import { createWidget, widget, align } from '@zos/ui'
+import { createWidget, widget, deleteWidget, align } from '@zos/ui'
 import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
 import { getText } from '@zos/i18n'
@@ -21,10 +21,11 @@ Page(
       lightName: '',
       status: 'loading' // 'loading' | 'success' | 'error'
     },
-    
+    widgets: [],
+
     onInit(p) {
       logger.debug('Quick toggle page onInit')
-      
+
       // Parse params
       let params = {}
       try {
@@ -32,20 +33,20 @@ Page(
       } catch (e) {
         logger.error('Failed to parse params:', e)
       }
-      
+
       this.state.lightId = params.lightId
       this.state.lightName = params.lightName || 'Light'
-      
+
       if (!this.state.lightId) {
         logger.error('No lightId provided!')
         this.state.status = 'error'
       }
     },
-    
+
     build() {
       // Mostra UI minimale
       this.renderUI()
-      
+
       // Se abbiamo un lightId, fai il toggle
       if (this.state.lightId) {
         this.doToggle()
@@ -54,23 +55,40 @@ Page(
         this.goBackAfterDelay(1000)
       }
     },
-    
+
+    clearAllWidgets() {
+          this.widgets.forEach(w => {
+            try { deleteWidget(w) } catch (e) {
+              logger.error('Del widget err', e)
+            }
+          })
+          this.widgets = []
+          this.state.brightnessSliderFillWidget = null
+          this.state.brightnessLabel = null
+        },
+
+    createTrackedWidget(type, props) {
+      const w = createWidget(type, props)
+      this.widgets.push(w)
+      return w
+    },
+
     renderUI() {
       // Sfondo
-      createWidget(widget.FILL_RECT, {
+      this.createTrackedWidget(widget.FILL_RECT, {
         x: 0,
         y: 0,
         w: DEVICE_WIDTH,
         h: DEVICE_HEIGHT,
-        color: COLORS.background || 0x000000
+        color: COLORS.background
       })
-      
+
       // Testo di stato
       const statusText = this.state.status === 'error' ?
         (getText('ERROR') || 'Error') :
         (getText('TOGGLING') || 'Toggling...')
-      
-      createWidget(widget.TEXT, {
+
+      this.createTrackedWidget(widget.TEXT, {
         x: 0,
         y: DEVICE_HEIGHT / 2 - px(30),
         w: DEVICE_WIDTH,
@@ -81,8 +99,8 @@ Page(
         align_h: align.CENTER_H,
         align_v: align.CENTER_V
       })
-      
-      createWidget(widget.TEXT, {
+
+      this.createTrackedWidget(widget.TEXT, {
         x: 0,
         y: DEVICE_HEIGHT / 2 + px(20),
         w: DEVICE_WIDTH,
@@ -94,24 +112,22 @@ Page(
         align_v: align.CENTER_V
       })
     },
-    
+
     doToggle() {
       logger.log('Toggling light:', this.state.lightId)
-      
+
       // Usa ZML request per comunicare con app-side
       this.request({
-          method: 'TOGGLE_LIGHT',
+          method: 'WIDGET_TOGGLE_LIGHT',
           params: {
-            lightId: this.state.lightId,
-            // Non specifichiamo state, così l'app-side farà un vero toggle
-            // leggendo lo stato attuale e invertendolo
+            lightId: this.state.lightId
           }
         })
         .then(result => {
           logger.log('Toggle result:', result)
           this.state.status = result.success ? 'success' : 'error'
           // Torna indietro
-          this.goBackAfterDelay(300)
+          this.goBackAfterDelay(200)
         })
         .catch(err => {
           logger.error('Toggle error:', err)
@@ -119,25 +135,20 @@ Page(
           this.goBackAfterDelay(1000)
         })
     },
-    
+
     goBackAfterDelay(ms) {
-      // ZeppOS non ha setTimeout standard, usiamo un workaround
-      // In realtà ZeppOS 3.0+ ha timer, ma per sicurezza facciamo back diretto
-      // con un piccolo delay visivo se possibile
-      
-      // Tentativo con timer se disponibile
       try {
-        const timer = setTimeout(() => {
+        setTimeout(() => {
           back()
         }, ms)
       } catch (e) {
-        // Se setTimeout non è disponibile, torna subito
         back()
       }
     },
-    
+
     onDestroy() {
       logger.debug('Quick toggle page destroyed')
+      this.clearAllWidgets()
     }
   })
 )

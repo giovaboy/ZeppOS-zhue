@@ -1602,22 +1602,6 @@ AppSideService(
           this.handleApplyScene(req, res)
           break
 
-        /*case 'GET_WIDGET_SHORTCUTS':
-          this.handleGetWidgetShortcuts(res)
-          break
-
-        case 'ADD_WIDGET_SHORTCUT':
-          this.handleAddWidgetShortcut(req, res)
-          break
-
-        case 'REMOVE_WIDGET_SHORTCUT':
-          this.handleRemoveWidgetShortcut(req, res)
-          break
-
-        case 'IS_LIGHT_IN_WIDGET':
-          this.handleIsLightInWidget(req, res)
-          break*/
-
         case 'WIDGET_TOGGLE_LIGHT':
           this.handleWidgetToggleLight(req, res)
           break
@@ -2049,68 +2033,10 @@ AppSideService(
       }
     },
 
-    // ==========================================
-    // WIDGET SHORTCUTS HANDLERS
-    // ==========================================
-/*
-    async handleGetWidgetShortcuts(res) {
-      try {
-        console.log('Getting widget shortcuts...')
-        const shortcuts = hueBridge.getWidgetShortcuts()
-        res(null, { success: true, shortcuts })
-      } catch (error) {
-        console.error('Get widget shortcuts error:', error)
-        res({ error: error.message })
-      }
-    },
-
-    async handleAddWidgetShortcut(req, res) {
-      try {
-        const { lightId, lightName } = req.params
-        console.log('Adding widget shortcut:', lightId, lightName)
-        
-        const result = hueBridge.addWidgetShortcut(lightId, lightName)
-        res(null, result)
-      } catch (error) {
-        console.error('Add widget shortcut error:', error)
-        res({ error: error.message })
-      }
-    },
-
-    async handleRemoveWidgetShortcut(req, res) {
-      try {
-        const { lightId } = req.params
-        console.log('Removing widget shortcut:', lightId)
-        
-        const result = hueBridge.removeWidgetShortcut(lightId)
-        res(null, result)
-      } catch (error) {
-        console.error('Remove widget shortcut error:', error)
-        res({ error: error.message })
-      }
-    },
-
-    async handleIsLightInWidget(req, res) {
-      try {
-        const { lightId } = req.params
-        const isInWidget = hueBridge.isLightInWidgetShortcuts(lightId)
-        res(null, { success: true, isInWidget })
-      } catch (error) {
-        console.error('Is light in widget error:', error)
-        res({ error: error.message })
-      }
-    },*/
-
     async handleWidgetToggleLight(req, res) {
       try {
         const { lightId } = req.params
         console.log('Widget toggle light:', lightId)
-        
-        // Simple toggle without checking current state
-        // We just send ON, but the bridge will handle it
-        // For a true toggle, we'd need to check state first
-        // But per requirements, we don't care about current state
-        
         if (!hueBridge.bridgeIp || !hueBridge.username) {
           res({ error: 'Bridge not configured' })
           return
@@ -2120,7 +2046,7 @@ AppSideService(
         const url = `http://${hueBridge.bridgeIp}/api/${hueBridge.username}/lights/${lightId}`
         const stateRes = await fetch({ url, method: 'GET' })
         const lightData = typeof stateRes.body === 'string' ? JSON.parse(stateRes.body) : stateRes.body
-        
+
         const currentState = lightData?.state?.on || false
         const newState = !currentState
 
