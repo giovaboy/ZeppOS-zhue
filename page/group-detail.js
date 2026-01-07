@@ -16,6 +16,7 @@ Page(
       groupId: null,
       groupType: null,
       groupName: '',
+      anyOnInitial: null,
       lights: [],
       scenes: [],
       isLoading: false,
@@ -44,6 +45,7 @@ Page(
         this.state.groupId = params.groupId
         this.state.groupType = params.groupType
         this.state.groupName = params.groupName
+        this.state.anyOnInitial = params.anyOn
         this.state.scrollPos_y = app.getGroupDetailScrollY(this.state.groupId)
       }
 

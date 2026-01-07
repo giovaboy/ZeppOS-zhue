@@ -29,9 +29,9 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
     })
     
     // Header: Nome del Gruppo togglable
-    const anyOn = state.lights.some(light => !!light.ison)
-    // const badgeColor =  anyOn ? COLORS.success : COLORS.inactive
-    const badgeColor = isLoading ? COLORS.loading : (anyOn ? COLORS.success : COLORS.inactive)
+    // Durante il loading, mostra il colore INIZIALE ma disabilita il button
+    const anyOn = isLoading ? state.anyOnInitial : state.lights.some(light => !!light.ison)
+    const badgeColor = anyOn ? COLORS.success : COLORS.inactive
     
     pageContext.createTrackedWidget(widget.BUTTON, {
         x: px(10),

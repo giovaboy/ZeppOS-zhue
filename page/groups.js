@@ -238,7 +238,8 @@ Page(
             const paramsString = JSON.stringify({
               groupId: item.raw.id,
               groupType: item.raw.type,
-              groupName: item.raw.name
+              groupName: item.raw.name,
+              anyOn: item.raw.anyOn || item.raw.on_off
             })
 
             push({
