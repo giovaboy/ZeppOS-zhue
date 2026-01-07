@@ -2,7 +2,7 @@ import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
 import { widget, align, prop, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
-import { BRI_RANGE, COLORS, PRESET_TYPES, btnPressColor, ct2hex, xy2hex } from '../utils/constants'
+import { BRI_RANGE, COLORS, PRESET_TYPES, btnPressColor, ct2hex, xy2hex, hexStringToInt } from '../utils/constants'
 import { getLogger } from '../utils/logger'
 
 const logger = getLogger('zhue-light-detail-layout')
@@ -222,7 +222,9 @@ function renderNormalState(pageContext, state, callbacks) {
     applyPresetFunc,
     addFavoriteFunc,
     deleteFavoriteFunc,
-    getLightBgColor
+    getLightBgColor,
+    isInWidgetShortcuts,
+    toggleWidgetShortcutFunc
   } = callbacks
 
   const lightOn = !!light.ison
@@ -261,36 +263,23 @@ function renderNormalState(pageContext, state, callbacks) {
   })
 
   // Header
-  /*pageContext.createTrackedWidget(widget.TEXT, {
-    x: 0,
-    y: LAYOUT_CONFIG.headerY,
-    w: DEVICE_WIDTH,
-    h: LAYOUT_CONFIG.headerH,
-    text: lightName,
-    text_size: px(34),
-    color: COLORS.text,
-    align_h: align.CENTER_H,
-    align_v: align.CENTER_V
-  })
-
-  let currentY = px(80)*/
-
   // Toggle Button
   const toggleColor = lightOn ? COLORS.success : COLORS.inactive
   pageContext.createTrackedWidget(widget.BUTTON, {
-    x: px(10),
-    y: LAYOUT_CONFIG.headerY, w: DEVICE_WIDTH - px(20), h: LAYOUT_CONFIG.headerH,
+    x: px(20),
+    y: LAYOUT_CONFIG.headerY, w: DEVICE_WIDTH - px(40),
+    h: lightOn ? LAYOUT_CONFIG.headerH : DEVICE_HEIGHT - LAYOUT_CONFIG.headerY * 2,
     text: lightName,// || lightOn ? getText('LIGHT_ON') : getText('LIGHT_OFF'),
     text_size: px(34),
     normal_color: toggleColor,
     press_color: btnPressColor(toggleColor, 0.8),
-    radius: px(8),
+    radius: lightOn ? px(8) : DEVICE_HEIGHT - LAYOUT_CONFIG.headerY * 2,
     click_func: toggleLightFunc
   })
 
   let currentY = LAYOUT_CONFIG.headerY + LAYOUT_CONFIG.headerH + px(10)
 
-  const caps = callbacks.capabilities || ['brightness']
+  const caps = callbacks.capabilities(light) || ['brightness']
 
   // Presets
   if (lightOn && favoriteColors) {
@@ -306,6 +295,33 @@ function renderNormalState(pageContext, state, callbacks) {
   // Color Button
   if (lightOn && (caps.includes('color') || caps.includes('ct'))) {
     currentY = renderColorButton(pageContext, state, currentY, openColorPickerFunc)
+  }
+
+  // ==========================================
+  // WIDGET SHORTCUT BUTTON
+  // ==========================================
+  const isInWidget = isInWidgetShortcuts || false
+  const toggleWidgetFunc = toggleWidgetShortcutFunc
+
+  if (toggleWidgetFunc) {
+    const widgetBtnColor = isInWidget ? COLORS.warning || 0xff6600 : COLORS.highlight || 0x0055ff
+    const widgetBtnText = isInWidget ?  '★' : '☆'
+
+    pageContext.createTrackedWidget(widget.BUTTON, {
+      x: DEVICE_WIDTH /2 - px(10),
+      y: 0,//px(3),
+      w: px(20),
+      h: LAYOUT_CONFIG.headerY,//px(14),
+      text: widgetBtnText,
+      text_size: px(14),
+      color: COLORS.white,
+      normal_color: bgColor,// widgetBtnColor,
+      press_color: bgColor,//btnPressColor(widgetBtnColor, 0.8),
+      //radius: px(8),
+      click_func: toggleWidgetFunc
+    })
+
+    //currentY += px(55)
   }
 
   return currentY
@@ -396,7 +412,7 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
 
   let btnColor
   if (light.colormode === 'hs' && light.hex) {
-    btnColor = parseInt(light.hex.replace('#', '0x'), 16)
+    btnColor = hexStringToInt(light.hex)
   } else if (light.colormode === 'ct' && light.ct) {
     btnColor = ct2hex(light.ct)
   } else if (light.colormode === 'xy' && light.xy) {
@@ -475,7 +491,7 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
 
 function renderPresets(pageContext, state, yPos, applyCallback, addCallback, deleteCallback, callbacks) {
   const { presetsW, presetsX, presetsTitleH, presetItemSize } = LAYOUT_CONFIG
-  const { favoriteColors, scrollPos_y } = state
+  const { light, favoriteColors, scrollPos_y } = state
 
   // Header
   pageContext.createTrackedWidget(widget.TEXT, {
@@ -524,13 +540,13 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
     }
   })
 
-   /*presetContainer.createWidget(widget.FILL_RECT, {
-    x: 0,
-    y: 0,
-    w: DEVICE_WIDTH,
-    h: containerHeight + px(20),
-    color: COLORS.background
-  })*/
+  /*presetContainer.createWidget(widget.FILL_RECT, {
+   x: 0,
+   y: 0,
+   w: DEVICE_WIDTH,
+   h: containerHeight + px(20),
+   color: COLORS.background
+ })*/
 
   const ITEM_SIZE = presetItemSize
   const ITEM_MARGIN = px(10)
@@ -538,7 +554,7 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
   const COLS = Math.floor(ROW_WIDTH / (ITEM_SIZE + ITEM_MARGIN))
   const startX = presetsX + (ROW_WIDTH - (COLS * (ITEM_SIZE + ITEM_MARGIN) - ITEM_MARGIN)) / 2
 
-  const caps = callbacks.capabilities || []
+  const caps = callbacks.capabilities(light) || []
   const isColorLight = caps.includes('color')
   const isCtLight = caps.includes('ct')
 
@@ -586,8 +602,8 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
       color: 0x000000,
       text: buttonText,
       text_size: px(18),
-      normal_color: parseInt(fav.hex.replace('#', '0x'), 16),
-      press_color: btnPressColor(parseInt(fav.hex.replace('#', '0x'), 16), 0.8),
+      normal_color: hexStringToInt(fav.hex),
+      press_color: btnPressColor(hexStringToInt(fav.hex), 0.8),
       radius: fav.type === PRESET_TYPES.COLOR ? ITEM_SIZE / 2 : 8,
       click_func: () => applyCallback(fav),
       longpress_func: () => deleteCallback(fav)

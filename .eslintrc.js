@@ -43,6 +43,7 @@ module.exports = {
         // API ZeppOS di primo livello
         App: 'readonly',
         Page: 'readonly',
+        AppWidget: 'readonly',
         AppSideService: 'readonly',
         AppSettingsPage: 'readonly',
         SecondaryWidget: 'readonly',

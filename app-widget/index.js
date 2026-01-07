@@ -1,5 +1,6 @@
 // app-widget/index.js
 import { createWidget, widget, deleteWidget, align, getAppWidgetSize, setAppWidgetSize } from '@zos/ui'
+import { getDeviceInfo } from '@zos/device'
 import { localStorage } from '@zos/storage'
 import { push } from '@zos/router'
 import { px } from '@zos/utils'
@@ -8,20 +9,22 @@ import { COLORS, MAX_WIDGET_SHORTCUTS, WIDGET_SHORTCUTS_KEY, DEFAULT_WIDGET_SHOR
 import { getLogger } from '../utils/logger.js'
 
 const logger = getLogger('zhue-app-widget')
-const { w: WIDGET_W, radius: WIDGET_RADIUS } = getAppWidgetSize()
+const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
+let { w: WIDGET_W, radius: WIDGET_RADIUS } = getAppWidgetSize()
 
 // Layout constants
 const COLUMNS = 3
 const HEADER_H = px(40)
 const BUTTON_GAP = px(8)
-const BUTTON_H = px(70)
-const PADDING_X = px(50)
+const BUTTON_H = px(80)
 const PADDING_Y = px(10)
-const AVAILABLE_W = WIDGET_W - (PADDING_X * 2)
-const BUTTON_W = Math.floor((AVAILABLE_W - (BUTTON_GAP * (COLUMNS - 1))) / COLUMNS)
+
+let PADDING_X = (DEVICE_WIDTH - WIDGET_W) / 2
+let AVAILABLE_W = WIDGET_W - (PADDING_X * 2)
+let BUTTON_W = Math.floor((AVAILABLE_W - (BUTTON_GAP * (COLUMNS - 1))) / COLUMNS)
 const NO_BUTTONS_TEXT_HINT_H = px(60)
 
-// Minimum widget height (header only, no shortcuts)
+// Minimum widget height (header + hint text, no shortcuts)
 const MIN_WIDGET_H = PADDING_Y + HEADER_H + NO_BUTTONS_TEXT_HINT_H + PADDING_Y
 
 // Colors
@@ -40,6 +43,12 @@ AppWidget({
 
   build() {
     logger.debug('Widget build')
+    let appWidgetSize =  getAppWidgetSize()
+    WIDGET_W = appWidgetSize.w
+    WIDGET_RADIUS = appWidgetSize.radius
+    PADDING_X = (DEVICE_WIDTH - WIDGET_W) / 2
+    AVAILABLE_W = WIDGET_W - (PADDING_X * 2)
+    BUTTON_W = Math.floor((AVAILABLE_W - (BUTTON_GAP * (COLUMNS - 1))) / COLUMNS)
 
     // Load shortcuts from device localStorage
     this.loadShortcuts()
@@ -62,6 +71,13 @@ AppWidget({
   onResume() {
     logger.debug('Widget onResume')
     this.clearAllWidgets()
+
+    let appWidgetSize =  getAppWidgetSize()
+    WIDGET_W = appWidgetSize.w
+    WIDGET_RADIUS = appWidgetSize.radius
+    PADDING_X = (DEVICE_WIDTH - WIDGET_W) / 2
+    AVAILABLE_W = WIDGET_W - (PADDING_X * 2)
+    BUTTON_W = Math.floor((AVAILABLE_W - (BUTTON_GAP * (COLUMNS - 1))) / COLUMNS)
 
     // Reload shortcuts (might have changed)
     this.loadShortcuts()
@@ -124,7 +140,7 @@ AppWidget({
     // HEADER - App name, clickable to open app
     // ==========================================
     this.createTrackedWidget(widget.BUTTON, {
-      x: AVAILABLE_W - px(50),
+      x: DEVICE_WIDTH/2 - px(50),
       y: currentY,
       w: px(100),//AVAILABLE_W,
       h: HEADER_H,
@@ -182,7 +198,7 @@ AppWidget({
         w: BUTTON_W,
         h: BUTTON_H,
         text: buttonText,
-        text_size: px(14),
+        text_size: px(18),
         radius: WIDGET_RADIUS,//px(10),
         normal_color: COLOR_CONFIGURED,
         press_color: COLOR_PRESS,
@@ -224,8 +240,6 @@ AppWidget({
       }
     })
     this.widgets = []
-    this.state.brightnessSliderFillWidget = null
-    this.state.brightnessLabel = null
   },
 
   createTrackedWidget(type, props) {

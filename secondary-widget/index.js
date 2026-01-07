@@ -1,9 +1,11 @@
-// index.js
-import { createWidget, widget, align, text_style } from '@zos/ui'
+import { createWidget, widget, deleteWidget, align, text_style } from '@zos/ui'
+import { getLogger } from '../utils/logger.js'
+
+const logger = getLogger('zhue-group-detail-page')
 
 SecondaryWidget({
   build() {
-    const text = createWidget(widget.TEXT, {
+    const text = this.createTrackedWidget(widget.TEXT, {
       x: 96,
       y: 120,
       w: 288,
@@ -15,5 +17,29 @@ SecondaryWidget({
       text_style: text_style.NONE,
       text: 'HELLO, Zepp OS'
     })
+  },
+
+  createTrackedWidget(type, props) {
+    const w = createWidget(type, props)
+    this.widgets.push(w)
+    return w
+  },
+
+  clearAllWidgets() {
+    this.widgets.forEach(w => {
+      try { deleteWidget(w) } catch (e) {
+        logger.error('Del widget err', e)
+      }
+    })
+    this.widgets = []
+  },
+
+  onResume() {
+    this.clearAllWidgets()
+    this.build()
+  },
+
+  onDestroy() {
+    this.clearAllWidgets()
   }
 })

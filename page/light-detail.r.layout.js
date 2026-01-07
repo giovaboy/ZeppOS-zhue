@@ -2,7 +2,7 @@ import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
 import { widget, align, prop, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
-import { BRI_RANGE, COLORS, PRESET_TYPES, btnPressColor, ct2hex, xy2hex } from '../utils/constants'
+import { BRI_RANGE, COLORS, PRESET_TYPES, btnPressColor, ct2hex, xy2hex, hexStringToInt } from '../utils/constants'
 import { getLogger } from '../utils/logger'
 
 const logger = getLogger('zhue-light-detail-layout')
@@ -412,7 +412,7 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
 
   let btnColor
   if (light.colormode === 'hs' && light.hex) {
-    btnColor = parseInt(light.hex.replace('#', '0x'), 16)
+    btnColor = hexStringToInt(light.hex)
   } else if (light.colormode === 'ct' && light.ct) {
     btnColor = ct2hex(light.ct)
   } else if (light.colormode === 'xy' && light.xy) {
@@ -602,8 +602,8 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
       color: 0x000000,
       text: buttonText,
       text_size: px(18),
-      normal_color: parseInt(fav.hex.replace('#', '0x'), 16),
-      press_color: btnPressColor(parseInt(fav.hex.replace('#', '0x'), 16), 0.8),
+      normal_color: hexStringToInt(fav.hex),
+      press_color: btnPressColor(hexStringToInt(fav.hex), 0.8),
       radius: fav.type === PRESET_TYPES.COLOR ? ITEM_SIZE / 2 : 8,
       click_func: () => applyCallback(fav),
       longpress_func: () => deleteCallback(fav)

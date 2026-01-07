@@ -373,7 +373,11 @@ Page(
         },
 
         onDestroy() {
-            this.unlockExitGesture();
+            this.clearWidgets();
+            if (this.exitGestureListener) {
+                this.exitGestureListener();
+                this.exitGestureListener = null;
+            }
             setScrollLock({ lock: false });
         }
     })
