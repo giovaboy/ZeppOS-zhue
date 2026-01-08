@@ -6,9 +6,13 @@
 
 A powerful and intuitive smartwatch application that brings comprehensive control of your Philips Hue smart lighting system directly to your wrist. Manage individual lights, control groups, adjust brightness, and fine-tune colors—all from your Zepp OS smartwatch.
 
-<img src='screenshots/1.png' width='250'>
-<img src='screenshots/2.png' width='250'>
-<img src='screenshots/3.png' width='250'>
+## Screenshots
+| ![Screenshot 1](screenshots/1.png) | ![Screenshot 2](screenshots/2.png) | ![Screenshot 3](screenshots/3.png) |
+|-------------------------------------|-------------------------------------|-------------------------------------|
+| ![Screenshot 4](screenshots/4.png) | ![Screenshot 5](screenshots/5.png) | ![Screenshot 6](screenshots/6.png) |
+| ![Screenshot 7](screenshots/7.png) | ![Screenshot 8](screenshots/8.png) | ![Screenshot 9](screenshots/9.png) |
+
+
 
 ## Features
 
