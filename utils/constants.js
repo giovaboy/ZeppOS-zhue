@@ -41,7 +41,6 @@ export const COLORS = {
   color_text_subtitle: 0xb3b3b3,
   color_text_secondary_info: 0x808080,
   color_text_button: 0xffffff
-
 }
 
 // Range API Hue/Sat/Bri
@@ -68,7 +67,6 @@ export const DEFAULT_PRESETS = [
 ];
 
 export const DEFAULT_USER_SETTINGS = {
-  //show_global_toggle: true,
   default_tab: 'ROOMS',
   show_scenes: true,
   display_order: 'LIGHTS_FIRST',
@@ -82,7 +80,7 @@ export const MAX_WIDGET_SHORTCUTS = 9
 // Default widget shortcuts
 export const DEFAULT_WIDGET_SHORTCUTS = Array.from(
   { length: MAX_WIDGET_SHORTCUTS },
-  () => ({ lightId: null, lightName: null })
+  () => ({ lightId: null, lightName: null, modelid: null })
 )
 
 export const DEMO_DATA = {
@@ -312,9 +310,9 @@ export const DEMO_DATA = {
     },
     '101': {
       id: '101',
-      name: 'Cinema Mode',
+      name: 'Game Mode',
       type: 'Zone',
-      class: 'TV', // Icon: TV
+      class: 'TV',
       lights: ['1', '2', '13'],
       state: { all_on: true, any_on: true }
     }
@@ -386,12 +384,12 @@ export const LIGHT_MODELS = {
   // 🟣 BR30
   // --------------------------------------------------------------------------------
   'LCT002': { name: 'BR30 Color Gen 1', icon: 'br30' },
-  LTW011: { name: 'BR30 White Ambiance', icon: 'br30' },
-  LTB003: { name: 'BR30 White E26', icon: 'br30' },
-  LTB002: { name: 'BR30 White (BT)', icon: 'br30' },
-  LCB001: { name: 'Philips', icon: 'br30' },
-  LCB002: { name: 'Philips Hue White and Color Ambiance BR30 E26', icon: 'br30' },
-  LCT011: { name: 'Philips Hue White and Color Ambiance BR30 Richer Colors', icon: 'br30' },
+  'LTW011': { name: 'BR30 White Ambiance', icon: 'br30' },
+  'LTB003': { name: 'BR30 White E26', icon: 'br30' },
+  'LTB002': { name: 'BR30 White (BT)', icon: 'br30' },
+  'LCB001': { name: 'Philips', icon: 'br30' },
+  'LCB002': { name: 'Philips Hue White and Color Ambiance BR30 E26', icon: 'br30' },
+  'LCT011': { name: 'Philips Hue White and Color Ambiance BR30 Richer Colors', icon: 'br30' },
 
   // --------------------------------------------------------------------------------
   // 🟠 E14 / Candela
@@ -537,7 +535,7 @@ export const GROUP_ICONS = {
   'Toilet': 'toilet',
   'Top floor': 'upstairs',
   'Terrace': 'terrace',
-  'TV': 'tv',
+  'TV': 'games',
   'Upstairs': 'upstairs'
 }
 
@@ -546,7 +544,6 @@ export function getGroupIconPath(className) {
   const filename = GROUP_ICONS[className] || 'other'
   return `icons/groups/${filename}.png`
 }
-
 
 // Utility HSB to Hex (Visuale)
 export function hsb2hex(h, s, v) {
@@ -674,16 +671,12 @@ function xyBriToRgb(x, y, bri) {
   }
 }
 
-
-
 // Utility CT (Mireds) to Hex approssimativo per visualizzazione
 export function ct2hex(mireds) {
   const { r, g, b } = calculateCtRgb(mireds);
   // Costruisce l'intero: (R << 16) + (G << 8) + B
   return (r << 16) + (g << 8) + b;
 }
-
-
 
 export function ct2hexString(mireds) {
   const { r, g, b } = calculateCtRgb(mireds);

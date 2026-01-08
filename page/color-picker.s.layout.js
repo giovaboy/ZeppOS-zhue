@@ -3,6 +3,9 @@ import { px } from '@zos/utils'
 import { widget, align, text_style, prop, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { HUE_RANGE, SAT_RANGE, BRI_RANGE, CT_MIN, CT_MAX, COLORS, hsb2hex, ct2hex, btnPressColor } from '../utils/constants.js'
+import { setStatusBarVisible } from '@zos/ui'
+
+setStatusBarVisible(false)
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
@@ -14,7 +17,7 @@ export const LAYOUT_CONFIG = {
     sliderW: px(300),
     sliderH: px(50),
     sliderX: (DEVICE_WIDTH - px(300)) / 2,
-    sliderY: DEVICE_HEIGHT - px(90) // In basso
+    sliderY: DEVICE_HEIGHT - px(55) // In basso
 }
 
 export function renderColorPickerPage(pageContext, state, callbacks) {

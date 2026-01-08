@@ -4,6 +4,9 @@ import { widget, align, prop, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { BRI_RANGE, COLORS, PRESET_TYPES, btnPressColor, ct2hex, xy2hex, hexStringToInt } from '../utils/constants'
 import { getLogger } from '../utils/logger'
+import { setStatusBarVisible } from '@zos/ui'
+
+setStatusBarVisible(false)
 
 const logger = getLogger('zhue-light-detail-layout')
 
@@ -13,7 +16,7 @@ export const LAYOUT_CONFIG = {
   headerY: px(20),
   headerH: px(60),
   sliderX: (DEVICE_WIDTH - px(300)) / 2,
-  sliderY: DEVICE_HEIGHT - px(90),
+  sliderY: DEVICE_HEIGHT - px(50),
   sliderW: px(300),
   sliderH: px(50),
   colorBtnX: px(60),

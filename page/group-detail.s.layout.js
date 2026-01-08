@@ -4,6 +4,9 @@ import { widget, align, text_style } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { btnPressColor } from '../utils/constants.js'
 import { getLogger } from '../utils/logger.js'
+import { setStatusBarVisible } from '@zos/ui'
+
+setStatusBarVisible(false)
 
 const logger = getLogger('zhue-group-detail-page')
 
@@ -21,27 +24,39 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
     const userSettings = getApp().globalData.settings
     // Background
     pageContext.createTrackedWidget(widget.FILL_RECT, {
-        x: 0, y: 0, w: DEVICE_WIDTH, h: DEVICE_HEIGHT, color: COLORS.background
+        x: 0,
+        y: 0,
+        w: DEVICE_WIDTH,
+        h: DEVICE_HEIGHT,
+        color: COLORS.background
     })
 
     // Header: Nome del Gruppo togglable
-    const anyOn = state.lights.some(light => !!light.ison)
-    const badgeColor =  anyOn ? COLORS.success : COLORS.inactive
+    // Durante il loading, mostra il colore INIZIALE ma disabilita il button
+    const anyOn = isLoading ? state.anyOnInitial : state.lights.some(light => !!light.ison)
+    const badgeColor = anyOn ? COLORS.success : COLORS.inactive
+
     pageContext.createTrackedWidget(widget.BUTTON, {
-            x: px(10),
-            y: LAYOUT_CONFIG.headerY, w: DEVICE_WIDTH - px(20), h: LAYOUT_CONFIG.headerH,
-            text: groupName || getText('GROUP_DETAIL'),
-            text_size: px(34),
-            radius: px(8),
-            normal_color: badgeColor,
-            press_color: btnPressColor(badgeColor, 0.8),
-            click_func: toggleGroup
-        });
+        x: px(10),
+        y: LAYOUT_CONFIG.headerY,
+        w: DEVICE_WIDTH - px(20),
+        h: LAYOUT_CONFIG.headerH,
+        text: groupName || getText('GROUP_DETAIL'),
+        text_size: px(34),
+        radius: px(8),
+        normal_color: badgeColor,
+        press_color: isLoading ? badgeColor : btnPressColor(badgeColor, 0.8),
+        // Durante loading, il click non fa nulla
+        click_func: isLoading ? () => { } : toggleGroup
+    });
 
     // 1. Gestione Errore
     if (error) {
         pageContext.createTrackedWidget(widget.TEXT, {
-            x: px(20), y: px(200), w: px(440), h: px(100),
+            x: px(20),
+            y: px(200),
+            w: px(440),
+            h: px(100),
             text: `ERROR: ${error}`,
             text_size: px(24),
             color: COLORS.error,
@@ -50,7 +65,10 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
             text_style: text_style.WRAP
         })
         pageContext.createTrackedWidget(widget.BUTTON, {
-            x: px(140), y: px(350), w: px(200), h: px(60),
+            x: px(140),
+            y: px(350),
+            w: px(200),
+            h: px(60),
             text: getText('RETRY'),
             normal_color: COLORS.highlight,
             press_color: 0x333333,
@@ -64,7 +82,10 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
     if (isLoading) {
         pageContext.createTrackedWidget(widget.TEXT, {
             //x: 0, y: px(200), w: DEVICE_WIDTH, h: px(50),
-            x: 0, y: DEVICE_HEIGHT / 2 - px(50), w: DEVICE_WIDTH, h: px(50),
+            x: 0,
+            y: DEVICE_HEIGHT / 2 - px(50),
+            w: DEVICE_WIDTH,
+            h: px(50),
             text: getText('LOADING'),
             text_size: px(28),
             color: COLORS.loading,
@@ -88,7 +109,10 @@ function renderGroupContentWithViewContainer(pageContext, state, viewData, callb
 
     if (data.length === 0) {
         pageContext.createTrackedWidget(widget.TEXT, {
-            x: 0, y: px(200), w: DEVICE_WIDTH, h: px(50),
+            x: 0,
+            y: px(200),
+            w: DEVICE_WIDTH,
+            h: px(50),
             text: getText('NO_LIGHTS_OR_SCENES'),
             text_size: px(24),
             color: COLORS.inactive,
@@ -149,9 +173,9 @@ function renderGroupContentWithViewContainer(pageContext, state, viewData, callb
 // ✅ Render Header Section
 function renderHeader(container, item, yPos, COLORS) {
     container.createWidget(widget.TEXT, {
-        x: px(20),
+        x: 0,
         y: yPos,
-        w: px(440),
+        w: DEVICE_WIDTH,
         h: px(50),
         text: item.name,
         text_size: px(26),

@@ -4,6 +4,9 @@ import { widget, align, text_style, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { getLogger } from '../utils/logger.js'
 import { COLORS, btnPressColor, getGroupIconPath } from '../utils/constants.js'
+import { setStatusBarVisible } from '@zos/ui'
+
+setStatusBarVisible(false)
 
 const logger = getLogger('zhue-group-detail-page')
 
@@ -197,7 +200,7 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
     container.createWidget(widget.TEXT, {
         x: startX + itemSpacing + iconSize + itemSpacing,
         y: yPos + px(20),
-        w: px(250),
+        w: px(180),
         h: px(30),
         text: group.name,
         text_size: px(28),
@@ -210,7 +213,7 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
     container.createWidget(widget.TEXT, {
         x: startX + itemSpacing + iconSize + itemSpacing,
         y: yPos + px(55),
-        w: px(200),
+        w: px(140),
         h: px(25),
         text: group.status,
         text_size: px(20),
@@ -225,9 +228,9 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
 
     // Navigate overlay (left side - nome e status)
     let overlay1 = container.createWidget(widget.BUTTON, {
-        x: px(20),
+        x: startX,
         y: yPos,
-        w: px(310),
+        w: startX + itemSpacing + iconSize + itemSpacing + px(140),
         h: itemHeight,
         text: '',
         normal_color: 0x000000,
@@ -242,7 +245,7 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
     const badgeColor = isOn ? COLORS.success : COLORS.inactive
 
     container.createWidget(widget.BUTTON, {
-        x: px(340),
+        x: startX + itemSpacing + iconSize + itemSpacing + px(140),
         y: yPos + px(25),
         w: px(80),
         h: px(50),

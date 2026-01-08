@@ -738,6 +738,7 @@ Page(
     toggleWidgetShortcut() {
       const lightId = this.state.lightId
       const lightName = this.state.lightName || this.state.light?.name || 'Light'
+      const modelid = this.state.light?.modelid || 'default'
 
       const shortcuts = this.getWidgetShortcuts()
 
@@ -745,7 +746,7 @@ Page(
         // RIMUOVI dalla lista
         const index = shortcuts.findIndex(s => s.lightId === lightId)
         if (index !== -1) {
-          shortcuts[index] = { lightId: null, lightName: null }
+          shortcuts[index] = { lightId: null, lightName: null, modelid: null }
           this.saveWidgetShortcuts(shortcuts)
           this.state.isInWidgetShortcuts = false
           showToast({ text: getText('REMOVED_FROM_WIDGET') || 'Removed from widget' })
@@ -771,7 +772,7 @@ Page(
         }
 
         // Aggiungi
-        shortcuts[emptyIndex] = { lightId, lightName }
+        shortcuts[emptyIndex] = { lightId, lightName, modelid }
         this.saveWidgetShortcuts(shortcuts)
         this.state.isInWidgetShortcuts = true
         showToast({ text: getText('ADDED_TO_WIDGET') || 'Added to widget!' })
