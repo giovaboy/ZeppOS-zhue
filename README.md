@@ -37,7 +37,7 @@ A powerful and intuitive smartwatch application that brings comprehensive contro
 
 To test the app without a physical Hue Bridge:
 
-1. Go to Settings
+1. Go to Settings from the zepp app on your phone
 2. Enable Demo Mode
 3. Use pre-configured demo lights for testing
 
@@ -54,9 +54,12 @@ zhue/
 │   ├── groups/            # Groups (Rooms & Zones) view
 │   ├── group-detail/      # Group detail and control
 │   ├── light-detail/      # Individual light control
-│   └── color-picker/      # Advanced color selection
+│   ├── color-picker/      # Advanced color selection
+│   └── quick-toggle/      # Quick toggle from app widget
 ├── setting/               # Settings page
+│   └── index.js           # Settings implementation
 ├── app-widget/            # Quick-access widget
+│   └── index.js           # Widget implementation
 ├── secondary-widget/      # Lock screen widget
 ├── assets/                # Images, fonts, icons
 ├── i18n/                  # Internationalization files
@@ -79,6 +82,7 @@ Implements the UI for each screen:
 - `group-detail`: Control grouped lights
 - `light-detail`: Individual light control panel
 - `color-picker`: Advanced color selection interface
+- `quick-toggle`: Quick toggle from app widget
 
 ### setting/index.js
 Settings and configuration interface:
@@ -94,14 +98,14 @@ Settings and configuration interface:
 - Tap for detailed control options
 
 ### Light Control
-- **Brightness**: Slide to adjust intensity (0-254)
+- **Brightness**: Slide to adjust intensity
 - **Color**: Tap to open color picker
 - **Toggle**: Quick on/off switch
 
 ### Color Picker
 - **Gradient Mode**: Tap to select hue
-- **Saturation**: Horizontal swipe to adjust
-- **Brightness**: Vertical swipe to adjust
+- **Saturation**: Vertical swipe to adjust
+- **Brightness**: Horizontal swipe to adjust
 - **CT Mode**: Available for color temperature adjustment
 
 ### Groups
@@ -114,10 +118,11 @@ Settings and configuration interface:
 This application uses icons from the **Hass Hue Icons** project:
 
 - **Source**: [hass-hue-icons](https://github.com/arallsopp/hass-hue-icons)
-- **License**: Follows the license terms of the hass-hue-icons project
+- **Author**: [arallsopp](https://github.com/arallsopp)
+- **License**: [Attribution-NonCommercial-ShareAlike 4.0 International](https://github.com/arallsopp/hass-hue-icons/blob/main/LICENSE)
 - **Usage**: Icons have been adapted for smartwatch display
 
-We acknowledge and thank the hass-hue-icons project for providing high-quality Hue-compatible icons.
+We acknowledge and thank the hass-hue-icons project for providing high-quality Hue-compatible icons. In compliance with the CC BY-NC-SA 4.0 license, any derivative works or modifications of this project must maintain the same license terms.
 
 ## Security Notes
 
