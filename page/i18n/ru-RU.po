@@ -24,10 +24,10 @@ msgstr "Ожидание нажатия кнопки..."
 msgid "PAIRED_SUCCESS"
 msgstr "Сопряжение успешно выполнено!"
 
-msgid "INDEX_CONNECTION_ERROR"
+msgid "CONNECTION_ERROR"
 msgstr "Ошибка подключения"
 
-msgid "INDEX_CONNECTION_ERROR_DESC"
+msgid "CONNECTION_ERROR_DESC"
 msgstr "Не удалось подключиться к шлюзу Hue"
 
 msgid "DISCOVERY_FAILED"

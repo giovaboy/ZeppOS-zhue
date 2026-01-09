@@ -19,8 +19,8 @@ const PADDING_Y = px(10)
 
 // Button layout: icona 70x70 + testo sotto
 const ICON_SIZE = px(70)
-const TEXT_H = px(40)
-const BUTTON_H = ICON_SIZE + TEXT_H  // 70 + 40 = 110
+const TEXT_H = px(50)
+const BUTTON_H = ICON_SIZE + TEXT_H  // 70 + 50 = 120
 const BUTTON_GAP_X = px(8)
 const BUTTON_GAP_Y = px(8)
 const PADDING_X = px(10)// Internal padding

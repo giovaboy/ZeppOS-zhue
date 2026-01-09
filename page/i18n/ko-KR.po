@@ -24,10 +24,10 @@ msgstr "버튼 입력을 기다리는 중..."
 msgid "PAIRED_SUCCESS"
 msgstr "페어링 성공!"
 
-msgid "INDEX_CONNECTION_ERROR"
+msgid "CONNECTION_ERROR"
 msgstr "연결 오류"
 
-msgid "INDEX_CONNECTION_ERROR_DESC"
+msgid "CONNECTION_ERROR_DESC"
 msgstr "Hue 브릿지에 연결할 수 없습니다"
 
 msgid "DISCOVERY_FAILED"

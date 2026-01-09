@@ -24,10 +24,10 @@ msgstr "Warte auf Tastendruck..."
 msgid "PAIRED_SUCCESS"
 msgstr "Erfolgreich gekoppelt!"
 
-msgid "INDEX_CONNECTION_ERROR"
+msgid "CONNECTION_ERROR"
 msgstr "Verbindungsfehler"
 
-msgid "INDEX_CONNECTION_ERROR_DESC"
+msgid "CONNECTION_ERROR_DESC"
 msgstr "Verbindung zur Hue Bridge fehlgeschlagen"
 
 msgid "DISCOVERY_FAILED"

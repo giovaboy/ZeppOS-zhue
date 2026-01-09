@@ -24,10 +24,10 @@ msgstr "Waiting for button press..."
 msgid "PAIRED_SUCCESS"
 msgstr "Paired Successfully!"
 
-msgid "INDEX_CONNECTION_ERROR"
+msgid "CONNECTION_ERROR"
 msgstr "Connection Error"
 
-msgid "INDEX_CONNECTION_ERROR_DESC"
+msgid "CONNECTION_ERROR_DESC"
 msgstr "Could not connect to Hue Bridge"
 
 msgid "DISCOVERY_FAILED"

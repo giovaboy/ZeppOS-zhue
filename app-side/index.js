@@ -388,7 +388,10 @@ class HueBridgeManager {
 
   getUserSettings() {
     this.user_settings = this._loadUserSettings()
-    return this.user_settings
+    return {
+      ...this.user_settings,
+      demo_mode: this.demo
+    }
   }
 
   // Salva i colori preferiti
@@ -455,68 +458,68 @@ class HueBridgeManager {
   // ==========================================
   // WIDGET SHORTCUTS MANAGEMENT
   // ==========================================
-/*
-  getWidgetShortcuts() {
-    return this.user_settings.widget_shortcuts || DEFAULT_USER_SETTINGS.widget_shortcuts
-  }
-
-  saveWidgetShortcuts(shortcuts) {
-    try {
-      const shortcutsJson = JSON.stringify(shortcuts)
-      settingsLib.setItem(WIDGET_SHORTCUTS, shortcutsJson)
-      this.user_settings.widget_shortcuts = shortcuts
-      console.log('Widget shortcuts saved:', shortcuts)
-      return { success: true }
-    } catch (e) {
-      console.error('Failed to save widget shortcuts:', e)
-      throw new Error('Failed to save widget shortcuts')
+  /*
+    getWidgetShortcuts() {
+      return this.user_settings.widget_shortcuts || DEFAULT_USER_SETTINGS.widget_shortcuts
     }
-  }
-
-  addWidgetShortcut(lightId, lightName) {
-    const shortcuts = this.getWidgetShortcuts()
-
-    // Check if light is already in shortcuts
-    const existingIndex = shortcuts.findIndex(s => s.lightId === lightId)
-    if (existingIndex !== -1) {
-      console.log('Light already in widget shortcuts')
-      return { success: true, added: false, reason: 'already_exists' }
+  
+    saveWidgetShortcuts(shortcuts) {
+      try {
+        const shortcutsJson = JSON.stringify(shortcuts)
+        settingsLib.setItem(WIDGET_SHORTCUTS, shortcutsJson)
+        this.user_settings.widget_shortcuts = shortcuts
+        console.log('Widget shortcuts saved:', shortcuts)
+        return { success: true }
+      } catch (e) {
+        console.error('Failed to save widget shortcuts:', e)
+        throw new Error('Failed to save widget shortcuts')
+      }
     }
-
-    // Find first empty slot
-    const emptyIndex = shortcuts.findIndex(s => s.lightId === null)
-    if (emptyIndex === -1) {
-      console.log('No empty slots available')
-      return { success: false, added: false, reason: 'slots_full' }
+  
+    addWidgetShortcut(lightId, lightName) {
+      const shortcuts = this.getWidgetShortcuts()
+  
+      // Check if light is already in shortcuts
+      const existingIndex = shortcuts.findIndex(s => s.lightId === lightId)
+      if (existingIndex !== -1) {
+        console.log('Light already in widget shortcuts')
+        return { success: true, added: false, reason: 'already_exists' }
+      }
+  
+      // Find first empty slot
+      const emptyIndex = shortcuts.findIndex(s => s.lightId === null)
+      if (emptyIndex === -1) {
+        console.log('No empty slots available')
+        return { success: false, added: false, reason: 'slots_full' }
+      }
+  
+      // Add to empty slot
+      shortcuts[emptyIndex] = { lightId, lightName }
+      this.saveWidgetShortcuts(shortcuts)
+  
+      return { success: true, added: true, slotIndex: emptyIndex }
     }
-
-    // Add to empty slot
-    shortcuts[emptyIndex] = { lightId, lightName }
-    this.saveWidgetShortcuts(shortcuts)
-
-    return { success: true, added: true, slotIndex: emptyIndex }
-  }
-
-  removeWidgetShortcut(lightId) {
-    const shortcuts = this.getWidgetShortcuts()
-
-    const index = shortcuts.findIndex(s => s.lightId === lightId)
-    if (index === -1) {
-      console.log('Light not found in widget shortcuts')
-      return { success: false, removed: false }
+  
+    removeWidgetShortcut(lightId) {
+      const shortcuts = this.getWidgetShortcuts()
+  
+      const index = shortcuts.findIndex(s => s.lightId === lightId)
+      if (index === -1) {
+        console.log('Light not found in widget shortcuts')
+        return { success: false, removed: false }
+      }
+  
+      // Clear the slot
+      shortcuts[index] = { lightId: null, lightName: null }
+      this.saveWidgetShortcuts(shortcuts)
+  
+      return { success: true, removed: true }
     }
-
-    // Clear the slot
-    shortcuts[index] = { lightId: null, lightName: null }
-    this.saveWidgetShortcuts(shortcuts)
-
-    return { success: true, removed: true }
-  }
-
-  isLightInWidgetShortcuts(lightId) {
-    const shortcuts = this.getWidgetShortcuts()
-    return shortcuts.some(s => s.lightId === lightId)
-  }*/
+  
+    isLightInWidgetShortcuts(lightId) {
+      const shortcuts = this.getWidgetShortcuts()
+      return shortcuts.some(s => s.lightId === lightId)
+    }*/
 
   // --- Funzioni per lo stato DEMO ---
   _initDemoState() {
@@ -2035,6 +2038,25 @@ AppSideService(
       try {
         const { lightId } = req.params
         console.log('Widget toggle light:', lightId)
+
+        // Handle demo mode
+        if (hueBridge.demo) {
+          console.log('DEMO MODE: Widget toggle light', lightId)
+          const light = hueBridge.DEMO_STATE.lights[lightId]
+          if (!light) {
+            res({ error: 'Demo Light not found' })
+            return
+          }
+
+          // Toggle the light state
+          const newState = !light.ison
+          hueBridge._handleDemoAction(lightId, { ison: newState })
+
+          res(null, { success: true, newState })
+          return
+        }
+
+        // Normal mode - requires bridge configuration
         if (!hueBridge.bridgeIp || !hueBridge.username) {
           res({ error: 'Bridge not configured' })
           return

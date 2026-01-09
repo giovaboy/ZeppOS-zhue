@@ -24,10 +24,10 @@ msgstr "In attesa della pressione del pulsante..."
 msgid "PAIRED_SUCCESS"
 msgstr "Associazione Riuscita!"
 
-msgid "INDEX_CONNECTION_ERROR"
+msgid "CONNECTION_ERROR"
 msgstr "Errore di Connessione"
 
-msgid "INDEX_CONNECTION_ERROR_DESC"
+msgid "CONNECTION_ERROR_DESC"
 msgstr "Impossibile connettersi a Hue Bridge"
 
 msgid "DISCOVERY_FAILED"

@@ -24,10 +24,10 @@ msgstr "Esperando a que pulses el botón..."
 msgid "PAIRED_SUCCESS"
 msgstr "¡Vinculado con éxito!"
 
-msgid "INDEX_CONNECTION_ERROR"
+msgid "CONNECTION_ERROR"
 msgstr "Error de conexión"
 
-msgid "INDEX_CONNECTION_ERROR_DESC"
+msgid "CONNECTION_ERROR_DESC"
 msgstr "No se pudo conectar con el Puente Hue"
 
 msgid "DISCOVERY_FAILED"

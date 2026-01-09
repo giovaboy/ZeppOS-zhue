@@ -24,10 +24,10 @@ msgstr "等待按下按钮..."
 msgid "PAIRED_SUCCESS"
 msgstr "配对成功！"
 
-msgid "INDEX_CONNECTION_ERROR"
+msgid "CONNECTION_ERROR"
 msgstr "连接错误"
 
-msgid "INDEX_CONNECTION_ERROR_DESC"
+msgid "CONNECTION_ERROR_DESC"
 msgstr "无法连接到 Hue 桥接器"
 
 msgid "DISCOVERY_FAILED"
