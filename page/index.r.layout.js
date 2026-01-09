@@ -144,8 +144,10 @@ function renderSearchingBridge(pageContext, animateSpinner, animateProgressBar) 
   })
 
   // Barra di progresso
+  const progressBarMaxW = px(210)  // 10 + 2*100
+
   const progressBar = pageContext.createTrackedWidget(widget.FILL_RECT, {
-    x: px(140),
+    x: (DEVICE_WIDTH - progressBarMaxW) / 2,
     y: px(420),
     w: px(10),
     h: px(6),
@@ -213,9 +215,11 @@ function renderWaitingForPress(pageContext, animateProgressBar) {
   })
 
   // Progress bar animata
+  const progressBarMaxW = px(210)
+
   const progressBar = pageContext.createTrackedWidget(widget.FILL_RECT, {
-    x: px(140),
-    y: px(440),
+    x: (DEVICE_WIDTH - progressBarMaxW) / 2,
+    y: px(420),
     w: px(10),
     h: px(6),
     color: COLORS.warningText,
@@ -231,7 +235,7 @@ function renderError(pageContext, error, retryFunc) {
     y: px(60),
     w: DEVICE_WIDTH,
     h: px(50),
-    text: getText('CONNECTION_ERROR') || 'Connection Error',
+    text: getText('CONNECTION_ERROR'),
     text_size: px(36),
     color: COLORS.error,
     align_h: align.CENTER_H,
@@ -252,7 +256,7 @@ function renderError(pageContext, error, retryFunc) {
     y: px(240),
     w: DEVICE_WIDTH - px(80),
     h: px(100),
-    text: error || getText('BRIDGE_CONNECTION_FAILED') || 'Could not connect to Hue Bridge',
+    text: error || getText('BRIDGE_CONNECTION_FAILED'),
     text_size: px(24),
     color: COLORS.text,
     align_h: align.CENTER_H,
@@ -262,7 +266,7 @@ function renderError(pageContext, error, retryFunc) {
 
   // Bottone RETRY
   pageContext.createTrackedWidget(widget.BUTTON, {
-    x: px(90),
+    x: (DEVICE_WIDTH - px(300)) / 2,
     y: px(360),
     w: px(300),
     h: px(60),
@@ -340,7 +344,7 @@ function renderBluetoothError(pageContext, error, retryFunc) {
 
   // Bottone Retry manuale
   pageContext.createTrackedWidget(widget.BUTTON, {
-    x: DEVICE_WIDTH / 2 - px(80),
+    x: (DEVICE_WIDTH - px(160)) / 2,
     y: DEVICE_HEIGHT - px(120),
     w: px(160),
     h: px(50),

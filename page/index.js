@@ -31,7 +31,7 @@ Page(
     widgets: [],
     progressInterval: null,
     btCheckInterval: null,
-    
+
     // 🐛 Debug flag - imposta true per vedere logs dettagliati
     DEBUG_MODE: false,
 
@@ -91,7 +91,7 @@ Page(
       if (this.DEBUG_MODE) {
         logger.log(`State transition: ${this.state.currentState} -> ${newState}`)
       }
-      
+
       this.state.currentState = newState
 
       if (data.error) this.state.error = data.error
@@ -219,7 +219,7 @@ Page(
       this.setState(STATES.SEARCHING_BRIDGE)
       this.startBridgeSearch()
     },
-    
+
     navigateToGroups() {
       logger.log('Navigating to groups page')
       this.stopBluetoothMonitoring()

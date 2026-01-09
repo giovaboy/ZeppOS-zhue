@@ -159,3 +159,21 @@ msgstr "Already in widget"
 
 msgid "WIDGET_SLOTS_FULL"
 msgstr "Widget full! Remove a light first"
+
+msgid "BT_NOT_CONNECTED"
+msgstr "Bluetooth not connected"
+
+msgid "BT_CONNECT_INSTRUCTIONS"
+msgstr "Please connect your watch to your phone via Bluetooth"
+
+msgid "BT_AUTO_RETRY"
+msgstr "Auto-retry when connected..."
+
+msgid "NETWORK_ERROR"
+msgstr "Network error"
+
+msgid "FAILED_TO_LOAD_DETAIL"
+msgstr "Failed to load details"
+
+msgid "ERROR"
+msgstr "Error"

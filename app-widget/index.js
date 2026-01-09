@@ -224,7 +224,7 @@ AppWidget({
         w: BUTTON_W,
         h: TEXT_H,
         color: COLORS.text || 0xffffff,
-        text_size: px(14),
+        text_size: px(18),
         align_h: align.CENTER_H,
         align_v: align.TOP,
         text_style: text_style.WRAP,
