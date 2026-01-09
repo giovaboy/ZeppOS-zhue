@@ -135,3 +135,51 @@ msgstr "Любимые цвета"
 
 msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "Пресет уже существует"
+
+msgid "WIDGET_NOT_CONFIGURED"
+msgstr "Добавьте лампу в этот ярлык, удерживая кнопку выбора на странице лампы"
+
+msgid "TOGGLING"
+msgstr "Переключение..."
+
+msgid "ADD_TO_WIDGET"
+msgstr "☆ Добавить в виджет"
+
+msgid "REMOVE_FROM_WIDGET"
+msgstr "★ В виджете"
+
+msgid "ADDED_TO_WIDGET"
+msgstr "Добавлено в виджет!"
+
+msgid "REMOVED_FROM_WIDGET"
+msgstr "Удалено из виджета"
+
+msgid "ALREADY_IN_WIDGET"
+msgstr "Уже в виджете"
+
+msgid "WIDGET_SLOTS_FULL"
+msgstr "Виджет заполнен! Сначала удалите лампу"
+
+msgid "BT_NOT_CONNECTED"
+msgstr "Bluetooth не подключен"
+
+msgid "BT_CONNECT_INSTRUCTIONS"
+msgstr "Подключите часы к телефону через Bluetooth"
+
+msgid "BT_AUTO_RETRY"
+msgstr "Автоматический повтор при подключении..."
+
+msgid "NETWORK_ERROR"
+msgstr "Ошибка сети"
+
+msgid "FAILED_TO_LOAD_DETAIL"
+msgstr "Не удалось загрузить детали"
+
+msgid "ERROR"
+msgstr "Ошибка"
+
+msgid "NO_DATA"
+msgstr "Нет данных"
+
+msgid "RELOAD"
+msgstr "Перезагрузить"

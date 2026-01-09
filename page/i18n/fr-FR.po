@@ -135,3 +135,51 @@ msgstr "Couleurs favorites"
 
 msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "Ce préréglage existe déjà"
+
+msgid "WIDGET_NOT_CONFIGURED"
+msgstr "Ajoutez une lumière à ce raccourci en maintenant le bouton de sélection sur la page de la lumière"
+
+msgid "TOGGLING"
+msgstr "Changement d'état..."
+
+msgid "ADD_TO_WIDGET"
+msgstr "☆ Ajouter au Widget"
+
+msgid "REMOVE_FROM_WIDGET"
+msgstr "★ Dans le Widget"
+
+msgid "ADDED_TO_WIDGET"
+msgstr "Ajouté au widget !"
+
+msgid "REMOVED_FROM_WIDGET"
+msgstr "Retiré du widget"
+
+msgid "ALREADY_IN_WIDGET"
+msgstr "Déjà dans le widget"
+
+msgid "WIDGET_SLOTS_FULL"
+msgstr "Widget plein ! Retirez d'abord une lumière"
+
+msgid "BT_NOT_CONNECTED"
+msgstr "Bluetooth non connecté"
+
+msgid "BT_CONNECT_INSTRUCTIONS"
+msgstr "Connectez votre montre à votre téléphone via Bluetooth"
+
+msgid "BT_AUTO_RETRY"
+msgstr "Nouvelle tentative automatique à la connexion..."
+
+msgid "NETWORK_ERROR"
+msgstr "Erreur réseau"
+
+msgid "FAILED_TO_LOAD_DETAIL"
+msgstr "Échec du chargement des détails"
+
+msgid "ERROR"
+msgstr "Erreur"
+
+msgid "NO_DATA"
+msgstr "Aucune donnée disponible"
+
+msgid "RELOAD"
+msgstr "Recharger"

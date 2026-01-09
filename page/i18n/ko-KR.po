@@ -135,3 +135,51 @@ msgstr "즐겨찾는 색상"
 
 msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "이미 존재하는 프리셋입니다"
+
+msgid "WIDGET_NOT_CONFIGURED"
+msgstr "조명 페이지에서 선택 버튼을 길게 눌러 이 바로가기에 조명을 추가하세요"
+
+msgid "TOGGLING"
+msgstr "전환 중..."
+
+msgid "ADD_TO_WIDGET"
+msgstr "☆ 위젯에 추가"
+
+msgid "REMOVE_FROM_WIDGET"
+msgstr "★ 위젯에 있음"
+
+msgid "ADDED_TO_WIDGET"
+msgstr "위젯에 추가됨!"
+
+msgid "REMOVED_FROM_WIDGET"
+msgstr "위젯에서 제거됨"
+
+msgid "ALREADY_IN_WIDGET"
+msgstr "이미 위젯에 있음"
+
+msgid "WIDGET_SLOTS_FULL"
+msgstr "위젯이 가득 찼습니다! 먼저 조명을 제거하세요"
+
+msgid "BT_NOT_CONNECTED"
+msgstr "블루투스가 연결되지 않음"
+
+msgid "BT_CONNECT_INSTRUCTIONS"
+msgstr "블루투스를 통해 시계를 휴대폰에 연결하세요"
+
+msgid "BT_AUTO_RETRY"
+msgstr "연결 시 자동으로 재시도..."
+
+msgid "NETWORK_ERROR"
+msgstr "네트워크 오류"
+
+msgid "FAILED_TO_LOAD_DETAIL"
+msgstr "세부 정보를 불러오지 못했습니다"
+
+msgid "ERROR"
+msgstr "오류"
+
+msgid "NO_DATA"
+msgstr "데이터 없음"
+
+msgid "RELOAD"
+msgstr "새로고침"

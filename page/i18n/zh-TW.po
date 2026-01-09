@@ -135,3 +135,51 @@ msgstr "收藏顏色"
 
 msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "預設已存在"
+
+msgid "WIDGET_NOT_CONFIGURED"
+msgstr "在燈光頁面長按選擇按鈕將燈光新增到此捷徑"
+
+msgid "TOGGLING"
+msgstr "正在切換..."
+
+msgid "ADD_TO_WIDGET"
+msgstr "☆ 新增到小工具"
+
+msgid "REMOVE_FROM_WIDGET"
+msgstr "★ 已在小工具中"
+
+msgid "ADDED_TO_WIDGET"
+msgstr "已新增到小工具！"
+
+msgid "REMOVED_FROM_WIDGET"
+msgstr "已從小工具移除"
+
+msgid "ALREADY_IN_WIDGET"
+msgstr "已在小工具中"
+
+msgid "WIDGET_SLOTS_FULL"
+msgstr "小工具已滿！請先移除一個燈光"
+
+msgid "BT_NOT_CONNECTED"
+msgstr "藍牙未連線"
+
+msgid "BT_CONNECT_INSTRUCTIONS"
+msgstr "請透過藍牙將手錶連線到手機"
+
+msgid "BT_AUTO_RETRY"
+msgstr "連線後自動重試..."
+
+msgid "NETWORK_ERROR"
+msgstr "網路錯誤"
+
+msgid "FAILED_TO_LOAD_DETAIL"
+msgstr "載入詳情失敗"
+
+msgid "ERROR"
+msgstr "錯誤"
+
+msgid "NO_DATA"
+msgstr "暫無資料"
+
+msgid "RELOAD"
+msgstr "重新載入"

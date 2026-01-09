@@ -159,3 +159,27 @@ msgstr "Già nel widget"
 
 msgid "WIDGET_SLOTS_FULL"
 msgstr "Widget pieno! Rimuovi prima una luce"
+
+msgid "BT_NOT_CONNECTED"
+msgstr "Bluetooth non connesso"
+
+msgid "BT_CONNECT_INSTRUCTIONS"
+msgstr "Collega il tuo orologio al telefono tramite Bluetooth"
+
+msgid "BT_AUTO_RETRY"
+msgstr "Riprovo automaticamente alla connessione..."
+
+msgid "NETWORK_ERROR"
+msgstr "Errore di rete"
+
+msgid "FAILED_TO_LOAD_DETAIL"
+msgstr "Impossibile caricare i dettagli"
+
+msgid "ERROR"
+msgstr "Errore"
+
+msgid "NO_DATA"
+msgstr "Nessun dato disponibile"
+
+msgid "RELOAD"
+msgstr "Ricarica"

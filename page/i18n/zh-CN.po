@@ -135,3 +135,51 @@ msgstr "收藏颜色"
 
 msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "预设已存在"
+
+msgid "WIDGET_NOT_CONFIGURED"
+msgstr "在灯光页面长按选择按钮将灯光添加到此快捷方式"
+
+msgid "TOGGLING"
+msgstr "正在切换..."
+
+msgid "ADD_TO_WIDGET"
+msgstr "☆ 添加到小组件"
+
+msgid "REMOVE_FROM_WIDGET"
+msgstr "★ 已在小组件中"
+
+msgid "ADDED_TO_WIDGET"
+msgstr "已添加到小组件！"
+
+msgid "REMOVED_FROM_WIDGET"
+msgstr "已从小组件移除"
+
+msgid "ALREADY_IN_WIDGET"
+msgstr "已在小组件中"
+
+msgid "WIDGET_SLOTS_FULL"
+msgstr "小组件已满！请先移除一个灯光"
+
+msgid "BT_NOT_CONNECTED"
+msgstr "蓝牙未连接"
+
+msgid "BT_CONNECT_INSTRUCTIONS"
+msgstr "请通过蓝牙将手表连接到手机"
+
+msgid "BT_AUTO_RETRY"
+msgstr "连接后自动重试..."
+
+msgid "NETWORK_ERROR"
+msgstr "网络错误"
+
+msgid "FAILED_TO_LOAD_DETAIL"
+msgstr "加载详情失败"
+
+msgid "ERROR"
+msgstr "错误"
+
+msgid "NO_DATA"
+msgstr "暂无数据"
+
+msgid "RELOAD"
+msgstr "重新加载"

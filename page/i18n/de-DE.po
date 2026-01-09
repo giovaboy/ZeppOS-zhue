@@ -135,3 +135,51 @@ msgstr "Lieblingsfarben"
 
 msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "Voreinstellung existiert bereits"
+
+msgid "WIDGET_NOT_CONFIGURED"
+msgstr "Füge eine Lampe zu diesem Shortcut hinzu, indem du die Auswahltaste auf der Lampenseite gedrückt hältst"
+
+msgid "TOGGLING"
+msgstr "Schalte um..."
+
+msgid "ADD_TO_WIDGET"
+msgstr "☆ Zum Widget hinzufügen"
+
+msgid "REMOVE_FROM_WIDGET"
+msgstr "★ Im Widget"
+
+msgid "ADDED_TO_WIDGET"
+msgstr "Zum Widget hinzugefügt!"
+
+msgid "REMOVED_FROM_WIDGET"
+msgstr "Vom Widget entfernt"
+
+msgid "ALREADY_IN_WIDGET"
+msgstr "Bereits im Widget"
+
+msgid "WIDGET_SLOTS_FULL"
+msgstr "Widget voll! Entferne zuerst eine Lampe"
+
+msgid "BT_NOT_CONNECTED"
+msgstr "Bluetooth nicht verbunden"
+
+msgid "BT_CONNECT_INSTRUCTIONS"
+msgstr "Verbinde deine Uhr über Bluetooth mit deinem Telefon"
+
+msgid "BT_AUTO_RETRY"
+msgstr "Automatischer Neuversuch bei Verbindung..."
+
+msgid "NETWORK_ERROR"
+msgstr "Netzwerkfehler"
+
+msgid "FAILED_TO_LOAD_DETAIL"
+msgstr "Details konnten nicht geladen werden"
+
+msgid "ERROR"
+msgstr "Fehler"
+
+msgid "NO_DATA"
+msgstr "Keine Daten verfügbar"
+
+msgid "RELOAD"
+msgstr "Neu laden"

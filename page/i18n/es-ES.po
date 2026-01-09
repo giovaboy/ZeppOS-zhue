@@ -135,3 +135,51 @@ msgstr "Colores favoritos"
 
 msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "El ajuste ya existe"
+
+msgid "WIDGET_NOT_CONFIGURED"
+msgstr "Añade una luz a este acceso directo manteniendo pulsado el botón de selección en la página de la luz"
+
+msgid "TOGGLING"
+msgstr "Cambiando estado..."
+
+msgid "ADD_TO_WIDGET"
+msgstr "☆ Añadir a Widget"
+
+msgid "REMOVE_FROM_WIDGET"
+msgstr "★ En Widget"
+
+msgid "ADDED_TO_WIDGET"
+msgstr "¡Añadido al widget!"
+
+msgid "REMOVED_FROM_WIDGET"
+msgstr "Eliminado del widget"
+
+msgid "ALREADY_IN_WIDGET"
+msgstr "Ya está en el widget"
+
+msgid "WIDGET_SLOTS_FULL"
+msgstr "¡Widget lleno! Elimina una luz primero"
+
+msgid "BT_NOT_CONNECTED"
+msgstr "Bluetooth no conectado"
+
+msgid "BT_CONNECT_INSTRUCTIONS"
+msgstr "Conecta tu reloj al teléfono mediante Bluetooth"
+
+msgid "BT_AUTO_RETRY"
+msgstr "Reintentando automáticamente al conectar..."
+
+msgid "NETWORK_ERROR"
+msgstr "Error de red"
+
+msgid "FAILED_TO_LOAD_DETAIL"
+msgstr "Error al cargar los detalles"
+
+msgid "ERROR"
+msgstr "Error"
+
+msgid "NO_DATA"
+msgstr "No hay datos disponibles"
+
+msgid "RELOAD"
+msgstr "Recargar"
