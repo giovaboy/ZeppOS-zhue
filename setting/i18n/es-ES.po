@@ -1,0 +1,121 @@
+# Spanish translations for Hue Settings
+
+msgid "SETTINGS_SUBTITLE"
+msgstr "Configura la conexión de tu Philips Hue Bridge"
+
+msgid "BRIDGE_IP"
+msgstr "Dirección IP del Bridge"
+
+msgid "BRIDGE_IP_PLACEHOLDER"
+msgstr "ej. 192.168.1.100"
+
+msgid "API_VERSION"
+msgstr "Versión de API"
+
+msgid "NOT_CONFIGURED"
+msgstr "Aún no configurado"
+
+msgid "BRIDGE_CONFIGURED"
+msgstr "Bridge configurado y vinculado"
+
+msgid "BRIDGE_NOT_CONFIGURED"
+msgstr "Bridge no configurado. Usa la app para vincularlo."
+
+msgid "TEST_CONNECTION"
+msgstr "Probar Conexión"
+
+msgid "CLEAR_CONFIG"
+msgstr "Borrar Configuración"
+
+msgid "ADVANCED_SETTINGS"
+msgstr "Ajustes Avanzados"
+
+msgid "DEBUG_MODE"
+msgstr "Modo Depuración"
+
+msgid "HELP_TITLE"
+msgstr "Cómo Vincular tu Bridge"
+
+msgid "HELP_TEXT"
+msgstr "1. Abre la app Hue en tu reloj\n2. La app buscará automáticamente tu bridge\n3. Pulsa el botón físico en tu Hue Bridge\n4. Espera a que se complete la vinculación\n5. La configuración se guardará automáticamente"
+
+msgid "CONFIRM_CLEAR"
+msgstr "¿Estás seguro de que quieres borrar toda la configuración del Hue Bridge?\n\nTendrás que vincularlo de nuevo."
+
+msgid "CONFIG_CLEARED"
+msgstr "¡Configuración borrada con éxito!"
+
+msgid "BRIDGE_NOT_SETUP"
+msgstr "Bridge no configurado. Vincúlalo primero usando la app del reloj."
+
+msgid "BRIDGE_CONFIGURATION"
+msgstr "Configuración del Bridge"
+
+msgid "CONNECTION_STATUS"
+msgstr "Estado de Conexión"
+
+msgid "FAVORITE_COLORS"
+msgstr "Colores Favoritos"
+
+msgid "ACTIONS"
+msgstr "Acciones"
+
+msgid "USERNAME_LABEL"
+msgstr "Usuario:"
+
+msgid "API_VERSION_LABEL"
+msgstr "Versión API:"
+
+msgid "DEFAULT_TAB"
+msgstr "Pestaña predeterminada"
+
+msgid "SHOW_SCENES"
+msgstr "Mostrar Escenas"
+
+msgid "DISPLAY_ORDER"
+msgstr "Orden de Visualización"
+
+msgid "LIGHTS_FIRST"
+msgstr "Luces primero"
+
+msgid "SCENES_FIRST"
+msgstr "Escenas primero"
+
+msgid "DEMO_MODE"
+msgstr "Modo DEMO"
+
+msgid "FAVORITE_COLORS_DESC"
+msgstr "Gestiona tus presets de colores favoritos. Puedes añadir colores desde la página de detalle de luz en tu reloj."
+
+msgid "CURRENT_PRESETS"
+msgstr "Presets actuales:"
+
+msgid "RESET_PRESETS"
+msgstr "Restablecer Presets Predeterminados"
+
+msgid "RESET_PRESETS_CONFIRM"
+msgstr "¿Restablecer los presets predeterminados?"
+
+msgid "CLEAR_ALL_CONFIG"
+msgstr "Borrar Toda la Configuración"
+
+msgid "CLEAR_ALL_CONFIG_CONFIRM"
+msgstr "¿Borrar toda la configuración?"
+
+msgid "HELP_STEP_1"
+msgstr "1. Abre la app Hue en tu reloj"
+
+msgid "HELP_STEP_2"
+msgstr "2. La app buscará automáticamente tu bridge"
+
+msgid "HELP_STEP_3"
+msgstr "3. Pulsa el botón físico en tu Hue Bridge"
+
+msgid "HELP_STEP_4"
+msgstr "4. Espera a que se complete la vinculación"
+
+msgid "HELP_STEP_5"
+msgstr "5. La configuración se guardará automáticamente"
+
+msgid "MADE_WITH_LOVE"
+msgstr "Hecho con ❤️ para Zepp OS"

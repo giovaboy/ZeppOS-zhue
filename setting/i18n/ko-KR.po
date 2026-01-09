@@ -1,0 +1,121 @@
+# Korean translations for Hue Settings
+
+msgid "SETTINGS_SUBTITLE"
+msgstr "Philips Hue Bridge 연결을 설정하세요"
+
+msgid "BRIDGE_IP"
+msgstr "브릿지 IP 주소"
+
+msgid "BRIDGE_IP_PLACEHOLDER"
+msgstr "예: 192.168.1.100"
+
+msgid "API_VERSION"
+msgstr "API 버전"
+
+msgid "NOT_CONFIGURED"
+msgstr "아직 설정되지 않음"
+
+msgid "BRIDGE_CONFIGURED"
+msgstr "브릿지가 설정되고 페어링되었습니다"
+
+msgid "BRIDGE_NOT_CONFIGURED"
+msgstr "브릿지가 설정되지 않았습니다. 앱을 사용하여 페어링하세요."
+
+msgid "TEST_CONNECTION"
+msgstr "연결 테스트"
+
+msgid "CLEAR_CONFIG"
+msgstr "설정 삭제"
+
+msgid "ADVANCED_SETTINGS"
+msgstr "고급 설정"
+
+msgid "DEBUG_MODE"
+msgstr "디버그 모드"
+
+msgid "HELP_TITLE"
+msgstr "브릿지 페어링 방법"
+
+msgid "HELP_TEXT"
+msgstr "1. 시계에서 Hue 앱을 엽니다\n2. 앱이 자동으로 브릿지를 검색합니다\n3. Hue Bridge의 물리적 버튼을 누르세요\n4. 페어링이 완료될 때까지 기다리세요\n5. 설정이 자동으로 저장됩니다"
+
+msgid "CONFIRM_CLEAR"
+msgstr "모든 Hue Bridge 설정을 삭제하시겠습니까?\n\n다시 페어링해야 합니다."
+
+msgid "CONFIG_CLEARED"
+msgstr "설정이 성공적으로 삭제되었습니다!"
+
+msgid "BRIDGE_NOT_SETUP"
+msgstr "브릿지가 설정되지 않았습니다. 먼저 시계 앱을 사용하여 페어링하세요."
+
+msgid "BRIDGE_CONFIGURATION"
+msgstr "브릿지 설정"
+
+msgid "CONNECTION_STATUS"
+msgstr "연결 상태"
+
+msgid "FAVORITE_COLORS"
+msgstr "즐겨찾는 색상"
+
+msgid "ACTIONS"
+msgstr "작업"
+
+msgid "USERNAME_LABEL"
+msgstr "사용자 이름:"
+
+msgid "API_VERSION_LABEL"
+msgstr "API 버전:"
+
+msgid "DEFAULT_TAB"
+msgstr "기본 탭"
+
+msgid "SHOW_SCENES"
+msgstr "장면 표시"
+
+msgid "DISPLAY_ORDER"
+msgstr "표시 순서"
+
+msgid "LIGHTS_FIRST"
+msgstr "조명 우선"
+
+msgid "SCENES_FIRST"
+msgstr "장면 우선"
+
+msgid "DEMO_MODE"
+msgstr "데모 모드"
+
+msgid "FAVORITE_COLORS_DESC"
+msgstr "즐겨찾는 색상 프리셋을 관리하세요. 시계의 조명 상세 페이지에서 색상을 추가할 수 있습니다."
+
+msgid "CURRENT_PRESETS"
+msgstr "현재 프리셋:"
+
+msgid "RESET_PRESETS"
+msgstr "기본 프리셋으로 재설정"
+
+msgid "RESET_PRESETS_CONFIRM"
+msgstr "기본 프리셋으로 재설정하시겠습니까?"
+
+msgid "CLEAR_ALL_CONFIG"
+msgstr "모든 설정 삭제"
+
+msgid "CLEAR_ALL_CONFIG_CONFIRM"
+msgstr "모든 설정을 삭제하시겠습니까?"
+
+msgid "HELP_STEP_1"
+msgstr "1. 시계에서 Hue 앱을 엽니다"
+
+msgid "HELP_STEP_2"
+msgstr "2. 앱이 자동으로 브릿지를 검색합니다"
+
+msgid "HELP_STEP_3"
+msgstr "3. Hue Bridge의 물리적 버튼을 누르세요"
+
+msgid "HELP_STEP_4"
+msgstr "4. 페어링이 완료될 때까지 기다리세요"
+
+msgid "HELP_STEP_5"
+msgstr "5. 설정이 자동으로 저장됩니다"
+
+msgid "MADE_WITH_LOVE"
+msgstr "Zepp OS를 위해 ❤️로 제작"

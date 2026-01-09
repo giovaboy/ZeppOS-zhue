@@ -1,0 +1,121 @@
+# German translations for Hue Settings
+
+msgid "SETTINGS_SUBTITLE"
+msgstr "Konfiguriere deine Philips Hue Bridge Verbindung"
+
+msgid "BRIDGE_IP"
+msgstr "Bridge IP-Adresse"
+
+msgid "BRIDGE_IP_PLACEHOLDER"
+msgstr "z.B. 192.168.1.100"
+
+msgid "API_VERSION"
+msgstr "API-Version"
+
+msgid "NOT_CONFIGURED"
+msgstr "Noch nicht konfiguriert"
+
+msgid "BRIDGE_CONFIGURED"
+msgstr "Bridge ist konfiguriert und gekoppelt"
+
+msgid "BRIDGE_NOT_CONFIGURED"
+msgstr "Bridge nicht konfiguriert. Nutze die App zum Koppeln."
+
+msgid "TEST_CONNECTION"
+msgstr "Verbindung testen"
+
+msgid "CLEAR_CONFIG"
+msgstr "Konfiguration löschen"
+
+msgid "ADVANCED_SETTINGS"
+msgstr "Erweiterte Einstellungen"
+
+msgid "DEBUG_MODE"
+msgstr "Debug-Modus"
+
+msgid "HELP_TITLE"
+msgstr "So koppelst du deine Bridge"
+
+msgid "HELP_TEXT"
+msgstr "1. Öffne die Hue App auf deiner Uhr\n2. Die App sucht automatisch nach deiner Bridge\n3. Drücke den physischen Knopf auf deiner Hue Bridge\n4. Warte bis die Kopplung abgeschlossen ist\n5. Die Konfiguration wird automatisch gespeichert"
+
+msgid "CONFIRM_CLEAR"
+msgstr "Bist du sicher, dass du die gesamte Hue Bridge Konfiguration löschen möchtest?\n\nDu musst sie erneut koppeln."
+
+msgid "CONFIG_CLEARED"
+msgstr "Konfiguration erfolgreich gelöscht!"
+
+msgid "BRIDGE_NOT_SETUP"
+msgstr "Bridge nicht konfiguriert. Kopple sie zuerst über die Uhren-App."
+
+msgid "BRIDGE_CONFIGURATION"
+msgstr "Bridge-Konfiguration"
+
+msgid "CONNECTION_STATUS"
+msgstr "Verbindungsstatus"
+
+msgid "FAVORITE_COLORS"
+msgstr "Lieblingsfarben"
+
+msgid "ACTIONS"
+msgstr "Aktionen"
+
+msgid "USERNAME_LABEL"
+msgstr "Benutzername:"
+
+msgid "API_VERSION_LABEL"
+msgstr "API-Version:"
+
+msgid "DEFAULT_TAB"
+msgstr "Standard-Tab"
+
+msgid "SHOW_SCENES"
+msgstr "Szenen anzeigen"
+
+msgid "DISPLAY_ORDER"
+msgstr "Anzeigereihenfolge"
+
+msgid "LIGHTS_FIRST"
+msgstr "Lampen zuerst"
+
+msgid "SCENES_FIRST"
+msgstr "Szenen zuerst"
+
+msgid "DEMO_MODE"
+msgstr "DEMO-Modus"
+
+msgid "FAVORITE_COLORS_DESC"
+msgstr "Verwalte deine Lieblingsfarbvoreinstellungen. Du kannst Farben von der Lampendetailseite auf deiner Uhr hinzufügen."
+
+msgid "CURRENT_PRESETS"
+msgstr "Aktuelle Voreinstellungen:"
+
+msgid "RESET_PRESETS"
+msgstr "Voreinstellungen zurücksetzen"
+
+msgid "RESET_PRESETS_CONFIRM"
+msgstr "Voreinstellungen auf Standard zurücksetzen?"
+
+msgid "CLEAR_ALL_CONFIG"
+msgstr "Gesamte Konfiguration löschen"
+
+msgid "CLEAR_ALL_CONFIG_CONFIRM"
+msgstr "Gesamte Konfiguration löschen?"
+
+msgid "HELP_STEP_1"
+msgstr "1. Öffne die Hue App auf deiner Uhr"
+
+msgid "HELP_STEP_2"
+msgstr "2. Die App sucht automatisch nach deiner Bridge"
+
+msgid "HELP_STEP_3"
+msgstr "3. Drücke den physischen Knopf auf deiner Hue Bridge"
+
+msgid "HELP_STEP_4"
+msgstr "4. Warte bis die Kopplung abgeschlossen ist"
+
+msgid "HELP_STEP_5"
+msgstr "5. Die Konfiguration wird automatisch gespeichert"
+
+msgid "MADE_WITH_LOVE"
+msgstr "Mit ❤️ für Zepp OS gemacht"

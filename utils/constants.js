@@ -115,8 +115,6 @@ export const DEMO_DATA = {
       name: 'Ceiling Spots',
       ison: false,
       bri: 100,
-      hue: 0,
-      sat: 0,
       ct: 366,
       colormode: 'ct',
       reachable: true,
@@ -162,8 +160,6 @@ export const DEMO_DATA = {
       name: 'Right Bedside',
       ison: false,
       bri: 50,
-      hue: 0,
-      sat: 0,
       ct: 400,
       colormode: 'ct',
       reachable: true,
@@ -207,8 +203,6 @@ export const DEMO_DATA = {
       name: 'Tree Spot (Lost)',
       ison: true, // Appears ON but no signal
       bri: 254,
-      hue: 0,
-      sat: 0,
       colormode: 'bri',
       reachable: false,
       modelid: 'LPA001'

@@ -556,13 +556,24 @@ Page(
       })
         .then(res => {
           if (res.success) {
+
+            let colormode = this.state.light.colormode // Keep current as fallback
+
+            if (favorite.type === PRESET_TYPES.CT) {
+              colormode = 'ct'
+            } else if (favorite.type === PRESET_TYPES.COLOR) {
+              // Use 'xy' if preset has xy values, otherwise 'hs'
+              colormode = favorite.xy ? 'xy' : 'hs'
+            }
+
             this.updateLight({
               hex: favorite.hex,
               bri: favorite.bri,
               hue: favorite.hue,
               sat: favorite.sat,
               xy: favorite.xy,
-              ct: favorite.ct
+              ct: favorite.ct,
+              colormode: colormode
             })
             this.loadLightDetail()
           }

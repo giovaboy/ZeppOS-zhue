@@ -1,121 +1,121 @@
 # Italian translations for Hue Settings
 
 msgid "SETTINGS_SUBTITLE"
-msgstr "Configura la connessione al Bridge Philips Hue"
+msgstr "Configura la connessione al tuo Philips Hue Bridge"
 
 msgid "BRIDGE_IP"
 msgstr "Indirizzo IP del Bridge"
 
 msgid "BRIDGE_IP_PLACEHOLDER"
-msgstr "e.g. 192.168.1.100"
+msgstr "es. 192.168.1.100"
 
 msgid "API_VERSION"
-msgstr "API Version"
+msgstr "Versione API"
 
 msgid "NOT_CONFIGURED"
-msgstr "Not configured yet"
+msgstr "Non ancora configurato"
 
 msgid "BRIDGE_CONFIGURED"
-msgstr "Bridge is configured and paired"
+msgstr "Bridge configurato e associato"
 
 msgid "BRIDGE_NOT_CONFIGURED"
-msgstr "Bridge not configured. Use the app to pair."
+msgstr "Bridge non configurato. Usa l'app per associarlo."
 
 msgid "TEST_CONNECTION"
-msgstr "Test Connection"
+msgstr "Testa Connessione"
 
 msgid "CLEAR_CONFIG"
-msgstr "Clear All Configuration"
+msgstr "Cancella Configurazione"
 
 msgid "ADVANCED_SETTINGS"
-msgstr "Advanced Settings"
+msgstr "Impostazioni Avanzate"
 
 msgid "DEBUG_MODE"
-msgstr "Debug Mode"
+msgstr "Modalità Debug"
 
 msgid "HELP_TITLE"
-msgstr "How to Pair Your Bridge"
+msgstr "Come Associare il Bridge"
 
 msgid "HELP_TEXT"
-msgstr "1. Open the Hue app on your watch\n2. The app will automatically search for your bridge\n3. Press the physical button on your Hue Bridge\n4. Wait for the pairing to complete\n5. Your configuration will be saved automatically"
+msgstr "1. Apri l'app Hue sul tuo orologio\n2. L'app cercherà automaticamente il bridge\n3. Premi il pulsante fisico sul tuo Hue Bridge\n4. Attendi il completamento dell'associazione\n5. La configurazione verrà salvata automaticamente"
 
 msgid "CONFIRM_CLEAR"
-msgstr "Are you sure you want to clear all Hue Bridge configuration?\n\nYou will need to pair again."
+msgstr "Sei sicuro di voler cancellare tutta la configurazione del Hue Bridge?\n\nDovrai associarlo di nuovo."
 
 msgid "CONFIG_CLEARED"
-msgstr "Configuration cleared successfully!"
+msgstr "Configurazione cancellata con successo!"
 
 msgid "BRIDGE_NOT_SETUP"
-msgstr "Bridge not configured. Please pair using the watch app first."
+msgstr "Bridge non configurato. Associalo prima usando l'app sull'orologio."
 
 msgid "BRIDGE_CONFIGURATION"
-msgstr "Bridge Configuration"
+msgstr "Configurazione Bridge"
 
 msgid "CONNECTION_STATUS"
-msgstr "Connection Status"
+msgstr "Stato Connessione"
 
 msgid "FAVORITE_COLORS"
-msgstr "Favorite Colors"
+msgstr "Colori Preferiti"
 
 msgid "ACTIONS"
-msgstr "Actions"
+msgstr "Azioni"
 
 msgid "USERNAME_LABEL"
 msgstr "Username:"
 
 msgid "API_VERSION_LABEL"
-msgstr "API Version:"
+msgstr "Versione API:"
 
 msgid "DEFAULT_TAB"
-msgstr "Default tab"
+msgstr "Tab predefinita"
 
 msgid "SHOW_SCENES"
-msgstr "Show Scenes"
+msgstr "Mostra Scene"
 
 msgid "DISPLAY_ORDER"
-msgstr "Display Order"
+msgstr "Ordine Visualizzazione"
 
 msgid "LIGHTS_FIRST"
-msgstr "Lights first"
+msgstr "Prima le luci"
 
 msgid "SCENES_FIRST"
-msgstr "Scenes first"
+msgstr "Prima le scene"
 
 msgid "DEMO_MODE"
-msgstr "DEMO Mode"
+msgstr "Modalità DEMO"
 
 msgid "FAVORITE_COLORS_DESC"
-msgstr "Manage your favorite color presets. You can add colors from the light detail page on your watch."
+msgstr "Gestisci i tuoi preset di colori preferiti. Puoi aggiungere colori dalla pagina dettaglio luce sul tuo orologio."
 
 msgid "CURRENT_PRESETS"
-msgstr "Current presets:"
+msgstr "Preset attuali:"
 
 msgid "RESET_PRESETS"
-msgstr "Reset to Default Presets"
+msgstr "Ripristina Preset Predefiniti"
 
 msgid "RESET_PRESETS_CONFIRM"
-msgstr "Reset to Default Presets?"
+msgstr "Ripristinare i preset predefiniti?"
 
 msgid "CLEAR_ALL_CONFIG"
-msgstr "Clear All Configuration"
+msgstr "Cancella Tutta la Configurazione"
 
 msgid "CLEAR_ALL_CONFIG_CONFIRM"
-msgstr "Clear All Configuration?"
+msgstr "Cancellare tutta la configurazione?"
 
 msgid "HELP_STEP_1"
-msgstr "1. Open the Hue app on your watch"
+msgstr "1. Apri l'app Hue sul tuo orologio"
 
 msgid "HELP_STEP_2"
-msgstr "2. The app will automatically search for your bridge"
+msgstr "2. L'app cercherà automaticamente il bridge"
 
 msgid "HELP_STEP_3"
-msgstr "3. Press the physical button on your Hue Bridge"
+msgstr "3. Premi il pulsante fisico sul tuo Hue Bridge"
 
 msgid "HELP_STEP_4"
-msgstr "4. Wait for the pairing to complete"
+msgstr "4. Attendi il completamento dell'associazione"
 
 msgid "HELP_STEP_5"
-msgstr "5. Your configuration will be saved automatically"
+msgstr "5. La configurazione verrà salvata automaticamente"
 
 msgid "MADE_WITH_LOVE"
-msgstr "Made with ❤️ for Zepp OS"
+msgstr "Fatto con ❤️ per Zepp OS"

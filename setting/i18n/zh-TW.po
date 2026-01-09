@@ -1,0 +1,121 @@
+# Chinese (Traditional) translations for Hue Settings
+
+msgid "SETTINGS_SUBTITLE"
+msgstr "設定您的 Philips Hue 橋接器連線"
+
+msgid "BRIDGE_IP"
+msgstr "橋接器 IP 位址"
+
+msgid "BRIDGE_IP_PLACEHOLDER"
+msgstr "例如 192.168.1.100"
+
+msgid "API_VERSION"
+msgstr "API 版本"
+
+msgid "NOT_CONFIGURED"
+msgstr "尚未設定"
+
+msgid "BRIDGE_CONFIGURED"
+msgstr "橋接器已設定並配對"
+
+msgid "BRIDGE_NOT_CONFIGURED"
+msgstr "橋接器未設定。請使用應用程式進行配對。"
+
+msgid "TEST_CONNECTION"
+msgstr "測試連線"
+
+msgid "CLEAR_CONFIG"
+msgstr "清除設定"
+
+msgid "ADVANCED_SETTINGS"
+msgstr "進階設定"
+
+msgid "DEBUG_MODE"
+msgstr "除錯模式"
+
+msgid "HELP_TITLE"
+msgstr "如何配對橋接器"
+
+msgid "HELP_TEXT"
+msgstr "1. 在手錶上開啟 Hue 應用程式\n2. 應用程式將自動搜尋橋接器\n3. 按下 Hue Bridge 上的實體按鈕\n4. 等待配對完成\n5. 設定將自動儲存"
+
+msgid "CONFIRM_CLEAR"
+msgstr "您確定要清除所有 Hue Bridge 設定嗎？\n\n您需要重新配對。"
+
+msgid "CONFIG_CLEARED"
+msgstr "設定已成功清除！"
+
+msgid "BRIDGE_NOT_SETUP"
+msgstr "橋接器未設定。請先使用手錶應用程式進行配對。"
+
+msgid "BRIDGE_CONFIGURATION"
+msgstr "橋接器設定"
+
+msgid "CONNECTION_STATUS"
+msgstr "連線狀態"
+
+msgid "FAVORITE_COLORS"
+msgstr "收藏顏色"
+
+msgid "ACTIONS"
+msgstr "操作"
+
+msgid "USERNAME_LABEL"
+msgstr "使用者名稱："
+
+msgid "API_VERSION_LABEL"
+msgstr "API 版本："
+
+msgid "DEFAULT_TAB"
+msgstr "預設標籤頁"
+
+msgid "SHOW_SCENES"
+msgstr "顯示場景"
+
+msgid "DISPLAY_ORDER"
+msgstr "顯示順序"
+
+msgid "LIGHTS_FIRST"
+msgstr "燈光優先"
+
+msgid "SCENES_FIRST"
+msgstr "場景優先"
+
+msgid "DEMO_MODE"
+msgstr "展示模式"
+
+msgid "FAVORITE_COLORS_DESC"
+msgstr "管理您的收藏顏色預設。您可以在手錶上的燈光詳情頁面新增顏色。"
+
+msgid "CURRENT_PRESETS"
+msgstr "目前預設："
+
+msgid "RESET_PRESETS"
+msgstr "重設為預設值"
+
+msgid "RESET_PRESETS_CONFIRM"
+msgstr "重設為預設值？"
+
+msgid "CLEAR_ALL_CONFIG"
+msgstr "清除所有設定"
+
+msgid "CLEAR_ALL_CONFIG_CONFIRM"
+msgstr "清除所有設定？"
+
+msgid "HELP_STEP_1"
+msgstr "1. 在手錶上開啟 Hue 應用程式"
+
+msgid "HELP_STEP_2"
+msgstr "2. 應用程式將自動搜尋橋接器"
+
+msgid "HELP_STEP_3"
+msgstr "3. 按下 Hue Bridge 上的實體按鈕"
+
+msgid "HELP_STEP_4"
+msgstr "4. 等待配對完成"
+
+msgid "HELP_STEP_5"
+msgstr "5. 設定將自動儲存"
+
+msgid "MADE_WITH_LOVE"
+msgstr "用 ❤️ 為 Zepp OS 製作"

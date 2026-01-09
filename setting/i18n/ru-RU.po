@@ -1,0 +1,121 @@
+# Russian translations for Hue Settings
+
+msgid "SETTINGS_SUBTITLE"
+msgstr "Настройте подключение к Philips Hue Bridge"
+
+msgid "BRIDGE_IP"
+msgstr "IP-адрес шлюза"
+
+msgid "BRIDGE_IP_PLACEHOLDER"
+msgstr "напр. 192.168.1.100"
+
+msgid "API_VERSION"
+msgstr "Версия API"
+
+msgid "NOT_CONFIGURED"
+msgstr "Ещё не настроено"
+
+msgid "BRIDGE_CONFIGURED"
+msgstr "Шлюз настроен и сопряжён"
+
+msgid "BRIDGE_NOT_CONFIGURED"
+msgstr "Шлюз не настроен. Используйте приложение для сопряжения."
+
+msgid "TEST_CONNECTION"
+msgstr "Проверить подключение"
+
+msgid "CLEAR_CONFIG"
+msgstr "Очистить конфигурацию"
+
+msgid "ADVANCED_SETTINGS"
+msgstr "Расширенные настройки"
+
+msgid "DEBUG_MODE"
+msgstr "Режим отладки"
+
+msgid "HELP_TITLE"
+msgstr "Как сопрячь шлюз"
+
+msgid "HELP_TEXT"
+msgstr "1. Откройте приложение Hue на часах\n2. Приложение автоматически найдёт ваш шлюз\n3. Нажмите физическую кнопку на Hue Bridge\n4. Дождитесь завершения сопряжения\n5. Конфигурация сохранится автоматически"
+
+msgid "CONFIRM_CLEAR"
+msgstr "Вы уверены, что хотите очистить всю конфигурацию Hue Bridge?\n\nВам придётся выполнить сопряжение заново."
+
+msgid "CONFIG_CLEARED"
+msgstr "Конфигурация успешно очищена!"
+
+msgid "BRIDGE_NOT_SETUP"
+msgstr "Шлюз не настроен. Сначала выполните сопряжение через приложение на часах."
+
+msgid "BRIDGE_CONFIGURATION"
+msgstr "Конфигурация шлюза"
+
+msgid "CONNECTION_STATUS"
+msgstr "Состояние подключения"
+
+msgid "FAVORITE_COLORS"
+msgstr "Любимые цвета"
+
+msgid "ACTIONS"
+msgstr "Действия"
+
+msgid "USERNAME_LABEL"
+msgstr "Имя пользователя:"
+
+msgid "API_VERSION_LABEL"
+msgstr "Версия API:"
+
+msgid "DEFAULT_TAB"
+msgstr "Вкладка по умолчанию"
+
+msgid "SHOW_SCENES"
+msgstr "Показывать сцены"
+
+msgid "DISPLAY_ORDER"
+msgstr "Порядок отображения"
+
+msgid "LIGHTS_FIRST"
+msgstr "Сначала лампы"
+
+msgid "SCENES_FIRST"
+msgstr "Сначала сцены"
+
+msgid "DEMO_MODE"
+msgstr "ДЕМО-режим"
+
+msgid "FAVORITE_COLORS_DESC"
+msgstr "Управляйте пресетами любимых цветов. Вы можете добавлять цвета со страницы детализации лампы на часах."
+
+msgid "CURRENT_PRESETS"
+msgstr "Текущие пресеты:"
+
+msgid "RESET_PRESETS"
+msgstr "Сбросить пресеты"
+
+msgid "RESET_PRESETS_CONFIRM"
+msgstr "Сбросить пресеты на стандартные?"
+
+msgid "CLEAR_ALL_CONFIG"
+msgstr "Очистить всю конфигурацию"
+
+msgid "CLEAR_ALL_CONFIG_CONFIRM"
+msgstr "Очистить всю конфигурацию?"
+
+msgid "HELP_STEP_1"
+msgstr "1. Откройте приложение Hue на часах"
+
+msgid "HELP_STEP_2"
+msgstr "2. Приложение автоматически найдёт ваш шлюз"
+
+msgid "HELP_STEP_3"
+msgstr "3. Нажмите физическую кнопку на Hue Bridge"
+
+msgid "HELP_STEP_4"
+msgstr "4. Дождитесь завершения сопряжения"
+
+msgid "HELP_STEP_5"
+msgstr "5. Конфигурация сохранится автоматически"
+
+msgid "MADE_WITH_LOVE"
+msgstr "Сделано с ❤️ для Zepp OS"
