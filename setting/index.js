@@ -2,8 +2,8 @@ import { gettext } from 'i18n'
 import { DEFAULT_PRESETS, PRESET_TYPES } from '../utils/constants'
 import appJson from '../app.json'
 
-const APP_VERSION = appJson.app.version.name  // "1.0.0"
-const APP_NAME = appJson.app.appName          // "zhue"
+const APP_VERSION = appJson.app.version.name
+const APP_NAME = appJson.app.appName
 
 function getPresetTypePriority(type) {
   switch (type) {
@@ -53,7 +53,7 @@ AppSettingsPage({
                 marginBottom: '10px'
               }
             },
-            ['🎨 zhue']
+            ['🎨 ' + `${APP_NAME}`]
           )
         ]),
 
