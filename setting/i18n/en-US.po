@@ -1,7 +1,4 @@
 # English translations for Hue Settings
-msgid ""
-msgstr ""
-"Language: en-US\n"
 
 msgid "SETTINGS_SUBTITLE"
 msgstr "Configure your Philips Hue Bridge connection"
@@ -53,3 +50,90 @@ msgstr "Configuration cleared successfully!"
 
 msgid "BRIDGE_NOT_SETUP"
 msgstr "Bridge not configured. Please pair using the watch app first."
+
+msgid "BRIDGE_CONFIGURATION"
+msgstr "Bridge Configuration"
+
+msgid "CONNECTION_STATUS"
+msgstr "Connection Status"
+
+msgid "ADVANCED_SETTINGS"
+msgstr "Advanced Settings"
+
+msgid "FAVORITE_COLORS"
+msgstr "Favorite Colors"
+
+msgid "ACTIONS"
+msgstr "Actions"
+
+msgid "USERNAME_LABEL"
+msgstr "Username:"
+
+msgid "API_VERSION_LABEL"
+msgstr "API Version:"
+
+msgid "BRIDGE_CONFIGURED"
+msgstr "Bridge is configured and paired"
+
+msgid "BRIDGE_NOT_CONFIGURED"
+msgstr "Bridge not configured. Use the app to pair."
+
+msgid "NOT_CONFIGURED"
+msgstr "Not configured yet"
+
+msgid "DEFAULT_TAB"
+msgstr "Default tab"
+
+msgid "SHOW_SCENES"
+msgstr "Show Scenes"
+
+msgid "DISPLAY_ORDER"
+msgstr "Display Order"
+
+msgid "LIGHTS_FIRST"
+msgstr "Lights first"
+
+msgid "SCENES_FIRST"
+msgstr "Scenes first"
+
+msgid "DEMO_MODE"
+msgstr "DEMO Mode"
+
+msgid "FAVORITE_COLORS_DESC"
+msgstr "Manage your favorite color presets. You can add colors from the light detail page on your watch."
+
+msgid "CURRENT_PRESETS"
+msgstr "Current presets:"
+
+msgid "RESET_PRESETS"
+msgstr "Reset to Default Presets"
+
+msgid "RESET_PRESETS_CONFIRM"
+msgstr "Reset to Default Presets?"
+
+msgid "CLEAR_ALL_CONFIG"
+msgstr "Clear All Configuration"
+
+msgid "CLEAR_ALL_CONFIG_CONFIRM"
+msgstr "Clear All Configuration?"
+
+msgid "HELP_TITLE"
+msgstr "How to Pair Your Bridge"
+
+msgid "HELP_STEP_1"
+msgstr "1. Open the Hue app on your watch"
+
+msgid "HELP_STEP_2"
+msgstr "2. The app will automatically search for your bridge"
+
+msgid "HELP_STEP_3"
+msgstr "3. Press the physical button on your Hue Bridge"
+
+msgid "HELP_STEP_4"
+msgstr "4. Wait for the pairing to complete"
+
+msgid "HELP_STEP_5"
+msgstr "5. Your configuration will be saved automatically"
+
+msgid "MADE_WITH_LOVE"
+msgstr "Made with ❤️ for Zepp OS"

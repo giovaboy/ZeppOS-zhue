@@ -1,5 +1,9 @@
 import { gettext } from 'i18n'
 import { DEFAULT_PRESETS, PRESET_TYPES } from '../utils/constants'
+import appJson from '../app.json'  // ← Aggiungi questo
+
+const APP_VERSION = appJson.app.version.name  // "1.0.0"
+const APP_NAME = appJson.app.appName          // "zhue"
 
 function getPresetTypePriority(type) {
   switch (type) {
@@ -99,13 +103,13 @@ AppSettingsPage({
                 marginBottom: '15px'
               }
             },
-            ['Bridge Configuration']
+            [gettext('BRIDGE_CONFIGURATION')]
           ),
 
           // Bridge IP Input
           TextInput({
-            label: gettext('BRIDGE_IP') || 'Bridge IP Address',
-            placeholder: 'e.g. 192.168.1.132',
+            label: gettext('BRIDGE_IP'),
+            placeholder: gettext('BRIDGE_IP_PLACEHOLDER'),
             value: props.settingsStorage.getItem('hue_bridge_ip') || '',
             onChange: (value) => {
               props.settingsStorage.setItem('hue_bridge_ip', value)
@@ -182,7 +186,7 @@ AppSettingsPage({
                     marginBottom: '5px'
                   }
                 },
-                ['API Version: ']
+                [gettext('API_VERSION_LABEL')]
               ),
               Text(
                 {
@@ -220,7 +224,7 @@ AppSettingsPage({
                 marginBottom: '15px'
               }
             },
-            ['Connection Status']
+            [gettext('CONNECTION_STATUS')]
           ),
 
           View(
@@ -257,8 +261,8 @@ AppSettingsPage({
                 },
                 [
                   props.settingsStorage.getItem('hue_username') ?
-                    'Bridge is configured and paired' :
-                    'Bridge not configured. Use the app to pair.'
+                    gettext('BRIDGE_CONFIGURED') :
+                    gettext('BRIDGE_NOT_CONFIGURED')
                 ]
               )
             ]
@@ -287,7 +291,7 @@ AppSettingsPage({
                 marginBottom: '15px'
               }
             },
-            ['Advanced Settings']
+            [gettext('ADVANCED_SETTINGS')]
           ),
 
           // Manual API Version Override
@@ -338,18 +342,18 @@ AppSettingsPage({
               }),*/
               // Default tab
               Select({
-                title: 'Default tab',
+                title: gettext('DEFAULT_TAB'),
                 options: [{ name: 'ROOMS', value: 'ROOMS' },
                 { name: 'ZONES', value: 'ZONES' }
                 ],
-                value: props.settingsStorage.getItem('default_tab') ,
+                value: props.settingsStorage.getItem('default_tab'),
                 onChange: (value) => {
                   props.settingsStorage.setItem('default_tab', value)
                 }
               }),
               // Show scenes
               Toggle({
-                label: 'Show Scenes',
+                label: gettext('SHOW_SCENES'),
                 value: props.settingsStorage.getItem('hue_show_scenes') === 'true',
                 onChange: (value) => {
                   props.settingsStorage.setItem('hue_show_scenes', value ? 'true' : 'false')
@@ -358,9 +362,9 @@ AppSettingsPage({
 
               // Display Order
               Select({
-                title: 'Display Order',
-                options: [{ name: 'Light first', value: 'LIGHTS_FIRST' },
-                { name: 'Scenes first', value: 'SCENES_FIRST' }
+                title: gettext('DISPLAY_ORDER'),
+                options: [{ name: gettext('LIGHTS_FIRST'), value: 'LIGHTS_FIRST' },
+                { name: gettext('SCENES_FIRST'), value: 'SCENES_FIRST' }
                 ],
                 value: props.settingsStorage.getItem('hue_display_order'),
                 selectedValue: props.settingsStorage.getItem('hue_display_order'),
@@ -371,7 +375,7 @@ AppSettingsPage({
 
               // Debug Mode Toggle
               Toggle({
-                label: '🐛 DEMO Mode',
+                label: '🐛 ' + gettext('DEMO_MODE'),
                 //settingsKey: 'hue_demo_mode',
                 value: props.settingsStorage.getItem('hue_demo_mode') === 'true',
                 onChange: (value) => {
@@ -403,7 +407,7 @@ AppSettingsPage({
                 marginBottom: '15px'
               }
             },
-            ['🎨 Favorite Colors']
+            ['🎨 ' + gettext('FAVORITE_COLORS')]
           ),
 
           Text(
@@ -415,7 +419,7 @@ AppSettingsPage({
                 marginBottom: '15px'
               }
             },
-            ['Manage your favorite color presets. You can add colors from the light detail page on your watch.']
+            [gettext('FAVORITE_COLORS_DESCRIPTION')]
           ),
 
           // Display current presets
@@ -477,7 +481,7 @@ AppSettingsPage({
                 marginBottom: '10px'
               }
             },
-            [`Current presets: ${(() => {
+            [gettext('CURRENT_PRESETS') + ` ${(() => {
               const favColorsStr = props.settingsStorage.getItem('hue_favorite_colors')
               if (favColorsStr) {
                 try {
@@ -489,21 +493,6 @@ AppSettingsPage({
               return DEFAULT_PRESETS.length
             })()}`]
           ),
-
-          /*Button({
-            label: '🔄 Reset to Default Presets',
-            color: 'secondary',
-            style: {
-              width: '100%'
-            },
-            onClick: () => {
-              //if (confirm('Reset favorite colors to default presets?')) {
-              props.settingsStorage.setItem('hue_favorite_colors', JSON.stringify(DEFAULT_PRESETS))
-              //alert('✅ Favorite colors reset to defaults!')
-              //window.location.reload()
-              //}
-            }
-          }),*/
 
           View({
             style: {
@@ -519,11 +508,11 @@ AppSettingsPage({
             }
           },
             [TextInput({
-              label: '🔄 Reset to Default Presets',
+              label: '🔄 ' + gettext('RESET_PRESETS'),
               labelStyle: { textAlign: 'center' },
               subStyle: { display: 'none' },
               disabled: true,
-              placeholder: '🔄 Reset to Default Presets' + '?',
+              placeholder: '🔄 ' + gettext('RESET_PRESETS_CONFIRM'),
               value: undefined,
               onChange: () => {
                 props.settingsStorage.setItem('hue_favorite_colors', JSON.stringify(DEFAULT_PRESETS))
@@ -555,48 +544,10 @@ AppSettingsPage({
                 marginBottom: '15px'
               }
             },
-            ['Actions']
+            [gettext('ACTIONS')]
           ),
 
-          // Test Connection Button
-          /*Button({
-            label: '🔄 Test Connection',
-            color: 'primary',
-            style: {
-              marginBottom: '10px',
-              width: '100%'
-            },
-            onClick: () => {
-              const bridgeIp = props.settingsStorage.getItem('hue_bridge_ip')
-              const username = props.settingsStorage.getItem('hue_username')
-
-              if (!bridgeIp || !username) {
-                alert('⚠️ Bridge not configured. Please pair using the watch app first.')
-                return
-              }
-
-              alert('Testing connection to ' + bridgeIp + '...\n\n(Feature coming soon)')
-            },
-          }),*/
-
           // Clear Configuration Button
-          /*Button({
-            label: '🗑️ Clear All Configuration',
-            color: 'secondary',
-            style: {
-              width: '100%'
-            },
-            onClick: () => {
-              if (confirm('Are you sure you want to clear all Hue Bridge configuration?\n\nYou will need to pair again.')) {
-                props.settingsStorage.removeItem('hue_bridge_ip')
-                props.settingsStorage.removeItem('hue_username')
-                props.settingsStorage.removeItem('hue_api_version')
-                alert('✅ Configuration cleared successfully!')
-                window.location.reload()
-              }
-            },
-          }),*/
-
           View({
             style: {
               //fontSize: '12px',
@@ -611,11 +562,11 @@ AppSettingsPage({
             }
           },
             [TextInput({
-              label: '🗑️ Clear All Configuration',
+              label: '🗑️ ' + gettext('CLEAR_ALL_CONFIG'),
               labelStyle: { textAlign: 'center' },
               subStyle: { display: 'none' },
               disabled: true,
-              placeholder: '🗑️ Clear All Configuration' + '?',
+              placeholder: '🗑️ ' + gettext('CLEAR_ALL_CONFIG_CONFIRM'),
               value: undefined,
               onChange: () => {
                 props.settingsStorage.removeItem('hue_bridge_ip')
@@ -653,7 +604,7 @@ AppSettingsPage({
                 marginBottom: '10px'
               }
             },
-            ['💡 How to Pair Your Bridge']
+            ['💡 ' + gettext('HELP_TITLE')]
           ),
           Text(
             {
@@ -665,11 +616,11 @@ AppSettingsPage({
               }
             },
             [
-              '1. Open the Hue app on your watch\n' +
-              '2. The app will automatically search for your bridge\n' +
-              '3. Press the physical button on your Hue Bridge\n' +
-              '4. Wait for the pairing to complete\n' +
-              '5. Your configuration will be saved automatically'
+              gettext('HELP_STEP_1') + '\n' +
+              gettext('HELP_STEP_2') + '\n' +
+              gettext('HELP_STEP_3') + '\n' +
+              gettext('HELP_STEP_4') + '\n' +
+              gettext('HELP_STEP_5')
             ]
           )
         ]
@@ -694,7 +645,7 @@ AppSettingsPage({
                 color: '#6c757d'
               }
             },
-            ['zhue v1.0']
+            [`${APP_NAME} v${APP_VERSION}`]
           ),
           Text(
             {
@@ -704,7 +655,7 @@ AppSettingsPage({
                 marginTop: '5px'
               }
             },
-            [' | Made with ❤️ for Zepp OS']
+            [' | ' + gettext('MADE_WITH_LOVE')]
           )
         ]
       )
