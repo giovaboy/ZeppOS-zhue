@@ -1,9 +1,11 @@
 import { gettext } from 'i18n'
 import { DEFAULT_PRESETS, PRESET_TYPES } from '../utils/constants'
-//import appJson from '../app.json'
+//import { getPackageInfo } from '@zos/app'
 
-const APP_VERSION = "1.0.0"//appJson.app.version.name
-const APP_NAME = "zhue"//appJson.app.appName
+//const packageInfo = getPackageInfo()
+
+const APP_VERSION = "1.0.0"//packageInfo.name//"1.0.0"//
+const APP_NAME = "zhue"//packageInfo.name//"zhue"//
 
 function getPresetTypePriority(type) {
   switch (type) {
@@ -419,7 +421,7 @@ AppSettingsPage({
                 marginBottom: '15px'
               }
             },
-            [gettext('FAVORITE_COLORS_DESCRIPTION')]
+            [gettext('FAVORITE_COLORS_DESC')]
           ),
 
           // Display current presets
@@ -638,8 +640,9 @@ AppSettingsPage({
           },
         },
         [
-          Text(
+          Link(
             {
+              source: 'https://github.com/giovaboy/ZeppOS-zhue',
               style: {
                 fontSize: '12px',
                 color: '#6c757d'
@@ -650,7 +653,7 @@ AppSettingsPage({
           Text(
             {
               style: {
-                fontSize: '11px',
+                fontSize: '16px',
                 color: '#adb5bd',
                 marginTop: '5px'
               }

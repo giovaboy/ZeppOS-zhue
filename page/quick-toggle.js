@@ -10,6 +10,9 @@ import { px } from '@zos/utils'
 import { getText } from '@zos/i18n'
 import { COLORS } from '../utils/constants'
 import { getLogger } from '../utils/logger'
+import { setStatusBarVisible } from '@zos/ui'
+
+setStatusBarVisible(false)
 
 const logger = getLogger('zhue-quick-toggle')
 const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
