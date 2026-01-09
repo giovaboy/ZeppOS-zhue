@@ -177,3 +177,9 @@ msgstr "Failed to load details"
 
 msgid "ERROR"
 msgstr "Error"
+
+msgid "NO_DATA"
+msgstr "No light data available"
+
+msgid "RELOAD"
+msgstr "Reload"
