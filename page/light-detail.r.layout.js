@@ -1,6 +1,6 @@
 import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
-import { widget, align, prop, event } from '@zos/ui'
+import { widget, align, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { BRI_RANGE, COLORS, PRESET_TYPES, btnPressColor, ct2hex, xy2hex, hexStringToInt } from '../utils/constants'
 import { getLogger } from '../utils/logger'

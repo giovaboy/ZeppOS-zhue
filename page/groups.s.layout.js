@@ -8,7 +8,7 @@ import { setStatusBarVisible } from '@zos/ui'
 
 setStatusBarVisible(false)
 
-const logger = getLogger('zhue-group-detail-page')
+const logger = getLogger('zhue-groups-layout')
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 

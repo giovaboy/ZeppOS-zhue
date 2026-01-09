@@ -1,8 +1,8 @@
 import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
-import { widget, align, text_style, prop, event } from '@zos/ui'
+import { widget, align, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
-import { HUE_RANGE, SAT_RANGE, BRI_RANGE, CT_MIN, CT_MAX, COLORS, hsb2hex, ct2hex, btnPressColor } from '../utils/constants.js'
+import { HUE_RANGE, SAT_RANGE, BRI_RANGE, CT_MIN, CT_MAX, COLORS, hsb2hex, btnPressColor } from '../utils/constants.js'
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 

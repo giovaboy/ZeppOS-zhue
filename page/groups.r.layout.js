@@ -5,7 +5,7 @@ import { getText } from '@zos/i18n'
 import { getLogger } from '../utils/logger.js'
 import { COLORS, btnPressColor, getGroupIconPath } from '../utils/constants.js'
 
-const logger = getLogger('zhue-group-detail-page')
+const logger = getLogger('zhue-groups-layout')
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 

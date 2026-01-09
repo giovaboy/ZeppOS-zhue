@@ -5,7 +5,7 @@ import { createWidget, deleteWidget, prop } from '@zos/ui'
 import { back } from '@zos/router'
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import { getLogger } from '../utils/logger.js'
-import { HUE_RANGE, SAT_RANGE, BRI_RANGE, CT_MIN, CT_MAX, hsb2hex, ct2hex, ct2hexString } from '../utils/constants.js'
+import { HUE_RANGE, SAT_RANGE, BRI_RANGE, CT_MIN, CT_MAX, hsb2hex, ct2hexString } from '../utils/constants.js'
 
 // Import Layout
 import { renderColorPickerPage, LAYOUT_CONFIG } from 'zosLoader:./color-picker.[pf].layout.js'
@@ -346,7 +346,7 @@ Page(
 
         sendBri(val, force) {
             const now = Date.now()
-            
+
             if (!force && (now - this._lastApiCall) < this._apiThrottle) {
                 return
             }

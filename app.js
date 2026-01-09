@@ -56,12 +56,12 @@ App(
 
             this.globalData.settingsLoaded = true
           } else {
-            console.warn('Failed to load settings, using defaults')
+            logger.warn('Failed to load settings, using defaults')
             this.globalData.settingsLoaded = true
           }
         })
         .catch(err => {
-          console.error('Error loading user settings:', err)
+          logger.error('Error loading user settings:', err)
           this.globalData.settingsLoaded = true
         })
     },
