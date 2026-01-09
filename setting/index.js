@@ -1,6 +1,6 @@
 import { gettext } from 'i18n'
 import { DEFAULT_PRESETS, PRESET_TYPES } from '../utils/constants'
-import appJson from '../app.json'  // ← Aggiungi questo
+import appJson from '../app.json'
 
 const APP_VERSION = appJson.app.version.name  // "1.0.0"
 const APP_NAME = appJson.app.appName          // "zhue"
@@ -147,7 +147,7 @@ AppSettingsPage({
                     marginBottom: '5px'
                   }
                 },
-                ['Username:']
+                [gettext('USERNAME_LABEL')]
               ),
               Text(
                 {
@@ -159,7 +159,7 @@ AppSettingsPage({
                     wordBreak: 'break-all'
                   }
                 },
-                [props.settingsStorage.getItem('hue_username') || 'Not configured yet']
+                [props.settingsStorage.getItem('hue_username') || gettext('NOT_CONFIGURED')]
               )
             ]
           ),

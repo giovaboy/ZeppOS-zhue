@@ -12,9 +12,6 @@ msgstr "e.g. 192.168.1.100"
 msgid "API_VERSION"
 msgstr "API Version"
 
-msgid "USERNAME_LABEL"
-msgstr "Username (Auto-generated)"
-
 msgid "NOT_CONFIGURED"
 msgstr "Not configured yet"
 
@@ -57,9 +54,6 @@ msgstr "Bridge Configuration"
 msgid "CONNECTION_STATUS"
 msgstr "Connection Status"
 
-msgid "ADVANCED_SETTINGS"
-msgstr "Advanced Settings"
-
 msgid "FAVORITE_COLORS"
 msgstr "Favorite Colors"
 
@@ -71,15 +65,6 @@ msgstr "Username:"
 
 msgid "API_VERSION_LABEL"
 msgstr "API Version:"
-
-msgid "BRIDGE_CONFIGURED"
-msgstr "Bridge is configured and paired"
-
-msgid "BRIDGE_NOT_CONFIGURED"
-msgstr "Bridge not configured. Use the app to pair."
-
-msgid "NOT_CONFIGURED"
-msgstr "Not configured yet"
 
 msgid "DEFAULT_TAB"
 msgstr "Default tab"
@@ -116,9 +101,6 @@ msgstr "Clear All Configuration"
 
 msgid "CLEAR_ALL_CONFIG_CONFIRM"
 msgstr "Clear All Configuration?"
-
-msgid "HELP_TITLE"
-msgstr "How to Pair Your Bridge"
 
 msgid "HELP_STEP_1"
 msgstr "1. Open the Hue app on your watch"
