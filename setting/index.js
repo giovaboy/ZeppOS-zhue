@@ -1,9 +1,9 @@
 import { gettext } from 'i18n'
 import { DEFAULT_PRESETS, PRESET_TYPES } from '../utils/constants'
-import appJson from '../app.json'
+//import appJson from '../app.json'
 
-const APP_VERSION = appJson.app.version.name
-const APP_NAME = appJson.app.appName
+const APP_VERSION = "1.0.0"//appJson.app.version.name
+const APP_NAME = "zhue"//appJson.app.appName
 
 function getPresetTypePriority(type) {
   switch (type) {
