@@ -57,7 +57,7 @@ function renderTabs(pageContext, currentMode, onTabSwitch) {
     pageContext.createTrackedWidget(widget.BUTTON, {
         x: startX, y: y, w: btnW, h: btnH,
         text: getText('COLOR'),
-        radius: 20,
+        radius: px(8),
         normal_color: currentMode === 'color' ? COLORS.activeTab : COLORS.inactiveTab,
         press_color: btnPressColor(COLORS.activeTab, 0.8),
         click_func: () => onTabSwitch('color')
@@ -67,7 +67,7 @@ function renderTabs(pageContext, currentMode, onTabSwitch) {
     pageContext.createTrackedWidget(widget.BUTTON, {
         x: startX + btnW + gap, y: y, w: btnW, h: btnH,
         text: getText('WHITE'),
-        radius: 20,
+        radius: px(8),
         normal_color: currentMode === 'ct' ? COLORS.activeTab : COLORS.inactiveTab,
         press_color: btnPressColor(COLORS.activeTab, 0.8),
         click_func: () => onTabSwitch('ct')

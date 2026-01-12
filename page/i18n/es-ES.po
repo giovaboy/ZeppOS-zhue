@@ -183,3 +183,9 @@ msgstr "No hay datos disponibles"
 
 msgid "RELOAD"
 msgstr "Recargar"
+
+msgid "COLOR"
+msgstr "Color"
+
+msgid "WHITE"
+msgstr "Blanco"

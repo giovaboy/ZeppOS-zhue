@@ -15,14 +15,15 @@ let { w: WIDGET_W, radius: WIDGET_RADIUS } = getAppWidgetSize()
 // Layout constants
 const COLUMNS = 3
 const HEADER_H = px(40)
-const PADDING_Y = px(10)
+const PADDING_Y = px(6)
 
 // Button layout: icona 70x70 + testo sotto
 const ICON_SIZE = px(70)
-const TEXT_H = px(50)
-const BUTTON_H = ICON_SIZE + TEXT_H  // 70 + 50 = 120
+const TEXT_SIZE = px(18)
+const TEXT_H = (TEXT_SIZE + px(8)) * 2  // Enough for 2 lines of text
+const BUTTON_H = ICON_SIZE + TEXT_H  // 70 + 56 = 126
 const BUTTON_GAP_X = px(8)
-const BUTTON_GAP_Y = px(8)
+const BUTTON_GAP_Y = 0//px(1)
 const PADDING_X = px(10)// Internal padding
 
 let AVAILABLE_W
@@ -224,7 +225,7 @@ AppWidget({
         w: BUTTON_W,
         h: TEXT_H,
         color: COLORS.text || 0xffffff,
-        text_size: px(18),
+        text_size: TEXT_SIZE,
         align_h: align.CENTER_H,
         align_v: align.TOP,
         text_style: text_style.WRAP,

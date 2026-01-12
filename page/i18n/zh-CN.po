@@ -183,3 +183,9 @@ msgstr "暂无数据"
 
 msgid "RELOAD"
 msgstr "重新加载"
+
+msgid "COLOR"
+msgstr "颜色"
+
+msgid "WHITE"
+msgstr "白色"

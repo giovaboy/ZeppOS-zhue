@@ -183,3 +183,9 @@ msgstr "데이터 없음"
 
 msgid "RELOAD"
 msgstr "새로고침"
+
+msgid "COLOR"
+msgstr "색상"
+
+msgid "WHITE"
+msgstr "흰색"

@@ -183,3 +183,9 @@ msgstr "Нет данных"
 
 msgid "RELOAD"
 msgstr "Перезагрузить"
+
+msgid "COLOR"
+msgstr "Цвет"
+
+msgid "WHITE"
+msgstr "Белый"

@@ -183,3 +183,9 @@ msgstr "No light data available"
 
 msgid "RELOAD"
 msgstr "Reload"
+
+msgid "COLOR"
+msgstr "Color"
+
+msgid "WHITE"
+msgstr "White"
