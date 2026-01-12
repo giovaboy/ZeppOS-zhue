@@ -125,16 +125,16 @@ msgid "SCENES"
 msgstr "Scenes"
 
 msgid "ADD_FAVORITE_COLOR"
-msgstr "Add favorite color"
+msgstr "Aggiungi colore preferito"
 
 msgid "NO_FAVORITE_COLOR"
-msgstr "No favorite colors added"
+msgstr "Nessun colore preferito aggiunto"
 
 msgid "FAVORITE_COLORS"
-msgstr "Favorite Colors"
+msgstr "Colori Preferiti"
 
 msgid "DUPLICATE_FAVORITE_COLOR"
-msgstr "Preset already exists"
+msgstr "Colore preferito già presente"
 
 msgid "WIDGET_NOT_CONFIGURED"
 msgstr "Aggiungi una luce a questo collegamento tenendo premuto il pulsante di selezione nella pagina della luce dell'app"
