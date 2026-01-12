@@ -11,6 +11,7 @@ import { getText } from '@zos/i18n'
 import { COLORS } from '../utils/constants'
 import { getLogger } from '../utils/logger'
 import { setStatusBarVisible } from '@zos/ui'
+import { connectStatus } from '@zos/ble'
 
 setStatusBarVisible(false)
 
@@ -25,10 +26,10 @@ Page(
       status: 'loading' // 'loading' | 'success' | 'error'
     },
     widgets: [],
-
+    
     onInit(p) {
       logger.debug('Quick toggle page onInit')
-
+      
       // Parse params
       let params = {}
       try {
@@ -36,20 +37,25 @@ Page(
       } catch (e) {
         logger.error('Failed to parse params:', e)
       }
-
+      
       this.state.lightId = params.lightId
       this.state.lightName = params.lightName || 'Light'
-
+      
       if (!this.state.lightId) {
         logger.error('No lightId provided!')
         this.state.status = 'error'
       }
+      
+      if (!connectStatus()) {
+        logger.warn('connectStatus false')
+        this.state.status = 'error'
+      }
     },
-
+    
     build() {
       // Mostra UI minimale
       this.renderUI()
-
+      
       // Se abbiamo un lightId, fai il toggle
       if (this.state.lightId) {
         this.doToggle()
@@ -58,24 +64,22 @@ Page(
         this.goBackAfterDelay(1000)
       }
     },
-
+    
     clearAllWidgets() {
-          this.widgets.forEach(w => {
-            try { deleteWidget(w) } catch (e) {
-              logger.error('Del widget err', e)
-            }
-          })
-          this.widgets = []
-          this.state.brightnessSliderFillWidget = null
-          this.state.brightnessLabel = null
-        },
-
+      this.widgets.forEach(w => {
+        try { deleteWidget(w) } catch (e) {
+          logger.error('Del widget err', e)
+        }
+      })
+      this.widgets = []
+    },
+    
     createTrackedWidget(type, props) {
       const w = createWidget(type, props)
       this.widgets.push(w)
       return w
     },
-
+    
     renderUI() {
       // Sfondo
       this.createTrackedWidget(widget.FILL_RECT, {
@@ -85,12 +89,12 @@ Page(
         h: DEVICE_HEIGHT,
         color: COLORS.background
       })
-
+      
       // Testo di stato
       const statusText = this.state.status === 'error' ?
-        (getText('ERROR') || 'Error') :
-        (getText('TOGGLING') || 'Toggling...')
-
+        (getText('ERROR')) :
+        (getText('TOGGLING'))
+      
       this.createTrackedWidget(widget.TEXT, {
         x: 0,
         y: DEVICE_HEIGHT / 2 - px(30),
@@ -102,7 +106,7 @@ Page(
         align_h: align.CENTER_H,
         align_v: align.CENTER_V
       })
-
+      
       this.createTrackedWidget(widget.TEXT, {
         x: 0,
         y: DEVICE_HEIGHT / 2 + px(20),
@@ -115,10 +119,13 @@ Page(
         align_v: align.CENTER_V
       })
     },
-
+    
     doToggle() {
       logger.log('Toggling light:', this.state.lightId)
-
+      if (!connectStatus()) {
+        this.goBackAfterDelay(1000)
+        return // Early exit if not connected
+      }
       // Usa ZML request per comunicare con app-side
       this.request({
           method: 'WIDGET_TOGGLE_LIGHT',
@@ -138,7 +145,7 @@ Page(
           this.goBackAfterDelay(1000)
         })
     },
-
+    
     goBackAfterDelay(ms) {
       try {
         setTimeout(() => {
@@ -148,7 +155,7 @@ Page(
         back()
       }
     },
-
+    
     onDestroy() {
       logger.debug('Quick toggle page destroyed')
       this.clearAllWidgets()
