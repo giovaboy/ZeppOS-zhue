@@ -23,8 +23,8 @@ export const LAYOUT_CONFIG = {
   colorBtnW: DEVICE_WIDTH - px(120),
   colorBtnH: px(50),
   presetsTitleH: px(35),
-  presetsX: px(60),
-  presetsW: DEVICE_WIDTH - px(120),
+  presetsX: px(40),
+  presetsW: DEVICE_WIDTH - px(80),
   presetItemSize: px(60)
 }
 
@@ -276,7 +276,7 @@ function renderNormalState(pageContext, state, callbacks) {
     text_size: px(34),
     normal_color: toggleColor,
     press_color: btnPressColor(toggleColor, 0.8),
-    radius: lightOn ? px(8) : DEVICE_HEIGHT - LAYOUT_CONFIG.headerY * 2,
+    radius: px(8),//lightOn ? px(8) : DEVICE_HEIGHT - LAYOUT_CONFIG.headerY * 2,
     click_func: toggleLightFunc
   })
 
@@ -517,9 +517,9 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
     h: presetsTitleH,
     text: '+',
     text_size: px(24),
-    normal_color: COLORS.highlight,
-    press_color: btnPressColor(COLORS.highlight, 0.8),
-    radius: px(6),
+    normal_color: COLORS.color_sys_key,
+    press_color: btnPressColor(COLORS.color_sys_key, 0.8),
+    radius: px(8),
     click_func: addCallback
   })
 

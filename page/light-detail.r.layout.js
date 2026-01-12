@@ -514,9 +514,9 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
     h: presetsTitleH,
     text: '+',
     text_size: px(24),
-    normal_color: COLORS.highlight,
-    press_color: btnPressColor(COLORS.highlight, 0.8),
-    radius: px(6),
+    normal_color: COLORS.color_sys_key,
+    press_color: btnPressColor(COLORS.color_sys_key, 0.8),
+    radius: px(8),
     click_func: addCallback
   })
 
