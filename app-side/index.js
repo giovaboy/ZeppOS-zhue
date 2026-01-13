@@ -462,7 +462,7 @@ class HueBridgeManager {
     getWidgetShortcuts() {
       return this.user_settings.widget_shortcuts || DEFAULT_USER_SETTINGS.widget_shortcuts
     }
-  
+
     saveWidgetShortcuts(shortcuts) {
       try {
         const shortcutsJson = JSON.stringify(shortcuts)
@@ -475,47 +475,47 @@ class HueBridgeManager {
         throw new Error('Failed to save widget shortcuts')
       }
     }
-  
+
     addWidgetShortcut(lightId, lightName) {
       const shortcuts = this.getWidgetShortcuts()
-  
+
       // Check if light is already in shortcuts
       const existingIndex = shortcuts.findIndex(s => s.lightId === lightId)
       if (existingIndex !== -1) {
         console.log('Light already in widget shortcuts')
         return { success: true, added: false, reason: 'already_exists' }
       }
-  
+
       // Find first empty slot
       const emptyIndex = shortcuts.findIndex(s => s.lightId === null)
       if (emptyIndex === -1) {
         console.log('No empty slots available')
         return { success: false, added: false, reason: 'slots_full' }
       }
-  
+
       // Add to empty slot
       shortcuts[emptyIndex] = { lightId, lightName }
       this.saveWidgetShortcuts(shortcuts)
-  
+
       return { success: true, added: true, slotIndex: emptyIndex }
     }
-  
+
     removeWidgetShortcut(lightId) {
       const shortcuts = this.getWidgetShortcuts()
-  
+
       const index = shortcuts.findIndex(s => s.lightId === lightId)
       if (index === -1) {
         console.log('Light not found in widget shortcuts')
         return { success: false, removed: false }
       }
-  
+
       // Clear the slot
       shortcuts[index] = { lightId: null, lightName: null }
       this.saveWidgetShortcuts(shortcuts)
-  
+
       return { success: true, removed: true }
     }
-  
+
     isLightInWidgetShortcuts(lightId) {
       const shortcuts = this.getWidgetShortcuts()
       return shortcuts.some(s => s.lightId === lightId)
@@ -1058,6 +1058,7 @@ class HueBridgeManager {
       return {
         success: true,
         updatedState: {
+          name: updatedLight.name,
           ison: updatedLight.ison,
           bri: updatedLight.bri,
           hue: updatedLight.hue,
@@ -1065,8 +1066,11 @@ class HueBridgeManager {
           ct: updatedLight.ct,
           xy: updatedLight.xy,
           colormode: updatedLight.colormode,
+          modelid: updatedLight.modelid,
+          type: updatedLight.type,
           reachable: updatedLight.reachable,
-          hex: updatedLight.hex // ✅ Già calcolato da getLightDetail()
+          hex: updatedLight.hex,
+          capabilities: updatedLight.capabilities
         }
       }
     } catch (e) {
@@ -1290,53 +1294,6 @@ class HueBridgeManager {
     return { success: true }
   }
 
-
-  async getLightDetail_old(lightId) {
-    if (this.demo) {
-      console.log(`DEMO MODE: Get light detail for ${lightId}`)
-      const light = this.DEMO_STATE.lights[lightId]
-      if (!light) throw new Error('Demo Light not found')
-
-      // I dati nello stato demo sono già dettagliati, basta aggiungere l'hex
-      return {
-        ...light,
-        hex: this.stateToHex({
-          on: light.ison,
-          bri: light.bri,
-          hue: light.hue,
-          sat: light.sat,
-          ct: light.ct,
-          xy: light.xy,
-          colormode: light.colormode
-        }),
-        capabilities: light.capabilities
-      }
-    }
-    const allLights = await this.getLights()
-    const light = allLights.find(l => l.id === lightId)
-
-    if (!light) throw new Error('Light not found')
-
-    // Get full light info
-    const url = `http://${this.bridgeIp}/api/${this.username}/lights/${lightId}`
-    const res = await fetch({ url, method: 'GET' })
-    const fullLight = await safeJson(res)
-
-    if (Array.isArray(fullLight) && fullLight[0]?.error)
-      throw new Error(fullLight[0].error.description)
-
-    return {
-      ...light,
-      bri: fullLight.state?.bri || 0,
-      hue: fullLight.state?.hue || 0,
-      sat: fullLight.state?.sat || 0,
-      ct: fullLight.state?.ct || 0,
-      xy: fullLight.state?.xy || [0, 0],
-      colormode: fullLight.state?.colormode || '',
-      capabilities: this.getLightCapabilities(fullLight)
-    }
-  }
-
   async getLightDetail(lightId) {
     if (this.demo) {
       console.log(`DEMO MODE: Get light detail for ${lightId}`)
@@ -1369,6 +1326,8 @@ class HueBridgeManager {
     if (!fullLight || !fullLight.state)
       throw new Error('Light not found')
 
+    const capabilities = this._parseCapabilities(fullLight.capabilities)
+
     // Mappiamo i dati come in _mapLightsV1
     return {
       id: lightId,
@@ -1384,8 +1343,20 @@ class HueBridgeManager {
       type: fullLight.type || '',
       reachable: fullLight.state.reachable !== false,
       hex: this.stateToHex(fullLight.state),
-      capabilities: this.getLightCapabilities(fullLight)
+      capabilities: capabilities//this.getLightCapabilities(fullLight)
     }
+  }
+
+  // Helper per parsare le capabilities della bridge
+  _parseCapabilities(bridgeCapabilities) {
+    const caps = ['brightness']
+    if (bridgeCapabilities?.control?.ct) {
+      caps.push('ct')
+    }
+    if (bridgeCapabilities?.control?.colorgamut) {
+      caps.push('color')
+    }
+    return caps
   }
 
   getLightCapabilities(light) {
