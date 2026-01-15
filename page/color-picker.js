@@ -378,7 +378,6 @@ Page(
                 this.exitGestureListener();
                 this.exitGestureListener = null;
             }
-            setScrollLock({ lock: false });
         }
     })
 )

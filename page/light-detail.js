@@ -106,7 +106,7 @@ Page(
           } else if (key === KEY_BACK && keyEvent === KEY_EVENT_LONG_PRESS) {
             logger.debug('long click back')
             const dialog = createModal({
-              content: `Clear widget shortcuts?`,
+              content: getText('CLEAR_QUICK_TOGGLE_WIDGET_SHORTCUTS'),
               autoHide: false,
               onClick: (keyObj) => {
                 if (keyObj.type === MODAL_CONFIRM) {
@@ -308,7 +308,7 @@ Page(
 
       if (evtType === 'DOWN') {
         this.lockExitGesture()
-        setScrollLock({ lock: true })
+        //setScrollLock({ lock: true })
 
         const newBri = getBrightnessFromX(info.x)
         this.state.isDraggingBrightness = true
@@ -330,7 +330,7 @@ Page(
         if (!this.state.isDraggingBrightness) return
 
         this.unlockExitGesture()
-        setScrollLock({ lock: false })
+        //setScrollLock({ lock: false })
 
         if (this.state.tempBrightness !== this.state.light.bri) {
           this.setBrightness(this.state.tempBrightness, false)
@@ -657,7 +657,7 @@ Page(
       }
 
       const dialog = createModal({
-        content: `Delete this preset?\n\n${presetDescription}`,
+        content: `${getText('PRESET_DELETE_CONFIRM')}\n\n${presetDescription }`,
         autoHide: false,
         onClick: (keyObj) => {
           if (keyObj.type === MODAL_CONFIRM) {

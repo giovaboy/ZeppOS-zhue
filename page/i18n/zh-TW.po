@@ -189,3 +189,9 @@ msgstr "顏色"
 
 msgid "WHITE"
 msgstr "白色"
+
+msgid "PRESET_DELETE_CONFIRM"
+msgstr "刪除這個預設？"
+
+msgid "CLEAR_QUICK_TOGGLE_WIDGET_SHORTCUTS"
+msgstr "清除小工具切換捷徑？"

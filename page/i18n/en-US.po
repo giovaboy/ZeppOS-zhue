@@ -189,3 +189,9 @@ msgstr "Color"
 
 msgid "WHITE"
 msgstr "White"
+
+msgid "PRESET_DELETE_CONFIRM"
+msgstr "Delete this preset?"
+
+msgid "CLEAR_QUICK_TOGGLE_WIDGET_SHORTCUTS"
+msgstr "Clear widget toggles shortcuts?"

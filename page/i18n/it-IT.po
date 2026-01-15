@@ -122,7 +122,7 @@ msgid "UNREACHABLE"
 msgstr "Non raggiungibile"
 
 msgid "SCENES"
-msgstr "Scenes"
+msgstr "Scene"
 
 msgid "ADD_FAVORITE_COLOR"
 msgstr "Aggiungi colore preferito"
@@ -189,3 +189,9 @@ msgstr "Colore"
 
 msgid "WHITE"
 msgstr "Bianco"
+
+msgid "PRESET_DELETE_CONFIRM"
+msgstr "Eliminare il preferito?"
+
+msgid "CLEAR_QUICK_TOGGLE_WIDGET_SHORTCUTS"
+msgstr "Eliminare tutti i quick toggle dei widget?"

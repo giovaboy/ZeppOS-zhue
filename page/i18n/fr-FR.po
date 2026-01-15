@@ -189,3 +189,9 @@ msgstr "Couleur"
 
 msgid "WHITE"
 msgstr "Blanc"
+
+msgid "PRESET_DELETE_CONFIRM"
+msgstr "Supprimer ce préréglage ?"
+
+msgid "CLEAR_QUICK_TOGGLE_WIDGET_SHORTCUTS"
+msgstr "Effacer les raccourcis de basculement du widget ?"

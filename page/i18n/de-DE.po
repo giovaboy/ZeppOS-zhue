@@ -189,3 +189,9 @@ msgstr "Farbe"
 
 msgid "WHITE"
 msgstr "Weiß"
+
+msgid "PRESET_DELETE_CONFIRM"
+msgstr "Dieses Voreinstellung löschen?"
+
+msgid "CLEAR_QUICK_TOGGLE_WIDGET_SHORTCUTS"
+msgstr "Widget-Toggles-Kurzbefehle löschen?"
