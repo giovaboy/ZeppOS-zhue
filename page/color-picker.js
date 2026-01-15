@@ -33,8 +33,6 @@ Page(
 
         widgets: [],
         exitGestureListener: null, // Riferimento al listener per lo swipe di uscita
-        _lastApiCall: 0,  // ✅ AGGIUNTO: Throttle API calls
-        _apiThrottle: 200, // ✅ AGGIUNTO: 200ms between calls
 
         onInit(p) {
             logger.log('Color Picker Init', p);
@@ -167,16 +165,15 @@ Page(
                 this.state.isDragging = true;
                 const vals = calcValues(info.x, info.y);
                 this.updateColorUI(vals.hue, vals.sat);
-                this.sendColor(vals.hue, vals.sat, false); // Instant response? Opzionale
             } else if (evt === 'MOVE' && this.state.isDragging) {
                 const vals = calcValues(info.x, info.y);
                 this.updateColorUI(vals.hue, vals.sat);
-                this.sendColor(vals.hue, vals.sat, false)
             } else if (evt === 'UP') {
                 this.unlockExitGesture(); // SBLOCCA GESTURE
                 this.state.isDragging = false;
                 const vals = calcValues(info.x, info.y);
-                this.sendColor(vals.hue, vals.sat, true); // Final send
+                this.updateColorUI(vals.hue, vals.sat);
+                this.sendColor(vals.hue, vals.sat); // Final send
             }
         },
 
@@ -198,15 +195,7 @@ Page(
             }
         },
 
-        sendColor(h, s, force) {
-            const now = Date.now()
-            // Se non è force (MOVE), magari saltiamo per non floodare, oppure usiamo throttle
-            if (!force && (now - this._lastApiCall) < this._apiThrottle) {
-                return
-            }
-
-            this._lastApiCall = now
-
+        sendColor(h, s) {
             // ✅ SEMPRE aggiorna cache locale (UI feedback immediato)
             const light = app.getLightData(this.state.lightId)
             if (light) {
@@ -246,16 +235,15 @@ Page(
                 this.state.isDragging = true
                 const val = calcCT(info.y)
                 this.updateCTUI(val)
-                this.sendCT(val, false)
             } else if (evt === 'MOVE' && this.state.isDragging) {
                 const val = calcCT(info.y)
                 this.updateCTUI(val)
-                this.sendCT(val, false)
             } else if (evt === 'UP') {
                 this.unlockExitGesture(); // SBLOCCA GESTURE
                 this.state.isDragging = false;
                 const val = calcCT(info.y);
-                this.sendCT(val, true);
+                this.updateCTUI(val);
+                this.sendCT(val);
             }
         },
 
@@ -270,15 +258,7 @@ Page(
             }
         },
 
-        sendCT(ctVal, force) {
-            const now = Date.now()
-
-            if (!force && (now - this._lastApiCall) < this._apiThrottle) {
-                return
-            }
-
-            this._lastApiCall = now
-
+        sendCT(ctVal) {
             // ✅ SEMPRE aggiorna cache locale
             const light = app.getLightData(this.state.lightId)
             if (light) {
@@ -319,16 +299,14 @@ Page(
                 this.state.isDragging = true
                 const val = calcBri(info.x)
                 this.updateBriUI(val)
-                this.sendBri(val, false)
             } else if (evt === 'MOVE' && this.state.isDragging) {
                 const val = calcBri(info.x)
                 this.updateBriUI(val)
-                this.sendBri(val, false)
             } else if (evt === 'UP') {
                 this.unlockExitGesture(); // SBLOCCA GESTURE
                 this.state.isDragging = false
                 const val = calcBri(info.x)
-                this.sendBri(val, true)
+                this.sendBri(val)
             }
         },
 
@@ -344,15 +322,7 @@ Page(
             }
         },
 
-        sendBri(val, force) {
-            const now = Date.now()
-
-            if (!force && (now - this._lastApiCall) < this._apiThrottle) {
-                return
-            }
-
-            this._lastApiCall = now
-
+        sendBri(val) {
             // ✅ SEMPRE aggiorna cache locale
             const light = app.getLightData(this.state.lightId)
             if (light) {
