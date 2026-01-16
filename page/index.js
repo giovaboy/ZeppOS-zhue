@@ -290,6 +290,24 @@ Page(
       logger.debug('index page onDestroy')
       this.stopBluetoothMonitoring()
       this.clearAllWidgets()
+      // Cancel all ongoing operations in app-side
+      try {
+        // Cancel pairing (handles pairWithRetry loop)
+        this.request({ method: 'CANCEL_PAIRING' })
+          .catch(err => logger.debug('Cancel pairing failed:', err))
+
+        // Cancel bridge discovery
+        this.request({ method: 'CANCEL_DISCOVERY' })
+          .catch(err => logger.debug('Cancel discovery failed:', err))
+
+        // Cancel data fetch operations
+        this.request({ method: 'CANCEL_FETCH' })
+          .catch(err => logger.debug('Cancel fetch failed:', err))
+
+      } catch (e) {
+        // If request() itself throws, ignore it
+        logger.debug('Could not send cancellation requests:', e)
+      }
     }
   })
 )

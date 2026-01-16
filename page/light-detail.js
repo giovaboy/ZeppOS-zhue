@@ -663,7 +663,7 @@ Page(
           if (keyObj.type === MODAL_CONFIRM) {
             this.request({
               method: 'REMOVE_FAVORITE_COLOR',
-              params: { index: favorite.id }
+              params: { favoriteId: favorite.id }
             })
               .then(result => {
                 if (result.success) {

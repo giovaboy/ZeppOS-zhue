@@ -195,3 +195,6 @@ msgstr "Delete this preset?"
 
 msgid "CLEAR_QUICK_TOGGLE_WIDGET_SHORTCUTS"
 msgstr "Clear widget toggles shortcuts?"
+
+msgid "NO_PRESETS"
+msgstr "No presets available"

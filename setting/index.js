@@ -574,6 +574,14 @@ AppSettingsPage({
                 props.settingsStorage.removeItem('hue_bridge_ip')
                 props.settingsStorage.removeItem('hue_username')
                 props.settingsStorage.removeItem('hue_api_version')
+                //props.settingsStorage.setItem('hue_bridge_ip', null)
+                //props.settingsStorage.setItem('hue_username', null)
+                //props.settingsStorage.setItem('hue_api_version', null)
+                props.settingsStorage.setItem('default_tab', 'ROOMS')
+                props.settingsStorage.setItem('hue_show_scenes', 'true')
+                props.settingsStorage.setItem('hue_display_order', 'LIGHTS_FIRST')
+                props.settingsStorage.setItem('hue_demo_mode', 'false')
+                props.settingsStorage.setItem('hue_favorite_colors', JSON.stringify(DEFAULT_PRESETS))
               }
             })])
 

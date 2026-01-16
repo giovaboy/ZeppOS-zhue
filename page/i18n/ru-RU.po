@@ -195,3 +195,6 @@ msgstr "Удалить этот пресет?"
 
 msgid "CLEAR_QUICK_TOGGLE_WIDGET_SHORTCUTS"
 msgstr "Очистить ярлыки быстрого переключения виджета?"
+
+msgid "NO_PRESETS"
+msgstr "Нет доступных пресетов"

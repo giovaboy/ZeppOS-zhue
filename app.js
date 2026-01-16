@@ -1,9 +1,3 @@
-// ============================================
-// PATCH: app.js - Demo Mode Cache Handling
-// ============================================
-// These patches ensure that cache never expires when demo mode is enabled.
-// Apply these changes to the respective methods in app.js
-
 import { BaseApp } from '@zeppos/zml/base-app'
 import { DEFAULT_USER_SETTINGS } from './utils/constants.js'
 import { getLogger } from './utils/logger.js'
@@ -413,6 +407,12 @@ App(
     onDestroy(options) {
       logger.debug('Hue On-Off App Destroyed - Cleaning up...')
       this.clearAllCache()
+      try {
+        this.request({ method: 'CANCEL_ALL' })
+          .catch(err => logger.debug('Cancel all failed:', err))
+      } catch (e) {
+        logger.debug('Could not send cancellation:', e)
+      }
       logger.debug('Hue On-Off App cleanup completed')
     }
   })

@@ -195,3 +195,6 @@ msgstr "이 프리셋을 삭제하시겠습니까?"
 
 msgid "CLEAR_QUICK_TOGGLE_WIDGET_SHORTCUTS"
 msgstr "위젯 토글 단축키를 지우시겠습니까?"
+
+msgid "NO_PRESETS"
+msgstr "사용 가능한 프리셋이 없습니다"

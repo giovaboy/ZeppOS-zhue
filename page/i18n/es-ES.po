@@ -195,3 +195,6 @@ msgstr "¿Eliminar este ajuste preestablecido?"
 
 msgid "CLEAR_QUICK_TOGGLE_WIDGET_SHORTCUTS"
 msgstr "¿Limpiar accesos directos de interruptores rápidos del widget?"
+
+msgid "NO_PRESETS"
+msgstr "No hay ajustes preestablecidos disponibles"

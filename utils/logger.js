@@ -1,6 +1,6 @@
 import { log } from '@zos/utils';
 
-const LOG_LEVEL = 'error'; // Set the desired log level: 'debug', 'log', 'info', 'warn', 'error'
+const LOG_LEVEL = 'debug'; // Set the desired log level: 'debug', 'log', 'info', 'warn', 'error'
 
 const levels = {
   debug: 0,

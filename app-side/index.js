@@ -345,6 +345,10 @@ class HueBridgeManager {
       this.apiVersion = 'v1'
     }
     // --------------------
+    // Cancellation tokens for different operations
+    this.currentPairingCancellation = null
+    this.currentDiscoveryCancellation = null
+    this.currentFetchCancellation = null
 
     console.log('HueBridgeManager initialized:', {
       bridgeIp: this.bridgeIp,
@@ -617,21 +621,54 @@ class HueBridgeManager {
       return bridges
     }
 
+    // Cancel any previous discovery
+    this.cancelDiscovery()
+
+    // Create cancellation token
+    const cancellationToken = { cancelled: false }
+    this.currentDiscoveryCancellation = cancellationToken
+
     console.log('Discovering bridges...')
-    const res = await fetch({
-      url: 'https://discovery.meethue.com',
-      method: 'GET',
-      timeout: 5000,
-      headers: { 'Accept': 'application/json' }
-    }).catch((e) => {
-      console.log('fetch=>', e)
-    })
-    const bridges = await safeJson(res)
-    if (!Array.isArray(bridges) || bridges.length === 0)
-      throw new Error('No bridges found on network')
-    this.bridgeIp = bridges[0].internalipaddress
-    this.saveConfig()
-    return bridges
+
+    try {
+      // Check cancellation before fetch
+      if (cancellationToken.cancelled) {
+        throw new Error('Discovery cancelled')
+      }
+
+      const res = await fetch({
+        url: 'https://discovery.meethue.com',
+        method: 'GET',
+        timeout: 5000,
+        headers: { 'Accept': 'application/json' }
+      }).catch((e) => {
+        console.log('fetch error:', e)
+        throw e
+      })
+
+      // Check cancellation after fetch
+      if (cancellationToken.cancelled) {
+        throw new Error('Discovery cancelled')
+      }
+
+      const bridges = await safeJson(res)
+
+      if (!Array.isArray(bridges) || bridges.length === 0) {
+        throw new Error('No bridges found on network')
+      }
+
+      this.bridgeIp = bridges[0].internalipaddress
+      this.saveConfig()
+
+      // Clear cancellation token on success
+      this.currentDiscoveryCancellation = null
+
+      return bridges
+
+    } catch (e) {
+      this.currentDiscoveryCancellation = null
+      throw e
+    }
   }
 
   async pair() {
@@ -644,32 +681,135 @@ class HueBridgeManager {
     return await this.pairV1()
   }
 
+  /**
+ * Cancel any ongoing pairing operation
+ */
+  cancelPairing() {
+    if (this.currentPairingCancellation) {
+      console.log('Cancelling ongoing pairing operation')
+      this.currentPairingCancellation.cancelled = true
+      this.currentPairingCancellation = null
+    }
+  }
+
+  /**
+   * Cancel any ongoing bridge discovery
+   */
+  cancelDiscovery() {
+    if (this.currentDiscoveryCancellation) {
+      console.log('Cancelling ongoing bridge discovery')
+      this.currentDiscoveryCancellation.cancelled = true
+      this.currentDiscoveryCancellation = null
+    }
+  }
+
+  /**
+   * Cancel any ongoing fetch operations
+   */
+  cancelFetch() {
+    if (this.currentFetchCancellation) {
+      console.log('Cancelling ongoing fetch operation')
+      this.currentFetchCancellation.cancelled = true
+      this.currentFetchCancellation = null
+    }
+  }
+
+  /**
+   * Cancel all operations (convenience method)
+   */
+  cancelAllOperations() {
+    console.log('Cancelling all ongoing operations')
+    this.cancelPairing()
+    this.cancelDiscovery()
+    this.cancelFetch()
+  }
+
   async pairWithRetry(maxRetries = 5, delayMs = 3000) {
     if (this.demo) {
       return this.pair()
     }
+
+    // Cancel any previous pairing attempt
+    this.cancelPairing()
+
     if (!this.bridgeIp) throw new Error('No bridge IP configured')
+
+    // Create cancellation token
+    const cancellationToken = { cancelled: false }
+    this.currentPairingCancellation = cancellationToken
 
     let attempt = 0
     while (attempt < maxRetries) {
+      // Check if cancelled before each attempt
+      if (cancellationToken.cancelled) {
+        console.log('Pairing cancelled by user')
+        throw new Error('Pairing cancelled')
+      }
+
       attempt++
       try {
         console.log(`Pairing attempt ${attempt}/${maxRetries}...`)
+
         const result = await this.pairV1()
         console.log('Pairing successful:', result)
+
+        // Clear cancellation token on success
+        this.currentPairingCancellation = null
         return result
+
       } catch (e) {
+        // Check if operation was cancelled
+        if (cancellationToken.cancelled) {
+          throw new Error('Pairing cancelled')
+        }
+
         if (e.message === 'BUTTON_NOT_PRESSED') {
           console.warn('Bridge button not pressed, waiting and retrying...')
-          await new Promise(r => setTimeout(r, delayMs))
+
+          // Wait with cancellation support
+          try {
+            await this.cancellableDelay(delayMs, cancellationToken)
+          } catch (cancelError) {
+            // Delay was cancelled
+            throw new Error('Pairing cancelled')
+          }
+
         } else {
-          // altri errori li rilanciamo subito
+          // Other errors are thrown immediately
+          this.currentPairingCancellation = null
           throw e
         }
       }
     }
 
+    this.currentPairingCancellation = null
     throw new Error('Failed to pair: button not pressed within retry limit')
+  }
+
+  /**
+ * Delay that checks for cancellation periodically
+ * @param {number} ms - Milliseconds to delay
+ * @param {object} cancellationToken - Token with 'cancelled' property
+ */
+  async cancellableDelay(ms, cancellationToken) {
+    const startTime = Date.now()
+
+    return new Promise((resolve, reject) => {
+      const checkInterval = setInterval(() => {
+        // Check if cancelled
+        if (cancellationToken.cancelled) {
+          clearInterval(checkInterval)
+          reject(new Error('Operation cancelled'))
+          return
+        }
+
+        // Check if delay is complete
+        if (Date.now() - startTime >= ms) {
+          clearInterval(checkInterval)
+          resolve()
+        }
+      }, 100) // Check every 100ms for quick response
+    })
   }
 
   async pairV1() {
@@ -728,6 +868,10 @@ class HueBridgeManager {
     }
     if (!this.bridgeIp || !this.username)
       throw new Error('Bridge not configured')
+
+    if (this.currentFetchCancellation?.cancelled) {
+      throw new Error('Fetch cancelled')
+    }
     return await this.getGroupsV1()
     /*try {
       return await this.getGroupsV2()
@@ -737,12 +881,25 @@ class HueBridgeManager {
   }
 
   async getGroupsV1() {
+    if (this.currentFetchCancellation?.cancelled) {
+      throw new Error('Fetch cancelled')
+    }
+
     const url = `http://${this.bridgeIp}/api/${this.username}/groups`
     const res = await fetch({ url, method: 'GET' })
+    // CHECK 2: After fetch, before parsing
+    if (this.currentFetchCancellation?.cancelled) {
+      throw new Error('Fetch cancelled')
+    }
     const json = await safeJson(res)
 
     if (Array.isArray(json) && json[0]?.error)
       throw new Error(json[0].error.description)
+
+    // CHECK 3: Before mapping (optional but recommended)
+    if (this.currentFetchCancellation?.cancelled) {
+      throw new Error('Fetch cancelled')
+    }
 
     return this._mapGroupsV1(json)
   }
@@ -1381,14 +1538,42 @@ class HueBridgeManager {
       }
     }
 
-    const groups = await this.getGroups()
-    const lights = await this.getLights()
+    this.cancelFetch()
 
-    return {
-      lights: lights,
-      rooms: groups.rooms,
-      zones: groups.zones,
-      scenes: [] // TODO
+    // Create cancellation token
+    const cancellationToken = { cancelled: false }
+    this.currentFetchCancellation = cancellationToken
+
+    try {
+      // Check cancellation before fetch
+      if (cancellationToken.cancelled) {
+        throw new Error('Fetch cancelled')
+      }
+
+      const groups = await this.getGroups()
+
+      if (cancellationToken.cancelled) {
+        throw new Error('Fetch cancelled')
+      }
+
+      const lights = await this.getLights()
+
+      if (cancellationToken.cancelled) {
+        throw new Error('Fetch cancelled')
+      }
+
+      // Clear token on success
+      this.currentFetchCancellation = null
+
+      return {
+        lights: lights,
+        rooms: groups.rooms,
+        zones: groups.zones,
+        scenes: []
+      }
+    } catch (e) {
+      this.currentFetchCancellation = null
+      throw e
     }
   }
 
@@ -1452,13 +1637,55 @@ AppSideService(
 
     onDestroy() {
       console.log('App side service destroyed')
+      hueBridge.cancelAllOperations()
     },
 
     onSettingsChange({ key, newValue, oldValue }) {
+      console.log('Settings changed:', key, ':', oldValue, '->', newValue)
+
+      switch (key) {
+        case 'data:clear': {
+          // Action needed: clear all stored data
+          this.settings.clear()
+          console.log('Settings cleared!')
+          break
+        }
+
+        case DEMO_MODE: {
+          // Action needed: update demo mode in memory
+          const isDemoMode = newValue === 'true' || newValue === true
+          console.log('Demo mode changed to:', isDemoMode)
+
+          hueBridge.demo = isDemoMode
+
+          if (isDemoMode) {
+            hueBridge._initDemoState()
+            console.log('Demo mode enabled - initialized demo state')
+          } else {
+            console.log('Demo mode disabled')
+          }
+          break
+        }
+
+        // No action needed - read on-demand
+        case SHOW_SCENES:
+        case DISPLAY_ORDER:
+        case FAVORITE_COLORS:
+          console.log('User preference updated:', key)
+          // Settings automatically picked up next time getUserSettings() is called
+          break
+
+        default:
+          console.log('Unhandled setting change:', key)
+      }
+    },
+
+    onSettingsChange_old({ key, newValue, oldValue }) {
       console.log('settings changed:', key, ':', oldValue, '>', newValue)
       switch (key) {
         case 'data:clear': {
           this.settings.clear()
+          console.log('settings cleared!')
           break
         }
         //case DEMO_MODE:
@@ -1578,6 +1805,22 @@ AppSideService(
           this.handleWidgetToggleLight(req, res)
           break
 
+        case 'CANCEL_PAIRING':
+          this.handleCancelPairing(res)
+          break
+
+        case 'CANCEL_DISCOVERY':
+          this.handleCancelDiscovery(res)
+          break
+
+        case 'CANCEL_FETCH':
+          this.handleCancelFetch(res)
+          break
+
+        case 'CANCEL_ALL':
+          this.handleCancelAll(res)
+          break
+
         default:
           console.error('Unknown method:', req.method)
           res({ error: 'Unknown method: ' + req.method })
@@ -1625,9 +1868,9 @@ AppSideService(
 
     async handleRemoveFavoriteColor(req, res) {
       try {
-        const { index } = req.params
-        console.log('Removing favorite color at index:', index)
-        const result = hueBridge.removeFavoriteColor(index)
+        const { favoriteId } = req.params
+        console.log('Removing favorite color at index:', favoriteId)
+        const result = hueBridge.removeFavoriteColor(favoriteId)
         res(null, result)
       } catch (error) {
         console.error('Remove favorite color error:', error)
@@ -2053,6 +2296,50 @@ AppSideService(
         res(null, { success: true, newState })
       } catch (error) {
         console.error('Widget toggle light error:', error)
+        res({ error: error.message })
+      }
+    },
+
+    async handleCancelPairing(res) {
+      try {
+        console.log('Cancelling pairing...')
+        hueBridge.cancelPairing()
+        res(null, { success: true, message: 'Pairing cancelled' })
+      } catch (error) {
+        console.error('Cancel pairing error:', error)
+        res({ error: error.message })
+      }
+    },
+
+    async handleCancelDiscovery(res) {
+      try {
+        console.log('Cancelling discovery...')
+        hueBridge.cancelDiscovery()
+        res(null, { success: true, message: 'Discovery cancelled' })
+      } catch (error) {
+        console.error('Cancel discovery error:', error)
+        res({ error: error.message })
+      }
+    },
+
+    async handleCancelFetch(res) {
+      try {
+        console.log('Cancelling fetch...')
+        hueBridge.cancelFetch()
+        res(null, { success: true, message: 'Fetch cancelled' })
+      } catch (error) {
+        console.error('Cancel fetch error:', error)
+        res({ error: error.message })
+      }
+    },
+
+    async handleCancelAll(res) {
+      try {
+        console.log('Cancelling all operations...')
+        hueBridge.cancelAllOperations()
+        res(null, { success: true, message: 'All operations cancelled' })
+      } catch (error) {
+        console.error('Cancel all error:', error)
         res({ error: error.message })
       }
     },

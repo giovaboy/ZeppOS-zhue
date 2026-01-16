@@ -195,3 +195,6 @@ msgstr "删除此预设？"
 
 msgid "CLEAR_QUICK_TOGGLE_WIDGET_SHORTCUTS"
 msgstr "清除小组件切换快捷方式？"
+
+msgid "NO_PRESETS"
+msgstr "暂无预设"
