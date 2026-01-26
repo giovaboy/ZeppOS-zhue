@@ -4,7 +4,7 @@ import { DEFAULT_PRESETS, PRESET_TYPES } from '../utils/constants'
 
 //const packageInfo = getPackageInfo()
 
-const APP_VERSION = "1.0.0"//packageInfo.name//"1.0.0"//
+const APP_VERSION = "1.0.1"//packageInfo.name//"1.0.0"//
 const APP_NAME = "zhue"//packageInfo.name//"zhue"//
 
 function getPresetTypePriority(type) {

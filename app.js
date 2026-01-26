@@ -407,12 +407,12 @@ App(
     onDestroy(options) {
       logger.debug('Hue On-Off App Destroyed - Cleaning up...')
       this.clearAllCache()
-      try {
+      /*try {
         this.request({ method: 'CANCEL_ALL' })
           .catch(err => logger.debug('Cancel all failed:', err))
       } catch (e) {
         logger.debug('Could not send cancellation:', e)
-      }
+      }*/
       logger.debug('Hue On-Off App cleanup completed')
     }
   })
