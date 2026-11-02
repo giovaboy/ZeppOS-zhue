@@ -37,7 +37,7 @@ const MIN_WIDGET_H = PADDING_Y + HEADER_H + NO_BUTTONS_TEXT_HINT_H + PADDING_Y
 
 // Colors
 const COLOR_HEADER = COLORS.activeTab || 0x984ce5
-const COLOR_HEADER_PRESS = btnPressColor ? btnPressColor(COLOR_HEADER, 0.7) : 0x6a35a0
+const COLOR_HEADER_PRESS = btnPressColor ? btnPressColor(COLOR_HEADER) : 0x6a35a0
 
 // Internal padding (configurable)
 //const INTERNAL_PADDING_X = px(10)

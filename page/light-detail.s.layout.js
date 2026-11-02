@@ -160,7 +160,7 @@ function renderErrorState(pageContext, lightName, error, retryFunc) {
       h: px(50),
       text: getText('RETRY') || 'Retry',
       normal_color: COLORS.primary,
-      press_color: btnPressColor(COLORS.primary, 0.8),
+      press_color: btnPressColor(COLORS.primary),
       radius: px(25),
       click_func: retryFunc
     })
@@ -208,7 +208,7 @@ function renderNoDataState(pageContext, lightName, retryFunc) {
       h: px(50),
       text: getText('RELOAD'),
       normal_color: COLORS.primary,
-      press_color: btnPressColor(COLORS.primary, 0.8),
+      press_color: btnPressColor(COLORS.primary),
       radius: px(25),
       click_func: retryFunc
     })
@@ -275,7 +275,7 @@ function renderNormalState(pageContext, state, callbacks) {
     text: lightName,// || lightOn ? getText('LIGHT_ON') : getText('LIGHT_OFF'),
     text_size: px(34),
     normal_color: toggleColor,
-    press_color: btnPressColor(toggleColor, 0.8),
+    press_color: btnPressColor(toggleColor),
     radius: px(8),//lightOn ? px(8) : DEVICE_HEIGHT - LAYOUT_CONFIG.headerY * 2,
     click_func: toggleLightFunc
   })
@@ -319,7 +319,7 @@ function renderNormalState(pageContext, state, callbacks) {
       text_size: px(14),
       color: COLORS.white,
       normal_color: bgColor,// widgetBtnColor,
-      press_color: bgColor,//btnPressColor(widgetBtnColor, 0.8),
+      press_color: bgColor,//btnPressColor(widgetBtnColor),
       //radius: px(8),
       click_func: toggleWidgetFunc
     })
@@ -446,7 +446,7 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
      text_size: px(22),
      color: 0x000000,
      normal_color: btnColor,
-     press_color: btnPressColor(btnColor, 0.8),
+     press_color: btnPressColor(btnColor),
      radius: 12,
      click_func: openCallback
    })
@@ -518,7 +518,7 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
     text: '+',
     text_size: px(24),
     normal_color: COLORS.color_sys_key,
-    press_color: btnPressColor(COLORS.color_sys_key, 0.8),
+    press_color: btnPressColor(COLORS.color_sys_key),
     radius: px(8),
     click_func: addCallback
   })
@@ -606,7 +606,7 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
       text: buttonText,
       text_size: px(18),
       normal_color: hexStringToInt(fav.hex),
-      press_color: btnPressColor(hexStringToInt(fav.hex), 0.8),
+      press_color: btnPressColor(hexStringToInt(fav.hex)),
       radius: fav.type === PRESET_TYPES.COLOR ? ITEM_SIZE / 2 : 8,
       click_func: () => applyCallback(fav),
       longpress_func: () => deleteCallback(fav)

@@ -56,7 +56,7 @@ function renderTabs(pageContext, currentMode, onTabSwitch) {
         text: getText('COLOR'),
         radius: px(8),
         normal_color: currentMode === 'color' ? COLORS.activeTab : COLORS.inactiveTab,
-        press_color: btnPressColor(COLORS.activeTab, 0.8),
+        press_color: btnPressColor(COLORS.activeTab),
         click_func: () => onTabSwitch('color')
     });
 
@@ -66,7 +66,7 @@ function renderTabs(pageContext, currentMode, onTabSwitch) {
         text: getText('WHITE'),
         radius: px(8),
         normal_color: currentMode === 'ct' ? COLORS.activeTab : COLORS.inactiveTab,
-        press_color: btnPressColor(COLORS.activeTab, 0.8),
+        press_color: btnPressColor(COLORS.activeTab),
         click_func: () => onTabSwitch('ct')
     });
 }

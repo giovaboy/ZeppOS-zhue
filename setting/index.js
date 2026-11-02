@@ -6,8 +6,17 @@ import { logsEnabled } from '../config.js'
 
 //const packageInfo = getPackageInfo()
 
-const APP_VERSION = "1.0.1"//packageInfo.name//"1.0.0"//
-const APP_NAME = "zhue"//packageInfo.name//"zhue"//
+// Keep in step with app.json version.name (the settings page can't import
+// @zos/app to read it)
+const APP_VERSION = "1.0.1"
+const APP_NAME = "zhue"
+
+// The bridge key, shortened: enough to tell two keys apart, not enough to
+// use one from a screenshot of this page
+function maskKey(key) {
+  if (!key) return ''
+  return key.length > 12 ? `${key.slice(0, 4)}…${key.slice(-4)}` : '…'
+}
 
 // Logs box (shared rule, ../_shared/zeppos-ai-doc/logging.md): the latest
 // watch ([w]) and phone lines, already scrubbed by the side service. A
@@ -212,7 +221,7 @@ AppSettingsPage({
                     wordBreak: 'break-all'
                   }
                 },
-                [props.settingsStorage.getItem('hue_username') || gettext('NOT_CONFIGURED')]
+                [maskKey(props.settingsStorage.getItem('hue_username')) || gettext('NOT_CONFIGURED')]
               )
             ]
           ),

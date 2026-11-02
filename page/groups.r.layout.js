@@ -51,7 +51,7 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
             h: px(60),
             text: getText('RETRY'),
             normal_color: COLORS.highlight,
-            press_color: btnPressColor(COLORS.highlight, 0.8),
+            press_color: btnPressColor(COLORS.highlight),
             radius: px(10),
             click_func: refresh
         })
@@ -73,7 +73,7 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
         text_size: px(26),
         color: isRooms ? COLORS.activeTabText : COLORS.inactiveTabText,
         normal_color: isRooms ? COLORS.activeTab : COLORS.inactiveTab,
-        press_color: btnPressColor(COLORS.activeTab, 0.8),
+        press_color: btnPressColor(COLORS.activeTab),
         radius: px(8),//LAYOUT_CONFIG.tabH / 2,
         click_func: () => switchTab('ROOMS')
     })
@@ -89,7 +89,7 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
         text_size: px(26),
         color: isZones ? COLORS.activeTabText : COLORS.inactiveTabText,
         normal_color: isZones ? COLORS.activeTab : COLORS.inactiveTab,
-        press_color: btnPressColor(COLORS.activeTab, 0.8),
+        press_color: btnPressColor(COLORS.activeTab),
         radius: px(8),//LAYOUT_CONFIG.tabH / 2,
         click_func: () => switchTab('ZONES')
     })
@@ -250,7 +250,7 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
         text_size: px(26),
         radius: px(8),
         normal_color: badgeColor,
-        press_color: btnPressColor(badgeColor, 0.8),
+        press_color: btnPressColor(badgeColor),
         click_func: () => onItemClick(index, 'on_off')
     });
 

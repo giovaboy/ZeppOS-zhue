@@ -3,10 +3,12 @@ export const COLORS = {
   text: 0xffffff,
   textSubtitle: 0xaaaaaa,
   highlight: 0x0055ff,
-  cardBg: 0x222222,
+  // Greys with RGB 1–46 are to be avoided on Zepp OS (design-guidelines.md,
+  // "Color"): pure black or color_sys_item (#333333) instead
+  cardBg: 0x333333,
   activeTab: 0x984ce5, //0x0055ff,
   activeTabText: 0xffffff,
-  inactiveTab: 0x1a1a1a,
+  inactiveTab: 0x333333,
   inactiveTabText: 0xAAAAAA,
   warningBg: 0x333300,
   highlightText: 0xffffff,
@@ -15,7 +17,8 @@ export const COLORS = {
   success: 0x39935a, //0x2ecd6e,//0x00aa00,
   error: 0xff0000,
   inactive: 0xb3b3b3, //0x666666,
-  loading: 0x666666,
+  // A "Loading…" text: #666666 on black is 3.7:1, under the 4.5:1 text needs
+  loading: 0x999999,
   roomIndicator: 0x0000cc,
   zoneIndicator: 0x009900,
   lightBg: 0x333333, //light background, same color as the light icons mask (#FFFFFF opacity 20%) color_sys_item_bg per zeppos doc
@@ -23,7 +26,7 @@ export const COLORS = {
   toggleOn: 0x00aa00,
   toggleOff: 0x444444,
   sectionHeader: 0x0088ff,
-  sliderBg: 0x2a2a2a,
+  sliderBg: 0x333333, // slider track: color_sys_item
   sliderFill: 0xffffff,
   briText: 0xcccccc,
   defaultSwatchColor: 0xFFCC66,
@@ -722,7 +725,16 @@ export function multiplyHexColor(hex_color, multiplier) {
   return result;
 }
 
-export function btnPressColor(hex_color, multiplier) {
+// Zepp OS design: a pressed control's brightness drops by 28.6%
+// (design-guidelines.md, "Color")
+export const PRESSED_BRIGHTNESS = 0.714
+
+// The pressed color of a control (a number, as widgets take it)
+export function btnPressColor(hex_color, multiplier = PRESSED_BRIGHTNESS) {
+  return Number(pressColorText(hex_color, multiplier))
+}
+
+function pressColorText(hex_color, multiplier) {
   hex_color = Math.floor(hex_color).toString(16).padStart(6, "0");
 
   let r = parseInt(hex_color.substring(0, 2), 16);

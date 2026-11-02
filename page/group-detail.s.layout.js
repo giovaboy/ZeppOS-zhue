@@ -45,7 +45,7 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
         text_size: px(34),
         radius: px(8),
         normal_color: badgeColor,
-        press_color: isLoading ? badgeColor : btnPressColor(badgeColor, 0.8),
+        press_color: isLoading ? badgeColor : btnPressColor(badgeColor),
         // Durante loading, il click non fa nulla
         click_func: isLoading ? () => { } : toggleGroup
     });

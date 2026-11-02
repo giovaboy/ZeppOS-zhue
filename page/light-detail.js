@@ -11,7 +11,7 @@ import { onGesture, GESTURE_RIGHT, createModal, MODAL_CONFIRM, onKey, KEY_SELECT
 import { px } from '@zos/utils'
 import { renderLightDetail, LAYOUT_CONFIG } from 'zosLoader:./light-detail.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
-import { HUE_RANGE, SAT_RANGE, BRI_RANGE, DEFAULT_PRESETS, PRESET_TYPES, WIDGET_SHORTCUTS_KEY, MAX_WIDGET_SHORTCUTS, DEFAULT_WIDGET_SHORTCUTS, hsb2hex, ct2hex, ct2hexString, xy2hex, normalizeHex, DEFAULT_USER_SETTINGS } from '../utils/constants.js'
+import { COLORS, HUE_RANGE, SAT_RANGE, BRI_RANGE, DEFAULT_PRESETS, PRESET_TYPES, WIDGET_SHORTCUTS_KEY, MAX_WIDGET_SHORTCUTS, DEFAULT_WIDGET_SHORTCUTS, hsb2hex, ct2hex, ct2hexString, xy2hex, normalizeHex, DEFAULT_USER_SETTINGS } from '../utils/constants.js'
 
 const logger = getLogger('zhue-light-detail-page')
 const app = getApp()
@@ -485,7 +485,12 @@ Page(
       const cleanHex = hex.replace('#', '')
       if (cleanHex === '000000') return 0x000000
       const color = parseInt(cleanHex, 16)
-      return ((color >> 3) & 0x1f1f1f) + 0x0a0a0a
+      const bg = ((color >> 3) & 0x1f1f1f) + 0x0a0a0a
+      // A white light gives a dark grey (up to #292929): greys with RGB 1–46
+      // are to be avoided (design-guidelines.md, "Color"), so color_sys_item.
+      // Tinted ones stay: the rule is about greys
+      const r = bg >> 16, g = (bg >> 8) & 0xff, b = bg & 0xff
+      return (r === g && g === b) ? COLORS.lightBg : bg
     },
 
     loadLightDetail() {

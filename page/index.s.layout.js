@@ -273,7 +273,7 @@ function renderError(pageContext, error, retryFunc) {
     text: getText('RETRY'),
     text_size: px(28),
     normal_color: COLORS.highlight,
-    press_color: btnPressColor(COLORS.highlight, 0.8),
+    press_color: btnPressColor(COLORS.highlight),
     radius: px(10),
     click_func: retryFunc
   })
@@ -351,7 +351,7 @@ function renderBluetoothError(pageContext, error, retryFunc) {
     text: getText('RETRY'),
     text_size: px(24),
     normal_color: COLORS.highlight,
-    press_color: btnPressColor(COLORS.highlight, 0.8),
+    press_color: btnPressColor(COLORS.highlight),
     radius: px(25),
     click_func: retryFunc
   })
