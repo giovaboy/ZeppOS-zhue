@@ -1,13 +1,13 @@
 {
-  "name": "empty",
-  "version": "1.0.0",
-  "description": "",
+  "name": "zhue",
+  "version": "1.0.1",
+  "description": "Control Philips Hue lights from a Zepp OS watch",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@zeppos/device-types": "^3.0.1"
   },

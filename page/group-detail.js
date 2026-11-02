@@ -70,14 +70,6 @@ Page(
       }
 
       // 1. Controlla se dobbiamo ricaricare
-      /*const needsRefresh = app.globalData.needsGroupDetailRefresh
-
-      if (needsRefresh) {
-        logger.debug('Refresh flag set, will reload from API')
-        app.globalData.needsGroupDetailRefresh = false
-        // Non carichiamo qui, lo farà build()
-        return
-      }*/
 
       // ✅ Prova a usare la cache
       const cachedData = app.getGroupDetailCache(this.state.groupId)

@@ -1,5 +1,5 @@
 import { BaseSideService, settingsLib } from '@zeppos/zml/base-side'
-import { DEFAULT_USER_SETTINGS, MAX_WIDGET_SHORTCUTS, HUE_RANGE, SAT_RANGE, BRI_RANGE, DEFAULT_PRESETS, PRESET_TYPES, DEMO_DATA } from '../utils/constants.js'
+import { DEFAULT_USER_SETTINGS, HUE_RANGE, SAT_RANGE, BRI_RANGE, PRESET_TYPES, DEMO_DATA } from '../utils/constants.js'
 import { logs, logsPrivate, logsEnabled, LOG_LEVEL } from '../config.js'
 import { LOG_KEY, LOG_MAX, scrubLog, requestForLog } from './log.js'
 import { errorText, sizeText } from '../utils/log-text.js'
@@ -248,39 +248,6 @@ function hsbToRgb(h, s, v) {
     r: Math.round(r * 255),
     g: Math.round(g * 255),
     b: Math.round(b * 255)
-  }
-}
-
-// Funzione esistente per RGB a HSB (per la conversione al contrario)
-function rgbToHsb(r, g, b) {
-  r /= 255
-  g /= 255
-  b /= 255
-
-  const max = Math.max(r, g, b)
-  const min = Math.min(r, g, b)
-  const delta = max - min
-
-  let h = 0
-  if (delta !== 0) {
-    if (max === r) {
-      h = ((g - b) / delta) % 6
-    } else if (max === g) {
-      h = (b - r) / delta + 2
-    } else {
-      h = (r - g) / delta + 4
-    }
-    h *= 60
-    if (h < 0) h += 360
-  }
-
-  const s = max === 0 ? 0 : delta / max
-  const bri = max
-
-  return {
-    hue: Math.round(h / 360 * HUE_RANGE), // Hue API usa 0-65535
-    sat: Math.round(s * SAT_RANGE), // Hue API usa 0-254
-    bri: Math.round(bri * BRI_RANGE) // Hue API usa 0-254
   }
 }
 
@@ -637,76 +604,9 @@ class HueBridgeManager {
     }
   }
 
-  // Reset ai preset di default
-  resetFavoriteColors() {
-    return this.saveFavoriteColors(DEFAULT_PRESETS)
-  }
-
   // ==========================================
   // WIDGET SHORTCUTS MANAGEMENT
   // ==========================================
-  /*
-    getWidgetShortcuts() {
-      return this.user_settings.widget_shortcuts || DEFAULT_USER_SETTINGS.widget_shortcuts
-    }
-
-    saveWidgetShortcuts(shortcuts) {
-      try {
-        const shortcutsJson = JSON.stringify(shortcuts)
-        settingsLib.setItem(WIDGET_SHORTCUTS, shortcutsJson)
-        this.user_settings.widget_shortcuts = shortcuts
-        clog('Widget shortcuts saved:', shortcuts)
-        return { success: true }
-      } catch (e) {
-        cerr('Failed to save widget shortcuts:', e)
-        throw new Error('Failed to save widget shortcuts')
-      }
-    }
-
-    addWidgetShortcut(lightId, lightName) {
-      const shortcuts = this.getWidgetShortcuts()
-
-      // Check if light is already in shortcuts
-      const existingIndex = shortcuts.findIndex(s => s.lightId === lightId)
-      if (existingIndex !== -1) {
-        clog('Light already in widget shortcuts')
-        return { success: true, added: false, reason: 'already_exists' }
-      }
-
-      // Find first empty slot
-      const emptyIndex = shortcuts.findIndex(s => s.lightId === null)
-      if (emptyIndex === -1) {
-        clog('No empty slots available')
-        return { success: false, added: false, reason: 'slots_full' }
-      }
-
-      // Add to empty slot
-      shortcuts[emptyIndex] = { lightId, lightName }
-      this.saveWidgetShortcuts(shortcuts)
-
-      return { success: true, added: true, slotIndex: emptyIndex }
-    }
-
-    removeWidgetShortcut(lightId) {
-      const shortcuts = this.getWidgetShortcuts()
-
-      const index = shortcuts.findIndex(s => s.lightId === lightId)
-      if (index === -1) {
-        clog('Light not found in widget shortcuts')
-        return { success: false, removed: false }
-      }
-
-      // Clear the slot
-      shortcuts[index] = { lightId: null, lightName: null }
-      this.saveWidgetShortcuts(shortcuts)
-
-      return { success: true, removed: true }
-    }
-
-    isLightInWidgetShortcuts(lightId) {
-      const shortcuts = this.getWidgetShortcuts()
-      return shortcuts.some(s => s.lightId === lightId)
-    }*/
 
   // --- Funzioni per lo stato DEMO ---
   _initDemoState() {
@@ -800,20 +700,6 @@ class HueBridgeManager {
     if (key === BRIDGE_IP_KEY) this.bridgeIp = v
     else if (key === USERNAME_KEY) this.username = v
     else if (key === API_VERSION_KEY) this.apiVersion = v || 'v1'
-  }
-
-  clearConfig() {
-    if (this.demo) {
-      this._initDemoState()
-      clog('DEMO MODE: Config cleared (reset to initial demo state)')
-      return
-    }
-    settingsLib.removeItem(BRIDGE_IP_KEY)
-    settingsLib.removeItem(USERNAME_KEY)
-    settingsLib.removeItem(API_VERSION_KEY)
-    this.bridgeIp = null
-    this.username = null
-    this.apiVersion = 'v1'
   }
 
   async discoverBridges() {
@@ -1076,11 +962,6 @@ class HueBridgeManager {
       throw new Error('Fetch cancelled')
     }
     return await this.getGroupsV1()
-    /*try {
-      return await this.getGroupsV2()
-    } catch {
-      return await this.getGroupsV1()
-    }*/
   }
 
   async getGroupsV1() {
@@ -1107,32 +988,6 @@ class HueBridgeManager {
     return this._mapGroupsV1(json)
   }
 
-  async getGroupsV2() {
-    const url = `https://${this.bridgeIp}/clip/v2/resource/room`
-    const res = await hueFetch({
-      url,
-      method: 'GET',
-      headers: { 'hue-application-key': this.username }
-    })
-    const json = await safeJson(res)
-    if (json.errors?.length) throw new Error(json.errors[0].description)
-
-    const rooms = this._mapGroupsV2(json.data || [], 'room')
-
-    // Get zones
-    const zonesUrl = `https://${this.bridgeIp}/clip/v2/resource/zone`
-    const zonesRes = await hueFetch({
-      url: zonesUrl,
-      method: 'GET',
-      headers: { 'hue-application-key': this.username }
-    })
-    const zonesJson = await safeJson(zonesRes)
-    const zones = this._mapGroupsV2(zonesJson.data || [], 'zone')
-
-    return { rooms, zones }
-  }
-
-  // In index_app.js
 
   _mapGroupsV1(data) {
     const rooms = []
@@ -1161,15 +1016,6 @@ class HueBridgeManager {
     return { rooms, zones }
   }
 
-  _mapGroupsV2(data, type) {
-    return data.map(g => ({
-      id: g.id,
-      name: g.metadata?.name || 'Unknown',
-      type: type,
-      lights: g.children?.map(c => c.rid) || []
-    }))
-  }
-
   async toggleGroup(groupId, state) {
     if (this.demo) {
       clog(`DEMO MODE: Toggle group ${groupId} to ${state}`)
@@ -1179,11 +1025,6 @@ class HueBridgeManager {
       throw new Error('Bridge not configured')
 
     return await this.toggleGroupV1(groupId, state)
-    /*try {
-      return await this.toggleGroupV2(groupId, state)
-    } catch {
-      return await this.toggleGroupV1(groupId, state)
-    }*/
   }
 
   async toggleGroupV1(groupId, state) {
@@ -1196,23 +1037,6 @@ class HueBridgeManager {
     })
     const result = await safeJson(res)
     if (result[0]?.error) throw new Error(result[0].error.description)
-    return { success: true }
-  }
-
-  async toggleGroupV2(groupId, state) {
-    // V2 usa grouped_light resource
-    const url = `https://${this.bridgeIp}/clip/v2/resource/grouped_light/${groupId}`
-    const res = await hueFetch({
-      url,
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'hue-application-key': this.username
-      },
-      body: JSON.stringify({ on: { on: state } })
-    })
-    const result = await safeJson(res)
-    if (result.errors?.length) throw new Error(result.errors[0].description)
     return { success: true }
   }
 
@@ -1286,17 +1110,6 @@ class HueBridgeManager {
     }
     if (!this.bridgeIp || !this.username)
       throw new Error('Bridge not configured')
-    /*try {
-      // prefer v2, fallback to v1
-      const v2Lights = await this.getLightsV2()
-      if (v2Lights && v2Lights.length) {
-        this.apiVersion = 'v2'
-        this.saveConfig()
-        return v2Lights
-      }
-    } catch (e) {
-      cerr('v2 getLights failed, fallback to v1:', e.message)
-    }*/
     return await this.getLightsV1()
   }
 
@@ -1307,18 +1120,6 @@ class HueBridgeManager {
     if (Array.isArray(json) && json[0]?.error)
       throw new Error(json[0].error.description)
     return this._mapLightsV1(json)
-  }
-
-  async getLightsV2() {
-    const url = `https://${this.bridgeIp}/clip/v2/resource/light`
-    const res = await hueFetch({
-      url,
-      method: 'GET',
-      headers: { 'hue-application-key': this.username }
-    })
-    const json = await safeJson(res)
-    if (json.errors?.length) throw new Error(json.errors[0].description)
-    return this._mapLightsV2(json.data || [])
   }
 
   // Mappa il formato dati esteso (DEMO o full V1) al formato semplificato del client
@@ -1371,19 +1172,6 @@ class HueBridgeManager {
     }))
   }
 
-  _mapLightsV2(data) {
-    return data.map(l => ({
-      id: l.id,
-      name: l.metadata?.name || 'Unknown',
-      ison: l.on?.on || false,
-      bri: Math.round((l.dimming?.brightness || 0) * 2.54),
-      ct: l.state.ct,
-      colormode: l.state.colormode,
-      reachable: l.status !== 'connectivity_issue',
-      hex: this.stateToHex({ on: l.on?.on, bri: l.dimming?.brightness })
-    }))
-  }
-
   async toggleLight(id, state) {
     if (this.demo) {
       clog(`DEMO MODE: Toggle light ${id} to ${state}`)
@@ -1393,11 +1181,6 @@ class HueBridgeManager {
       throw new Error('Bridge not configured')
 
     return await this.toggleLightV1(id, state)
-    /*try {
-      return await this.toggleLightV2(id, state)
-    } catch {
-      return await this.toggleLightV1(id, state)
-    }*/
   }
 
   async toggleLightV1(id, state) {
@@ -1411,7 +1194,7 @@ class HueBridgeManager {
     const result = await safeJson(res)
     if (result[0]?.error) throw new Error(result[0].error.description)
 
-    // ✅ NUOVO: Fetch dati aggiornati usando getLightDetail()
+    // The light as it is now, for the watch to show
     try {
       const updatedLight = await this.getLightDetail(id)
 
@@ -1440,22 +1223,6 @@ class HueBridgeManager {
     }
   }
 
-  async toggleLightV2(id, state) {
-    const url = `https://${this.bridgeIp}/clip/v2/resource/light/${id}`
-    const res = await hueFetch({
-      url,
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'hue-application-key': this.username
-      },
-      body: JSON.stringify({ on: { on: state } })
-    })
-    const result = await safeJson(res)
-    if (result.errors?.length) throw new Error(result.errors[0].description)
-    return { success: true }
-  }
-
   async setLightBrightness(id, bri) {
     if (this.demo) {
       clog(`DEMO MODE: Set brightness for light ${id} to ${bri}`)
@@ -1465,11 +1232,6 @@ class HueBridgeManager {
       throw new Error('Bridge not configured')
     return await this.setLightBrightnessV1(id, bri)
 
-    /*try {
-      return await this.setLightBrightnessV2(id, brightness)
-    } catch {
-      return await this.setLightBrightnessV1(id, brightness)
-    }*/
   }
 
   async setLightBrightnessV1(id, bri) {
@@ -1482,27 +1244,6 @@ class HueBridgeManager {
     })
     const result = await safeJson(res)
     if (result[0]?.error) throw new Error(result[0].error.description)
-    return { success: true }
-  }
-
-  async setLightBrightnessV2(id, bri) {
-    // V2 usa percentuale 0-100
-    const brightnessPercent = Math.round((bri / 254) * 100)
-
-    const url = `https://${this.bridgeIp}/clip/v2/resource/light/${id}`
-    const res = await hueFetch({
-      url,
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'hue-application-key': this.username
-      },
-      body: JSON.stringify({
-        dimming: { brightness: brightnessPercent }
-      })
-    })
-    const result = await safeJson(res)
-    if (result.errors?.length) throw new Error(result.errors[0].description)
     return { success: true }
   }
 
@@ -1524,11 +1265,6 @@ class HueBridgeManager {
       throw new Error('Bridge not configured')
     return await this.setLightColorV1(lightId, colorParams)
 
-    /*try {
-      return await this.setLightColorV2(lightId, colorParams)
-    } catch {
-      return await this.setLightColorV1(lightId, colorParams)
-    }*/
   }
 
   async setLightColorV1(lightId, colorParams) {
@@ -1573,44 +1309,6 @@ class HueBridgeManager {
     })
     const result = await safeJson(res)
     if (result[0]?.error) throw new Error(result[0].error.description)
-    return { success: true }
-  }
-
-  async setLightColorV2(lightId, { hex, rgb }) {
-    // V2 uses XY color space - convert from RGB
-    // Simplified conversion (full implementation needed)
-    const url = `https://${this.bridgeIp}/clip/v2/resource/light/${lightId}`
-    const res = await hueFetch({
-      url,
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'hue-application-key': this.username
-      },
-      body: JSON.stringify({
-        color: {
-          xy: { x: 0.5, y: 0.5 } // Placeholder
-        },
-        on: { on: true } // Accendi quando imposti il colore
-      })
-    })
-    const result = await safeJson(res)
-    if (result.errors?.length) throw new Error(result.errors[0].description)
-    return { success: true }
-  }
-
-  async toggleAllLights(on) {
-    if (this.demo) {
-      clog(`DEMO MODE: Toggle ALL lights to ${on}`)
-      return this._handleDemoAction('all', on)
-    }
-    const url = `http://${this.bridgeIp}/api/${this.username}/groups/0/action`
-    await hueFetch({
-      url,
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ on })
-    })
     return { success: true }
   }
 
@@ -1728,58 +1426,6 @@ class HueBridgeManager {
   }
 
 
-  async fetchAllData() {
-    if (this.demo) {
-      clog('DEMO MODE: Fetching all data mock')
-      const lights = Object.values(this.DEMO_STATE.lights).map(l => this._mapLightToSimple(l))
-      const groups = await this.getGroups()
-      return {
-        lights: lights,
-        rooms: groups.rooms,
-        zones: groups.zones,
-        scenes: Object.values(this.DEMO_STATE.scenes)
-      }
-    }
-
-    this.cancelFetch()
-
-    // Create cancellation token
-    const cancellationToken = { cancelled: false }
-    this.currentFetchCancellation = cancellationToken
-
-    try {
-      // Check cancellation before fetch
-      if (cancellationToken.cancelled) {
-        throw new Error('Fetch cancelled')
-      }
-
-      const groups = await this.getGroups()
-
-      if (cancellationToken.cancelled) {
-        throw new Error('Fetch cancelled')
-      }
-
-      const lights = await this.getLights()
-
-      if (cancellationToken.cancelled) {
-        throw new Error('Fetch cancelled')
-      }
-
-      // Clear token on success
-      this.currentFetchCancellation = null
-
-      return {
-        lights: lights,
-        rooms: groups.rooms,
-        zones: groups.zones,
-        scenes: []
-      }
-    } catch (e) {
-      this.currentFetchCancellation = null
-      throw e
-    }
-  }
-
   // Funzione unificata per generare l'HEX dal color state
   // Funzione unificata per generare l'HEX dal color state
   stateToHex(s) {
@@ -1816,14 +1462,10 @@ class HueBridgeManager {
     return val + val + val
   }
 
-  setManualBridgeIp(ip) {
-    this.bridgeIp = ip
-    this.saveConfig()
-  }
 }
 
 // ============================================
-// USAGE IN app-side/index.js
+// The side service
 // ============================================
 
 const hueBridge = new HueBridgeManager()
@@ -1948,20 +1590,12 @@ AppSideService(
           this.handleGetUserSettings(res)
           break
 
-        case 'GET_FAVORITE_COLORS':
-          this.handleGetFavoriteColors(res)
-          break
-
         case 'ADD_FAVORITE_COLOR':
           this.handleAddFavoriteColor(req, res)
           break
 
         case 'REMOVE_FAVORITE_COLOR':
           this.handleRemoveFavoriteColor(req, res)
-          break
-
-        case 'RESET_FAVORITE_COLORS':
-          this.handleResetFavoriteColors(res)
           break
 
         case 'CHECK_CONNECTION':
@@ -1974,10 +1608,6 @@ AppSideService(
 
         case 'PAIR':
           this.handlePair(req, res)
-          break
-
-        case 'GET_LIGHTS':
-          this.handleGetLights(res)
           break
 
         case 'GET_LIGHT_DETAIL':
@@ -2000,30 +1630,6 @@ AppSideService(
           this.handleSetHS(req, res)
           break
 
-        case 'SET_XY':
-          this.handleSetXY(req, res)
-          break
-
-        case 'ALL_LIGHTS':
-          this.handleAllLights(req, res)
-          break
-
-        case 'SET_MANUAL_IP':
-          this.handleSetManualIp(req, res)
-          break
-
-        case 'GET_CONFIG_STATUS':
-          this.handleGetConfigStatus(res)
-          break
-
-        case 'CLEAR_CONFIG':
-          this.handleClearConfig(res)
-          break
-
-        case 'FETCH_ALL_DATA':
-          this.handleFetchAllData(res)
-          break
-
         case 'GET_GROUPS':
           this.handleGetGroups(res)
           break
@@ -2044,18 +1650,6 @@ AppSideService(
           this.handleWidgetToggleLight(req, res)
           break
 
-        case 'CANCEL_PAIRING':
-          this.handleCancelPairing(res)
-          break
-
-        case 'CANCEL_DISCOVERY':
-          this.handleCancelDiscovery(res)
-          break
-
-        case 'CANCEL_FETCH':
-          this.handleCancelFetch(res)
-          break
-
         case 'CANCEL_ALL':
           this.handleCancelAll(res)
           break
@@ -2073,21 +1667,6 @@ AppSideService(
         res(null, { success: true, settings })
       } catch (error) {
         cerr('Get user settings error:', error)
-        res({ error: error.message })
-      }
-    },
-
-    async handleGetFavoriteColors(res) {
-      try {
-        clog('Getting favorite colors...')
-        const settings = hueBridge.getUserSettings()
-        clog('Favorite colors from settings:', settings.favorite_colors)
-        res(null, {
-          success: true,
-          colors: settings.favorite_colors || DEFAULT_PRESETS
-        })
-      } catch (error) {
-        cerr('Get favorite colors error:', error)
         res({ error: error.message })
       }
     },
@@ -2113,17 +1692,6 @@ AppSideService(
         res(null, result)
       } catch (error) {
         cerr('Remove favorite color error:', error)
-        res({ error: error.message })
-      }
-    },
-
-    async handleResetFavoriteColors(res) {
-      try {
-        clog('Resetting favorite colors to defaults...')
-        const result = hueBridge.resetFavoriteColors()
-        res(null, result)
-      } catch (error) {
-        cerr('Reset favorite colors error:', error)
         res({ error: error.message })
       }
     },
@@ -2176,21 +1744,6 @@ AppSideService(
         } else {
           res({ error: error.message })
         }
-      }
-    },
-
-    async handleGetLights(res) {
-      try {
-        clog('Getting lights...')
-        const lights = await hueBridge.getLights()
-
-        res(null, {
-          success: true,
-          lights: lights
-        })
-      } catch (error) {
-        cerr('Get lights error:', error)
-        res({ error: error.message })
       }
     },
 
@@ -2294,105 +1847,6 @@ AppSideService(
       }
     },
 
-    async handleSetXY(req, res) {
-      try {
-        const { lightId, x, y, bri } = req.params
-        clog(`Set XY for light ${lightId} - X:${x}, Y:${y}, B:${bri}`)
-
-        if (lightId === undefined || x === undefined || y === undefined) {
-          throw new Error('Missing lightId, x, or y parameter')
-        }
-
-        // Forza nel gamut se necessario
-        const corrected = forceIntoGamut(x, y, 'C')
-
-        const colorParams = { xy: [corrected.x, corrected.y] }
-        if (bri !== undefined) {
-          colorParams.bri = bri
-        }
-
-        await hueBridge.setLightColor(lightId, colorParams)
-        res(null, { success: true })
-      } catch (error) {
-        cerr('Set XY error:', error)
-        res({ error: error.message })
-      }
-    },
-
-    async handleAllLights(req, res) {
-      try {
-        const { state } = req.params
-        clog(`Toggle all lights to ${state}`)
-
-        await hueBridge.toggleAllLights(state)
-        res(null, { success: true })
-      } catch (error) {
-        cerr('All lights error:', error)
-        res({ error: error.message })
-      }
-    },
-
-    async handleSetManualIp(req, res) {
-      try {
-        const { ip } = req.params
-        clog('Setting manual IP:', ip)
-
-        hueBridge.setManualBridgeIp(ip)
-        res(null, { success: true })
-      } catch (error) {
-        cerr('Set manual IP error:', error)
-        res({ error: error.message })
-      }
-    },
-
-    async handleGetConfigStatus(res) {
-      try {
-        clog('Getting config status...')
-
-        // Whether they are set, not their values: the watch has no use for
-        // the bridge key
-        const status = {
-          hasBridgeIp: !!hueBridge.bridgeIp,
-          hasKey: !!hueBridge.username,
-          apiVersion: hueBridge.apiVersion,
-          isConfigured: !!(hueBridge.bridgeIp && hueBridge.username)
-        }
-
-        clog('Config status:', status)
-        res(null, status)
-
-      } catch (error) {
-        cerr('Get config status error:', error)
-        res({ error: error.message })
-      }
-    },
-
-    async handleClearConfig(res) {
-      try {
-        clog('Clearing config...')
-        hueBridge.clearConfig()
-        res(null, { success: true })
-      } catch (error) {
-        cerr('Clear config error:', error)
-        res({ error: error.message })
-      }
-    },
-
-    async handleFetchAllData(res) {
-      try {
-        clog('Fetching all data...')
-        const data = await hueBridge.fetchAllData()
-
-        res(null, {
-          success: true,
-          data: data
-        })
-      } catch (error) {
-        cerr('Fetch all data error:', error)
-        res({ error: error.message })
-      }
-    },
-
     async handleGetGroups(res) {
       try {
         clog('Getting groups...')
@@ -2442,15 +1896,12 @@ AppSideService(
         // ✅ Recupera dati gruppo
         const groupDetails = await hueBridge.getGroupDetail(groupId);
 
-        // ✅ Recupera user settings
-        //const userSettings = hueBridge.getUserSettings();
 
-        // ✅ Ritorna tutto insieme
+        // The lights and scenes of the group
         res(null, {
           success: true,
           data: {
             ...groupDetails, // lights, scenes
-            //userSettings // ← AGGIUNTO
           }
         });
       } catch (error) {
@@ -2556,39 +2007,6 @@ AppSideService(
         res(null, { success: true, newState })
       } catch (error) {
         cerr('Widget toggle light error:', error)
-        res({ error: error.message })
-      }
-    },
-
-    async handleCancelPairing(res) {
-      try {
-        clog('Cancelling pairing...')
-        hueBridge.cancelPairing()
-        res(null, { success: true, message: 'Pairing cancelled' })
-      } catch (error) {
-        cerr('Cancel pairing error:', error)
-        res({ error: error.message })
-      }
-    },
-
-    async handleCancelDiscovery(res) {
-      try {
-        clog('Cancelling discovery...')
-        hueBridge.cancelDiscovery()
-        res(null, { success: true, message: 'Discovery cancelled' })
-      } catch (error) {
-        cerr('Cancel discovery error:', error)
-        res({ error: error.message })
-      }
-    },
-
-    async handleCancelFetch(res) {
-      try {
-        clog('Cancelling fetch...')
-        hueBridge.cancelFetch()
-        res(null, { success: true, message: 'Fetch cancelled' })
-      } catch (error) {
-        cerr('Cancel fetch error:', error)
         res({ error: error.message })
       }
     },

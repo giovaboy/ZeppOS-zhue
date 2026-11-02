@@ -101,7 +101,7 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
     renderGroupContentWithViewContainer(pageContext, state, viewData, callbacks, COLORS, currentY)
 }
 
-// ✅ NUOVO: Rendering con VIEW_CONTAINER
+// The list in a VIEW_CONTAINER
 function renderGroupContentWithViewContainer(pageContext, state, viewData, callbacks, COLORS, startY) {
     const { applyScene, toggleLight, navigateToLightDetail, onScrollChange } = callbacks
     const { data } = viewData

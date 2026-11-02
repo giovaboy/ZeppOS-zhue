@@ -11,33 +11,10 @@ import { onGesture, GESTURE_RIGHT, createModal, MODAL_CONFIRM, onKey, KEY_SELECT
 import { px } from '@zos/utils'
 import { renderLightDetail, LAYOUT_CONFIG } from 'zosLoader:./light-detail.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
-import { COLORS, HUE_RANGE, SAT_RANGE, BRI_RANGE, DEFAULT_PRESETS, PRESET_TYPES, WIDGET_SHORTCUTS_KEY, MAX_WIDGET_SHORTCUTS, DEFAULT_WIDGET_SHORTCUTS, hsb2hex, ct2hex, ct2hexString, xy2hex, normalizeHex, DEFAULT_USER_SETTINGS } from '../utils/constants.js'
+import { COLORS, comparePresets, HUE_RANGE, SAT_RANGE, BRI_RANGE, DEFAULT_PRESETS, PRESET_TYPES, WIDGET_SHORTCUTS_KEY, MAX_WIDGET_SHORTCUTS, DEFAULT_WIDGET_SHORTCUTS, hsb2hex, ct2hex, ct2hexString, xy2hex, normalizeHex, DEFAULT_USER_SETTINGS } from '../utils/constants.js'
 
 const logger = getLogger('zhue-light-detail-page')
 const app = getApp()
-
-function getPresetTypePriority(type) {
-  switch (type) {
-    case PRESET_TYPES.WHITE:
-      return 1
-    case PRESET_TYPES.CT:
-      return 2
-    case PRESET_TYPES.COLOR:
-      return 3
-    default:
-      return 99
-  }
-}
-
-function comparePresets(a, b) {
-  const priorityA = getPresetTypePriority(a.type)
-  const priorityB = getPresetTypePriority(b.type)
-  if (priorityA !== priorityB) return priorityA - priorityB
-  if (a.type === PRESET_TYPES.WHITE) return a.bri - b.bri
-  if (a.type === PRESET_TYPES.CT) return a.ct - b.ct
-  if (a.type === PRESET_TYPES.COLOR) return a.hue - b.hue
-  return 0
-}
 
 Page(
   loggedPage('light-detail', BasePage({
@@ -497,10 +474,6 @@ Page(
       logger.log('Loading light detail...')
       logger.debug('Light ID:', this.state.lightId)
 
-      /*if (this.state.isLoading) {
-        logger.debug('Already loading, skipping duplicate request')
-        return
-      }*/
 
       this.state.isLoading = true
       this.state.error = null

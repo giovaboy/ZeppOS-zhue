@@ -624,11 +624,6 @@ function calculateCtRgb(mireds) {
   };
 }
 
-export function xy2hexString(xy, bri = 254) {
-  const hex = xy2hex(xy, bri).toString(16).padStart(6, '0').toUpperCase()
-  return '#' + hex
-}
-
 /**
  * Converti coordinate XY (CIE 1931) a hex color integer
  */
@@ -703,13 +698,6 @@ export function hexStringToInt(hexString) {
   return parseInt(hexString.replace('#', '0x'), 16)
 }
 
-/**
- * Converte un intero esadecimale a stringa hex (#RRGGBB)
- */
-export function intToHexString(intColor) {
-  return '#' + intColor.toString(16).padStart(6, '0').toUpperCase()
-}
-
 
 // Funzione per normalizzare HEX: aggiunge # se manca
 export const normalizeHex = (hex) => {
@@ -758,4 +746,24 @@ function pressColorText(hex_color, multiplier) {
   }
   // otherwise usual multiplication
   return multiplyHexColor("0x" + hex_color, multiplier);
+}
+// Presets in the order the watch and the settings page show them: whites by
+// brightness, then color temperatures, then colors by hue
+function presetTypePriority(type) {
+  switch (type) {
+    case PRESET_TYPES.WHITE: return 1
+    case PRESET_TYPES.CT: return 2
+    case PRESET_TYPES.COLOR: return 3
+    default: return 99
+  }
+}
+
+export function comparePresets(a, b) {
+  const priorityA = presetTypePriority(a.type)
+  const priorityB = presetTypePriority(b.type)
+  if (priorityA !== priorityB) return priorityA - priorityB
+  if (a.type === PRESET_TYPES.WHITE) return a.bri - b.bri
+  if (a.type === PRESET_TYPES.CT) return a.ct - b.ct
+  if (a.type === PRESET_TYPES.COLOR) return a.hue - b.hue
+  return 0
 }

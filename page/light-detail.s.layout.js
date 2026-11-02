@@ -426,31 +426,8 @@ function renderColorButton(pageContext, state, yPos, openCallback) {
   //return btnColor
 
   // Border
-  /*pageContext.createTrackedWidget(widget.STROKE_RECT, {
-    x: colorBtnX,
-    y: yPos,
-    w: colorBtnW,
-    h: colorBtnH,
-    radius: 12,
-    line_width: 2,
-    color: 0xFFFFFF
-  })*/
 
   // Button
-  /* pageContext.createTrackedWidget(widget.BUTTON, {
-     x: colorBtnX + 2,
-     y: yPos + 2,
-     w: colorBtnW - 4,
-     h: colorBtnH - 4,
-     text: getText('CHANGE'),
-     text_size: px(22),
-     color: 0x000000,
-     normal_color: btnColor,
-     press_color: btnPressColor(btnColor),
-     radius: 12,
-     click_func: openCallback
-   })
- */
 
   // color picker background
   let iconSize = px(70)
@@ -543,13 +520,6 @@ function renderPresets(pageContext, state, yPos, applyCallback, addCallback, del
     }
   })
 
-  /*presetContainer.createWidget(widget.FILL_RECT, {
-   x: 0,
-   y: 0,
-   w: DEVICE_WIDTH,
-   h: containerHeight + px(20),
-   color: COLORS.background
- })*/
 
   const ITEM_SIZE = presetItemSize
   const ITEM_MARGIN = px(10)

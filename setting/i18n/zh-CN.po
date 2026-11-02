@@ -9,62 +9,20 @@ msgstr "桥接器 IP 地址"
 msgid "BRIDGE_IP_PLACEHOLDER"
 msgstr "例如 192.168.1.100"
 
-msgid "API_VERSION"
-msgstr "API 版本"
-
-msgid "NOT_CONFIGURED"
-msgstr "尚未配置"
-
 msgid "BRIDGE_CONFIGURED"
 msgstr "桥接器已配置并配对"
 
 msgid "BRIDGE_NOT_CONFIGURED"
 msgstr "桥接器未配置。请使用应用进行配对。"
 
-msgid "TEST_CONNECTION"
-msgstr "测试连接"
-
-msgid "CLEAR_CONFIG"
-msgstr "清除配置"
-
-msgid "ADVANCED_SETTINGS"
-msgstr "高级设置"
-
-msgid "DEBUG_MODE"
-msgstr "调试模式"
-
 msgid "HELP_TITLE"
 msgstr "如何配对桥接器"
-
-msgid "HELP_TEXT"
-msgstr "1. 在手表上打开 Hue 应用\n2. 应用将自动搜索桥接器\n3. 按下 Hue Bridge 上的物理按钮\n4. 等待配对完成\n5. 配置将自动保存"
-
-msgid "CONFIRM_CLEAR"
-msgstr "您确定要清除所有 Hue Bridge 配置吗？\n\n您需要重新配对。"
-
-msgid "CONFIG_CLEARED"
-msgstr "配置已成功清除！"
-
-msgid "BRIDGE_NOT_SETUP"
-msgstr "桥接器未配置。请先使用手表应用进行配对。"
 
 msgid "BRIDGE_CONFIGURATION"
 msgstr "桥接器配置"
 
-msgid "CONNECTION_STATUS"
-msgstr "连接状态"
-
 msgid "FAVORITE_COLORS"
 msgstr "收藏颜色"
-
-msgid "ACTIONS"
-msgstr "操作"
-
-msgid "USERNAME_LABEL"
-msgstr "用户名："
-
-msgid "API_VERSION_LABEL"
-msgstr "API 版本："
 
 msgid "DEFAULT_TAB"
 msgstr "默认标签页"

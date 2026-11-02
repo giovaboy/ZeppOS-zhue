@@ -55,9 +55,7 @@ App(
         },
         groupDetail: {}
       },
-      needsGroupDetailRefresh: false,
       needsGroupsRefresh: false,
-      settingsLoaded: false,
       settings: {
         ...DEFAULT_USER_SETTINGS
       },
@@ -184,49 +182,12 @@ App(
     },
 
     // ============================================
-    // NEW: Helper method to check demo mode
+    // Demo mode: the settings the phone sent (GET_GROUPS userSettings)
     // ============================================
     isDemoMode() {
       // Check if demo_mode flag is set in settings
       // This is populated by the GET_USER_SETTINGS response from app-side
       return this.globalData.settings?.demo_mode === true
-    },
-
-    loadUserSettings() {
-      logger.debug('Loading user settings from backend...')
-
-      this.request({
-        method: 'GET_USER_SETTINGS'
-      })
-        .then(result => {
-          if (result.success && result.settings) {
-            logger.debug('User settings loaded:', result.settings)
-
-            // Update settings including demo_mode flag
-            this.globalData.settings = {
-              ...this.globalData.settings,
-              ...result.settings
-            }
-
-            this.globalData.settingsLoaded = true
-
-            // Log demo mode status
-            if (this.isDemoMode()) {
-              logger.debug('Demo mode is ACTIVE - cache will never expire')
-            }
-          } else {
-            console.warn('Failed to load settings, using defaults')
-            this.globalData.settingsLoaded = true
-          }
-        })
-        .catch(err => {
-          console.error('Error loading user settings:', err)
-          this.globalData.settingsLoaded = true
-        })
-    },
-
-    areSettingsReady() {
-      return this.globalData.settingsLoaded
     },
 
     updateSettings(newSettings) {
@@ -242,7 +203,7 @@ App(
     },
 
     // ============================================
-    // PATCHED: getLightData - Skip expiry in demo mode
+    // A light from the cache, while younger than TTL (never expires in demo mode)
     // ============================================
     getLightData(lightId) {
       const data = this.globalData.lightData[lightId]
@@ -280,7 +241,7 @@ App(
     },
 
     // ============================================
-    // PATCHED: getGroupsData - Skip expiry in demo mode
+    // The groups list from the cache, flagged expired after TTL (never in demo mode)
     // ============================================
     getGroupsData() {
       const data = this.globalData.groupsData
@@ -340,7 +301,7 @@ App(
     },
 
     // ============================================
-    // PATCHED: shouldRefreshGroups - Never refresh in demo mode (if data loaded)
+    // Whether the groups page fetches again (in demo mode only before the first load)
     // ============================================
     shouldRefreshGroups() {
       // In demo mode, only refresh if we haven't loaded data yet
@@ -358,7 +319,7 @@ App(
     },
 
     // ============================================
-    // PATCHED: getGroupDetailCache - Skip expiry in demo mode
+    // A group detail from the cache, while younger than TTL (never expires in demo mode)
     // ============================================
     getGroupDetailCache(groupId) {
       const cached = this.globalData.groupDetailCache[groupId]
@@ -397,7 +358,6 @@ App(
       this.globalData.groupDetailCache[groupId] = null
     },
 
-    // ... rest of existing methods remain unchanged ...
 
     setCurrentTab(tabName) {
       logger.debug('Global Store: Setting current tab to', tabName)
@@ -537,7 +497,6 @@ App(
 
       this.globalData.groupDetailCache = {}
       this.globalData.lightData = {}
-      this.globalData.needsGroupDetailRefresh = false
       this.globalData.needsGroupsRefresh = false
 
       this.globalData.scrollPositions = {
@@ -551,7 +510,6 @@ App(
       this.globalData.currentTab = null
       this.globalData.currentLightId = null
 
-      this.globalData.settingsLoaded = false
       this.globalData.settings = { ...DEFAULT_USER_SETTINGS }
 
       logger.debug('Global Store: Cache cleared successfully')
@@ -563,12 +521,6 @@ App(
       this.remoteLog('app closed')
       this._savePendingLog()
       this.clearAllCache()
-      /*try {
-        this.request({ method: 'CANCEL_ALL' })
-          .catch(err => logger.debug('Cancel all failed:', err))
-      } catch (e) {
-        logger.debug('Could not send cancellation:', e)
-      }*/
       logger.debug('Hue On-Off App cleanup completed')
     }
   })

@@ -1,5 +1,5 @@
 import { gettext } from 'i18n'
-import { DEFAULT_PRESETS, PRESET_TYPES, DEFAULT_USER_SETTINGS } from '../utils/constants'
+import { DEFAULT_PRESETS, PRESET_TYPES, DEFAULT_USER_SETTINGS, comparePresets } from '../utils/constants'
 import { LOG_KEY } from '../app-side/log.js'
 import { logsEnabled } from '../config.js'
 import { LOGO_SRC, LOGO_WIDTH, LOGO_HEIGHT } from './logo'
@@ -103,29 +103,6 @@ function choice(text, options, chosen, onPick) {
 function maskKey(key) {
   if (!key) return ''
   return key.length > 12 ? `${key.slice(0, 4)}…${key.slice(-4)}` : '…'
-}
-
-function getPresetTypePriority(type) {
-  switch (type) {
-    case PRESET_TYPES.WHITE:
-      return 1
-    case PRESET_TYPES.CT:
-      return 2
-    case PRESET_TYPES.COLOR:
-      return 3
-    default:
-      return 99
-  }
-}
-
-function comparePresets(a, b) {
-  const priorityA = getPresetTypePriority(a.type)
-  const priorityB = getPresetTypePriority(b.type)
-  if (priorityA !== priorityB) return priorityA - priorityB
-  if (a.type === PRESET_TYPES.WHITE) return a.bri - b.bri
-  if (a.type === PRESET_TYPES.CT) return a.ct - b.ct
-  if (a.type === PRESET_TYPES.COLOR) return a.hue - b.hue
-  return 0
 }
 
 AppSettingsPage({

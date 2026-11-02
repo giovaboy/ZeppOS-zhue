@@ -75,7 +75,7 @@ Page(
                 this.state.mode = this.state.supportsColor ? 'color' : 'ct';
             }
 
-            // ✅ AGGIUNTO: Carica light data per sincronizzazione
+            // The cached light fills in what the params left out
             const cachedLight = app.getLightData(this.state.lightId)
             if (cachedLight) {
                 logger.debug('Color picker using cached light data')

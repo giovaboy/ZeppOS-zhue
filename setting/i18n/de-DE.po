@@ -9,62 +9,20 @@ msgstr "Bridge IP-Adresse"
 msgid "BRIDGE_IP_PLACEHOLDER"
 msgstr "z.B. 192.168.1.100"
 
-msgid "API_VERSION"
-msgstr "API-Version"
-
-msgid "NOT_CONFIGURED"
-msgstr "Noch nicht konfiguriert"
-
 msgid "BRIDGE_CONFIGURED"
 msgstr "Bridge ist konfiguriert und gekoppelt"
 
 msgid "BRIDGE_NOT_CONFIGURED"
 msgstr "Bridge nicht konfiguriert. Nutze die App zum Koppeln."
 
-msgid "TEST_CONNECTION"
-msgstr "Verbindung testen"
-
-msgid "CLEAR_CONFIG"
-msgstr "Konfiguration löschen"
-
-msgid "ADVANCED_SETTINGS"
-msgstr "Erweiterte Einstellungen"
-
-msgid "DEBUG_MODE"
-msgstr "Debug-Modus"
-
 msgid "HELP_TITLE"
 msgstr "So koppelst du deine Bridge"
-
-msgid "HELP_TEXT"
-msgstr "1. Öffne die Hue App auf deiner Uhr\n2. Die App sucht automatisch nach deiner Bridge\n3. Drücke den physischen Knopf auf deiner Hue Bridge\n4. Warte bis die Kopplung abgeschlossen ist\n5. Die Konfiguration wird automatisch gespeichert"
-
-msgid "CONFIRM_CLEAR"
-msgstr "Bist du sicher, dass du die gesamte Hue Bridge Konfiguration löschen möchtest?\n\nDu musst sie erneut koppeln."
-
-msgid "CONFIG_CLEARED"
-msgstr "Konfiguration erfolgreich gelöscht!"
-
-msgid "BRIDGE_NOT_SETUP"
-msgstr "Bridge nicht konfiguriert. Kopple sie zuerst über die Uhren-App."
 
 msgid "BRIDGE_CONFIGURATION"
 msgstr "Bridge-Konfiguration"
 
-msgid "CONNECTION_STATUS"
-msgstr "Verbindungsstatus"
-
 msgid "FAVORITE_COLORS"
 msgstr "Lieblingsfarben"
-
-msgid "ACTIONS"
-msgstr "Aktionen"
-
-msgid "USERNAME_LABEL"
-msgstr "Benutzername:"
-
-msgid "API_VERSION_LABEL"
-msgstr "API-Version:"
 
 msgid "DEFAULT_TAB"
 msgstr "Standard-Tab"
