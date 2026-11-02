@@ -1,4 +1,5 @@
 import { BasePage } from '@zeppos/zml/base-page'
+import { loggedPage } from '../utils/remote-log.js'
 import { createWidget, deleteWidget } from '@zos/ui'
 import { exit, push } from '@zos/router'
 import { getText } from '@zos/i18n'
@@ -11,7 +12,7 @@ const logger = getLogger('zhue-groups-page')
 const app = getApp()
 
 Page(
-  BasePage({
+  loggedPage('groups', BasePage({
     state: {
       rooms: [],
       zones: [],
@@ -256,5 +257,5 @@ Page(
       app.setGroupsScrollY(this.state.scrollPos_y)
       this.clearAllWidgets()
     }
-  })
+  }))
 )

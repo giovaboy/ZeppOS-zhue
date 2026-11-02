@@ -119,3 +119,18 @@ msgstr "5. La configuration sera enregistrée automatiquement"
 
 msgid "MADE_WITH_LOVE"
 msgstr "Fait avec ❤️ pour Zepp OS"
+
+msgid "LOGS_TITLE"
+msgstr "Journaux"
+
+msgid "LOGS_HINT"
+msgstr "Les dernières lignes de la montre ([w]) et du téléphone. Touchez la zone, sélectionnez tout et copiez-le pour un rapport de bug. La clé du bridge et les adresses sont retirées."
+
+msgid "LOGS_EMPTY"
+msgstr "Aucune ligne pour l'instant : ouvrez l'app sur la montre."
+
+msgid "LOGS_COPY"
+msgstr "Lignes du journal (touchez pour copier)"
+
+msgid "LOGS_CLEAR"
+msgstr "Effacer les journaux"

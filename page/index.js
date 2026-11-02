@@ -1,4 +1,5 @@
 import { BasePage } from '@zeppos/zml/base-page'
+import { loggedPage, infoLog } from '../utils/remote-log.js'
 import { createWidget, deleteWidget, prop } from '@zos/ui'
 import { push } from '@zos/router'
 import { connectStatus } from '@zos/ble'
@@ -22,7 +23,7 @@ const logger = getLogger('zhue-index-page')
 const app = getApp()
 
 Page(
-  BasePage({
+  loggedPage('index', BasePage({
     state: {
       currentState: STATES.LOADING,
       error: null
@@ -91,6 +92,10 @@ Page(
       if (this.DEBUG_MODE) {
         logger.log(`State transition: ${this.state.currentState} -> ${newState}`)
       }
+      // The start-up path (Bluetooth, bridge search, pairing, data): one line
+      // per step, with the time since the page opened
+      const since = this._logOpenedAt ? ` at ${Date.now() - this._logOpenedAt}ms` : ''
+      infoLog(`[index] ${this.state.currentState} → ${newState}${since}${data.error ? `: ${data.error}` : ''}`)
 
       this.state.currentState = newState
 
@@ -309,5 +314,5 @@ Page(
         logger.debug('Could not send cancellation requests:', e)
       }
     }
-  })
+  }))
 )

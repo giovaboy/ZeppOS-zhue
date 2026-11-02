@@ -1,4 +1,5 @@
 import { BasePage } from '@zeppos/zml/base-page'
+import { loggedPage } from '../utils/remote-log.js'
 import { localStorage } from '@zos/storage'
 import { setPageBrightTime } from '@zos/display'
 import { setScrollLock } from '@zos/page'
@@ -38,7 +39,7 @@ function comparePresets(a, b) {
 }
 
 Page(
-  BasePage({
+  loggedPage('light-detail', BasePage({
     state: {
       lightId: null,
       lightName: '',
@@ -804,5 +805,5 @@ Page(
         this.currentModal = null
       }
     }
-  })
+  }))
 )

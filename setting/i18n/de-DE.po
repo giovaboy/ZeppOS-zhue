@@ -119,3 +119,18 @@ msgstr "5. Die Konfiguration wird automatisch gespeichert"
 
 msgid "MADE_WITH_LOVE"
 msgstr "Mit ❤️ für Zepp OS gemacht"
+
+msgid "LOGS_TITLE"
+msgstr "Protokoll"
+
+msgid "LOGS_HINT"
+msgstr "Die neuesten Zeilen von Uhr ([w]) und Telefon. Tippe auf das Feld, markiere alles und kopiere es für einen Fehlerbericht. Bridge-Schlüssel und Adressen werden entfernt."
+
+msgid "LOGS_EMPTY"
+msgstr "Noch keine Zeilen: öffne die App auf der Uhr."
+
+msgid "LOGS_COPY"
+msgstr "Protokollzeilen (zum Kopieren tippen)"
+
+msgid "LOGS_CLEAR"
+msgstr "Protokoll löschen"

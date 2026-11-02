@@ -1,11 +1,62 @@
 import { gettext } from 'i18n'
 import { DEFAULT_PRESETS, PRESET_TYPES } from '../utils/constants'
+import { LOG_KEY } from '../app-side/log.js'
+import { logsEnabled } from '../config.js'
 //import { getPackageInfo } from '@zos/app'
 
 //const packageInfo = getPackageInfo()
 
 const APP_VERSION = "1.0.1"//packageInfo.name//"1.0.0"//
 const APP_NAME = "zhue"//packageInfo.name//"zhue"//
+
+// Logs box (shared rule, ../_shared/zeppos-ai-doc/logging.md): the latest
+// watch ([w]) and phone lines, already scrubbed by the side service. A
+// multi-line TextInput because a Text can't be selected; its changes are
+// ignored. Each log write rebuilds this page while it is open. Not built in
+// public releases (config.js LOG_LEVEL 'off').
+function buildLogsCard(settingsStorage) {
+  let lines = []
+  try { lines = JSON.parse(settingsStorage.getItem(LOG_KEY) || '[]') } catch (e) { lines = [] }
+  return View(
+    {
+      style: {
+        marginTop: '20px',
+        padding: '20px',
+        backgroundColor: '#fff',
+        borderRadius: '8px',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+      }
+    },
+    [
+      Text(
+        { style: { fontSize: '18px', fontWeight: '600', color: '#333', marginBottom: '10px' } },
+        [`${gettext('LOGS_TITLE')} (${lines.length})`]
+      ),
+      Text(
+        { paragraph: true, style: { fontSize: '13px', color: '#6c757d', marginBottom: '10px' } },
+        [gettext(lines.length ? 'LOGS_HINT' : 'LOGS_EMPTY')]
+      ),
+      ...(lines.length ? [
+        TextInput({
+          label: gettext('LOGS_COPY'),
+          value: lines.join('\n'),
+          multiline: true,
+          rows: 8,
+          labelStyle: { fontSize: '12px', color: '#6c757d' },
+          subStyle: { fontSize: '11px', fontFamily: 'monospace', color: '#000', whiteSpace: 'pre-wrap', maxHeight: '240px', overflow: 'hidden' },
+          onChange: () => {}   // read-only: the box is there to be copied
+        }),
+        View({ style: { display: 'flex', justifyContent: 'center', marginTop: '10px' } }, [
+          Button({
+            label: gettext('LOGS_CLEAR'),
+            style: { fontSize: '13px', fontWeight: '500', borderRadius: '30px', background: '#6c757d', color: 'white', padding: '4px 22px' },
+            onClick: () => settingsStorage.removeItem(LOG_KEY)
+          })
+        ])
+      ] : [])
+    ]
+  )
+}
 
 function getPresetTypePriority(type) {
   switch (type) {
@@ -635,6 +686,9 @@ AppSettingsPage({
           )
         ]
       ),
+
+      // ===== LOGS (test builds only) =====
+      ...(logsEnabled() ? [buildLogsCard(props.settingsStorage)] : []),
 
       // ===== FOOTER =====
       View(

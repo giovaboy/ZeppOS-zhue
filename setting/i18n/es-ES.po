@@ -119,3 +119,18 @@ msgstr "5. La configuración se guardará automáticamente"
 
 msgid "MADE_WITH_LOVE"
 msgstr "Hecho con ❤️ para Zepp OS"
+
+msgid "LOGS_TITLE"
+msgstr "Registros"
+
+msgid "LOGS_HINT"
+msgstr "Las últimas líneas del reloj ([w]) y del teléfono. Toca el cuadro, selecciona todo y cópialo para pegarlo en un informe de error. La clave del bridge y las direcciones se eliminan."
+
+msgid "LOGS_EMPTY"
+msgstr "Aún no hay líneas: abre la app en el reloj."
+
+msgid "LOGS_COPY"
+msgstr "Líneas de registro (toca para copiar)"
+
+msgid "LOGS_CLEAR"
+msgstr "Borrar registros"

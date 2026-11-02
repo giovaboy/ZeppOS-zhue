@@ -119,3 +119,18 @@ msgstr "5. 설정이 자동으로 저장됩니다"
 
 msgid "MADE_WITH_LOVE"
 msgstr "Zepp OS를 위해 ❤️로 제작"
+
+msgid "LOGS_TITLE"
+msgstr "로그"
+
+msgid "LOGS_HINT"
+msgstr "시계([w])와 휴대폰의 최근 로그입니다. 상자를 눌러 모두 선택하고 복사해 버그 보고에 붙여 넣으세요. 브리지 키와 주소는 제거됩니다."
+
+msgid "LOGS_EMPTY"
+msgstr "아직 로그가 없습니다: 시계에서 앱을 여세요."
+
+msgid "LOGS_COPY"
+msgstr "로그 (눌러서 복사)"
+
+msgid "LOGS_CLEAR"
+msgstr "로그 지우기"

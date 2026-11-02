@@ -1,4 +1,5 @@
 import { BasePage } from '@zeppos/zml/base-page'
+import { loggedPage } from '../utils/remote-log.js'
 import { px } from '@zos/utils'
 import { setScrollLock } from '@zos/page'
 import { createWidget, deleteWidget, prop } from '@zos/ui'
@@ -14,7 +15,7 @@ const logger = getLogger('zhue-color-picker-page')
 const app = getApp()
 
 Page(
-    BasePage({
+    loggedPage('color-picker', BasePage({
         state: {
             lightId: null,
             hue: 0,
@@ -349,5 +350,5 @@ Page(
                 this.exitGestureListener = null;
             }
         }
-    })
+    }))
 )

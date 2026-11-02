@@ -1,4 +1,5 @@
 import { BasePage } from '@zeppos/zml/base-page'
+import { loggedPage } from '../utils/remote-log.js'
 import { setPageBrightTime } from '@zos/display'
 import { getLogger } from '../utils/logger.js'
 import { getText } from '@zos/i18n'
@@ -11,7 +12,7 @@ const logger = getLogger('zhue-group-detail-page')
 const app = getApp()
 
 Page(
-  BasePage({
+  loggedPage('group-detail', BasePage({
     state: {
       groupId: null,
       groupType: null,
@@ -391,5 +392,5 @@ Page(
       this.clearAllWidgets()
       app.setGroupDetailScrollY(this.state.groupId, this.state.scrollPos_y)
     }
-  })
+  }))
 )

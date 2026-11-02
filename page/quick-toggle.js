@@ -3,6 +3,7 @@
 // Si apre, fa il toggle, e torna indietro automaticamente
 
 import { BasePage } from '@zeppos/zml/base-page'
+import { loggedPage, infoLog, warnLog } from '../utils/remote-log.js'
 import { back } from '@zos/router'
 import { createWidget, widget, deleteWidget, align } from '@zos/ui'
 import { getDeviceInfo } from '@zos/device'
@@ -19,7 +20,7 @@ const logger = getLogger('zhue-quick-toggle')
 const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
 Page(
-  BasePage({
+  loggedPage('quick-toggle', BasePage({
     state: {
       lightId: null,
       lightName: '',
@@ -123,9 +124,11 @@ Page(
     doToggle() {
       logger.log('Toggling light:', this.state.lightId)
       if (!connectStatus()) {
+        warnLog(`[quick-toggle] light ${this.state.lightId}: phone not connected, nothing sent`)
         this.goBackAfterDelay(1000)
         return // Early exit if not connected
       }
+      const t0 = Date.now()
       // Usa ZML request per comunicare con app-side
       this.request({
           method: 'WIDGET_TOGGLE_LIGHT',
@@ -135,6 +138,7 @@ Page(
         })
         .then(result => {
           logger.log('Toggle result:', result)
+          if (result.success) infoLog(`[quick-toggle] light ${this.state.lightId} now ${result.newState ? 'on' : 'off'}, ${Date.now() - t0}ms from the tap`)
           this.state.status = result.success ? 'success' : 'error'
           // Torna indietro
           this.goBackAfterDelay(200)
@@ -160,5 +164,5 @@ Page(
       logger.debug('Quick toggle page destroyed')
       this.clearAllWidgets()
     }
-  })
+  }))
 )

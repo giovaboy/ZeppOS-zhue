@@ -1,9 +1,29 @@
 import { BaseApp } from '@zeppos/zml/base-app'
+import { writeFileSync, readFileSync, statSync, rmSync } from '@zos/fs'
+import { log } from '@zos/utils'
 import { DEFAULT_USER_SETTINGS } from './utils/constants.js'
 import { getLogger } from './utils/logger.js'
+import { logs, LOG_LEVEL } from './config.js'
 
 const logger = getLogger('zhue-app')
 const TTL = 1000 * 5 // 5 seconds
+
+// ── Remote log (shared rule: ../_shared/zeppos-ai-doc/logging.md) ──
+// The remote log's own console: @zos/utils directly, so app.js's own methods
+// don't call a module function shared with the pages (field-notes.md,
+// "app.js and undefined names")
+const remoteConsole = log.getLogger('zhue-remote')
+// Log levels of this build (config.js LOG_LEVEL), read once
+const LOG_TRACE = logs('trace')
+const LOG_INFO = logs('info')
+// false only with LOG_LEVEL 'off' (public releases): no line leaves the watch
+const LOG_WARN = logs('warn')
+// Watch lines waiting at most for the phone (the oldest are dropped)
+const REMOTE_LOG_MAX = 100
+// A batch unanswered this long is taken as lost: its lines go again
+const REMOTE_LOG_LOST_MS = 90000
+// Lines still waiting when the app closes: sent at the next start
+const PENDING_LOG_FILE = 'pending_log.json'
 
 App(
   BaseApp({
@@ -35,6 +55,91 @@ App(
 
     onCreate(options) {
       logger.debug('Hue On-Off App Created')
+      this._loadPendingLog()
+      this.remoteLog(`app started (log level ${LOG_LEVEL})`)
+    },
+
+    // ── Remote log ───────────────────────────────────────────
+    // Watch lines sent to the phone's Logs box (settings page, [w] prefix).
+    // Three levels: devLog (trace: diagnostics), remoteLog (info: main
+    // events), warnLog (problems; none with 'off'). Pages reach them through
+    // utils/remote-log.js.
+
+    remoteLog(msg) {
+      if (LOG_INFO) this._sendLog(msg)
+      else if (LOG_WARN) remoteConsole.log(msg)
+    },
+
+    warnLog(msg) {
+      if (LOG_WARN) this._sendLog(msg)
+    },
+
+    devLog(msg) {
+      if (LOG_TRACE) this._sendLog(msg)
+      else if (LOG_WARN) remoteConsole.log(msg)
+    },
+
+    // Lines carry the watch time (its clock runs ~2 s behind the phone's).
+    // If the phone can't be reached they wait (up to REMOTE_LOG_MAX) and go
+    // with the next line.
+    _sendLog(msg) {
+      remoteConsole.log(`[remote] ${msg}`)
+      const queue = this._remoteLog || (this._remoteLog = [])
+      queue.push(`${new Date().toTimeString().slice(0, 8)} ${msg}`)
+      if (queue.length > REMOTE_LOG_MAX) queue.splice(0, queue.length - REMOTE_LOG_MAX)
+      this._flushRemoteLog()
+    },
+
+    // One batch at a time; a batch whose request never settles is taken as
+    // lost after REMOTE_LOG_LOST_MS (checked on the next line: a timer would
+    // die with the page that started it)
+    _flushRemoteLog() {
+      const sending = this._remoteLogSending
+      if (sending && Date.now() - sending.at > REMOTE_LOG_LOST_MS) {
+        this._remoteLog.unshift(...sending.lines)
+        this._remoteLogSending = null
+      }
+      if (this._remoteLogSending || !this._remoteLog || !this._remoteLog.length) return
+      const lines = this._remoteLog.splice(0)
+      const batch = { lines, at: Date.now() }
+      this._remoteLogSending = batch
+      let sent
+      try { sent = this.request({ method: 'debug.deviceLog', params: { lines } }) } catch (e) { sent = Promise.reject(e) }
+      Promise.resolve(sent).then(
+        () => { if (this._remoteLogSending === batch) { this._remoteLogSending = null; this._flushRemoteLog() } },
+        () => { if (this._remoteLogSending === batch) { this._remoteLogSending = null; this._remoteLog.unshift(...lines) } },
+      )
+    },
+
+    // The lines not confirmed by the phone (waiting, or in a batch still
+    // unanswered) go to a small file at close; the phone skips a line
+    // "from the last run" it already has...
+    _savePendingLog() {
+      try {
+        const sending = this._remoteLogSending
+        const lines = [].concat(sending ? sending.lines : [], this._remoteLog || [])
+        if (!lines.length) return
+        writeFileSync({
+          path: PENDING_LOG_FILE,
+          data: JSON.stringify(lines.slice(-REMOTE_LOG_MAX)),
+          options: { encoding: 'utf8' },
+        })
+      } catch (e) { /* never throw from the logger */ }
+    },
+
+    // ...and are queued again at the next start, marked as from before
+    _loadPendingLog() {
+      try {
+        if (!statSync({ path: PENDING_LOG_FILE })) return
+        // A release build after a test one: the lines it left are dropped
+        if (!LOG_WARN) { rmSync({ path: PENDING_LOG_FILE }); return }
+        const text = readFileSync({ path: PENDING_LOG_FILE, options: { encoding: 'utf8' } })
+        rmSync({ path: PENDING_LOG_FILE })
+        const lines = JSON.parse(text || '[]')
+        if (Array.isArray(lines) && lines.length) {
+          this._remoteLog = lines.map((l) => `${l} (from the last run)`).slice(-REMOTE_LOG_MAX)
+        }
+      } catch (e) { /* never throw from the logger */ }
     },
 
     // ============================================
@@ -164,7 +269,10 @@ App(
 
     setGroupsData(apiData) {
       logger.debug('Global Store: Updating Groups Data')
-      logger.debug('API Data:', JSON.stringify(apiData))
+      if (LOG_TRACE) {
+        const demo = apiData.userSettings ? `, demo ${apiData.userSettings.demo_mode === true ? 'on' : 'off'}` : ''
+        this.devLog(`[store] groups: ${(apiData.rooms || []).length} rooms, ${(apiData.zones || []).length} zones${demo}`)
+      }
       this.globalData.groupsData.rooms = apiData.rooms || []
       this.globalData.groupsData.zones = apiData.zones || []
       this.globalData.groupsData.hasLoadedOnce = true
@@ -406,6 +514,8 @@ App(
 
     onDestroy(options) {
       logger.debug('Hue On-Off App Destroyed - Cleaning up...')
+      this.remoteLog('app closed')
+      this._savePendingLog()
       this.clearAllCache()
       /*try {
         this.request({ method: 'CANCEL_ALL' })

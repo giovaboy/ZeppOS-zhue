@@ -119,3 +119,18 @@ msgstr "5. Your configuration will be saved automatically"
 
 msgid "MADE_WITH_LOVE"
 msgstr "Made with ❤️ for Zepp OS"
+
+msgid "LOGS_TITLE"
+msgstr "Logs"
+
+msgid "LOGS_HINT"
+msgstr "The latest lines from the watch ([w]) and the phone. Tap the box, select all and copy it to paste into a bug report. The bridge key and addresses are removed."
+
+msgid "LOGS_EMPTY"
+msgstr "No log lines yet: open the app on the watch."
+
+msgid "LOGS_COPY"
+msgstr "Log lines (tap to copy)"
+
+msgid "LOGS_CLEAR"
+msgstr "Clear logs"
