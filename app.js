@@ -128,7 +128,14 @@ App(
       if (sending && (pageChanged || Date.now() - sending.at > REMOTE_LOG_LOST_MS)) {
         this._remoteLog.unshift(...sending.lines)
         this._remoteLogSending = null
-        if (LOG_TRACE) this._queueLog(`[log] a batch of ${sending.lines.length} lines got no answer in ${((Date.now() - sending.at) / 1000).toFixed(1)}s${pageChanged ? ' (page changed)' : ''}: sent again`)
+        if (pageChanged) {
+          // Expected at every page change (the phone always had the lines):
+          // counted, said once at close, not a line each
+          this._remoteLogResent = (this._remoteLogResent || 0) + 1
+        } else if (LOG_TRACE) {
+          // No page change: the link itself didn't answer
+          this._queueLog(`[log] a batch of ${sending.lines.length} lines got no answer in ${((Date.now() - sending.at) / 1000).toFixed(1)}s without a page change: sent again`)
+        }
       }
       if (this._remoteLogSending || !this._remoteLog || !this._remoteLog.length) return
       const lines = this._remoteLog.splice(0)
@@ -552,6 +559,7 @@ App(
 
     onDestroy(options) {
       logger.debug('Hue On-Off App Destroyed - Cleaning up...')
+      if (this._remoteLogResent) this.devLog(`[log] ${this._remoteLogResent} log batches sent again after a page change (their answers are lost there)`)
       this.remoteLog('app closed')
       this._savePendingLog()
       this.clearAllCache()

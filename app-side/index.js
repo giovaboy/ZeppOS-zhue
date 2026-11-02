@@ -70,17 +70,19 @@ function writeLines(msgs) {
 // (lines "from the last run")
 const storedWatchSeq = new Map()
 function freshWatchLines(entries) {
+  // Lines already stored come again at every page change (the watch never
+  // gets the answer there): skipped without a word. A gap in the numbers is
+  // what matters: lines the watch dropped (its queue keeps 100)
   const fresh = []
-  let skipped = 0
   for (const entry of [].concat(entries)) {
     if (!Array.isArray(entry) || entry.length !== 3) continue
     const [run, seq, text] = entry
     const last = storedWatchSeq.get(run)
-    if (last !== undefined && seq <= last) { skipped++; continue }
+    if (last !== undefined && seq <= last) continue
+    if (last !== undefined && seq > last + 1) fresh.push(`[log] ${seq - last - 1} watch lines missing before this one (dropped on the watch)`)
     storedWatchSeq.set(run, seq)
     fresh.push(`[w] ${text}`)
   }
-  if (skipped && logs('trace')) fresh.push(`[log] ${skipped} watch lines already stored, skipped`)
   return fresh
 }
 
