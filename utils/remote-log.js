@@ -80,6 +80,10 @@ export function loggedPage(name, options) {
   const build = options.build
   options.build = function (...args) {
     this._logOpenedAt = Date.now()
+    // Answers to the log batches sent before this page are lost (app.js
+    // pageChanged): they go again with this page's first line
+    const a = app()
+    if (a && a.pageChanged) a.pageChanged()
     const t0 = Date.now()
     const out = build && build.apply(this, args)
     if (LOG_TRACE) {

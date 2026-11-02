@@ -114,12 +114,21 @@ App(
     // One batch at a time; a batch whose request never settles is taken as
     // lost after REMOTE_LOG_LOST_MS (checked on the next line: a timer would
     // die with the page that started it)
+    // A page was built (utils/remote-log.js loggedPage): the answer to a
+    // batch sent before it won't come. Seen on the device: 5 of 5 batches in
+    // flight across a page change got no answer, though the phone had stored
+    // them; waiting for REMOTE_LOG_LOST_MS held the lines up to 34 s
+    pageChanged() {
+      this._remoteLogPageAt = Date.now()
+    },
+
     _flushRemoteLog() {
       const sending = this._remoteLogSending
-      if (sending && Date.now() - sending.at > REMOTE_LOG_LOST_MS) {
+      const pageChanged = sending && this._remoteLogPageAt && sending.at < this._remoteLogPageAt
+      if (sending && (pageChanged || Date.now() - sending.at > REMOTE_LOG_LOST_MS)) {
         this._remoteLog.unshift(...sending.lines)
         this._remoteLogSending = null
-        if (LOG_TRACE) this._queueLog(`[log] a batch of ${sending.lines.length} lines got no answer in ${((Date.now() - sending.at) / 1000).toFixed(1)}s: sent again`)
+        if (LOG_TRACE) this._queueLog(`[log] a batch of ${sending.lines.length} lines got no answer in ${((Date.now() - sending.at) / 1000).toFixed(1)}s${pageChanged ? ' (page changed)' : ''}: sent again`)
       }
       if (this._remoteLogSending || !this._remoteLog || !this._remoteLog.length) return
       const lines = this._remoteLog.splice(0)
