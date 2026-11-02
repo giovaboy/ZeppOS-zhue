@@ -2,7 +2,7 @@ import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
 import { widget, align, text_style } from '@zos/ui'
 import { getText } from '@zos/i18n'
-import { btnPressColor } from '../utils/constants.js'
+import { btnPressColor, ICON_IMAGE_SIZE } from '../utils/constants.js'
 import { getLogger } from '../utils/logger.js'
 import { setStatusBarVisible } from '@zos/ui'
 
@@ -299,11 +299,13 @@ function renderLightItem(container, light, yPos, COLORS, onToggle, onNavigate) {
         // light background
         iconSize = px(70)
         const iconX = DEVICE_WIDTH - startX - iconSize - px(15)
+        // Inset by 1 px under the mask: a mask a pixel off shows the card,
+        // not a line of this color
         container.createWidget(widget.FILL_RECT, {
-            x: iconX,
-            y: yPos + px(15),
-            w: iconSize,
-            h: iconSize,
+            x: iconX + 1,
+            y: yPos + px(15) + 1,
+            w: iconSize - 2,
+            h: iconSize - 2,
             color: light.swatch_bg_color || COLORS.inactive
         })
         // light mask
@@ -313,7 +315,9 @@ function renderLightItem(container, light, yPos, COLORS, onToggle, onNavigate) {
             w: iconSize,
             h: iconSize,
             src: light.icon,
-            auto_scale: true
+            // Scaled only where px() makes the box another size than the
+            // PNG (see groups layout)
+            auto_scale: iconSize !== ICON_IMAGE_SIZE
         })
 
         // Clickable overlay for toggle

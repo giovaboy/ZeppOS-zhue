@@ -407,11 +407,11 @@ export const LIGHT_MODELS = {
   'LWF001': { name: 'Filament Std A19', icon: 'filament_a19' },
   'LWF002': { name: 'white bulb A60 E27', icon: 'classic' },
   'LWF003': { name: 'Filament G93/G125', icon: 'filament_globe' },
-  'LWF004': { name: 'Filament ST64', icon: 'filament_st64' },
-  'LWF005': { name: 'Filament ST64', icon: 'filament_st64' },
+  'LWF004': { name: 'Filament ST64', icon: 'filament_a19' },
+  'LWF005': { name: 'Filament ST64', icon: 'filament_a19' },
   'LWF006': { name: 'Filament G93', icon: 'filament_globe' },
   'LWA003': { name: 'Filament A19 White (BT/Matter)', icon: 'filament_a19' },
-  'LWA004': { name: 'Filament ST72 Edison White', icon: 'filament_st64' },
+  'LWA004': { name: 'Filament ST72 Edison White', icon: 'filament_a19' },
   'LWA005': { name: 'Filament G125 Globe White', icon: 'filament_globe' },
 
   // --------------------------------------------------------------------------------
@@ -434,14 +434,14 @@ export const LIGHT_MODELS = {
   'LLC007': { name: 'Aura C&W', icon: 'aura' },
   'LLC006': { name: 'Iris C&W Gen 1', icon: 'iris' },
   'LLC010': { name: 'Iris C&W Gen 2', icon: 'iris' },
-  'LLC013': { name: 'StoryLight C&W', icon: 'storylight' },
-  'LLC020': { name: 'Hue Go', icon: 'hue_go' },
-  'LLT026': { name: 'Hue Go (BT)', icon: 'hue_go' },
-  'LLC021': { name: 'Hue Go (BT)', icon: 'hue_go' },
+  'LLC013': { name: 'StoryLight C&W', icon: 'classic' },
+  'LLC020': { name: 'Hue Go', icon: 'classic' },
+  'LLT026': { name: 'Hue Go (BT)', icon: 'classic' },
+  'LLC021': { name: 'Hue Go (BT)', icon: 'classic' },
   'LCX001': { name: 'Iris (Matter)', icon: 'iris' },
   'LTV001': { name: 'Bloom (Matter)', icon: 'bloom' },
-  'LTF001': { name: 'Signe Floor (Matter)', icon: 'signe_floor' },
-  'LTF002': { name: 'Signe Table (Matter)', icon: 'signe_table' },
+  'LTF001': { name: 'Signe Floor (Matter)', icon: 'signe' },
+  'LTF002': { name: 'Signe Table (Matter)', icon: 'signe' },
 
   // play / gradient
   'LJL001': { name: 'Play Bar', icon: 'play_bar' },
@@ -450,42 +450,42 @@ export const LIGHT_MODELS = {
   'LCT024': { name: 'Play Gradient Compact', icon: 'play_bar' },
 
   // Signe
-  'LCT020': { name: 'Signe Floor', icon: 'signe_floor' },
-  'LSL001': { name: 'Signe Floor', icon: 'signe_floor' },
-  'LSL002': { name: 'Signe Table', icon: 'signe_table' },
-  'LSL003': { name: 'Signe Floor Gradient', icon: 'signe_floor' },
-  'LSL004': { name: 'Signe Table Gradient', icon: 'signe_table' },
+  'LCT020': { name: 'Signe Floor', icon: 'signe' },
+  'LSL001': { name: 'Signe Floor', icon: 'signe' },
+  'LSL002': { name: 'Signe Table', icon: 'signe' },
+  'LSL003': { name: 'Signe Floor Gradient', icon: 'signe' },
+  'LSL004': { name: 'Signe Table Gradient', icon: 'signe' },
 
   // --------------------------------------------------------------------------------
   // 🏡 Lampadari / Plafoniere / Ceiling
   // --------------------------------------------------------------------------------
-  'LTC001': { name: 'Ceiling Panel Color', icon: 'ceiling_panel' },
-  'LTC002': { name: 'Ceiling Panel Ambience', icon: 'ceiling_panel' },
+  'LTC001': { name: 'Ceiling Panel Color', icon: 'ceiling-infuse' },
+  'LTC002': { name: 'Ceiling Panel Ambience', icon: 'ceiling-infuse' },
 
   'LTW018': { name: 'Ceiling Panel Ambience', icon: 'adore' },
 
   // --------------------------------------------------------------------------------
   // 🌳 Outdoor
   // --------------------------------------------------------------------------------
-  'LWO001': { name: 'LightStrip Outdoor', icon: 'lightstrip_outdoor' },
+  'LWO001': { name: 'LightStrip Outdoor', icon: 'lightstrip' },
 
-  'LCC001': { name: 'Impress Wall Lantern', icon: 'impress_wall' },
-  'LCC002': { name: 'Impress Pedestal', icon: 'impress_pedestal' },
-  'LCC003': { name: 'Impress Large Wall', icon: 'impress_wall' },
-  'LWL001': { name: 'Econic Wall', icon: 'econic_wall' },
-  'LWL002': { name: 'Econic Pedestal', icon: 'econic_pedestal' },
-  'LWL003': { name: 'Econic Ceiling', icon: 'econic_ceiling' },
-  'LWW001': { name: 'Resonate Wall', icon: 'resonate' },
-  'LWW002': { name: 'Appear Wall', icon: 'appear' },
-  'LWW003': { name: 'Nyro Wall', icon: 'nyro_wall' },
-  'LWW004': { name: 'Nyro Pedestal', icon: 'nyro_pedestal' },
-  'LWA010': { name: 'Turaco Wall', icon: 'turaco_wall' },
-  'LWA011': { name: 'Fuzo Wall', icon: 'fuzo_wall' },
-  'LWA012': { name: 'Fuzo Pedestal', icon: 'fuzo_pedestal' },
-  'LWA013': { name: 'Daylo Wall', icon: 'daylo_wall' },
-  'LWA014': { name: 'Inara Filament Wall', icon: 'inara' },
+  'LCC001': { name: 'Impress Wall Lantern', icon: 'classic' },
+  'LCC002': { name: 'Impress Pedestal', icon: 'calla' },
+  'LCC003': { name: 'Impress Large Wall', icon: 'classic' },
+  'LWL001': { name: 'Econic Wall', icon: 'classic' },
+  'LWL002': { name: 'Econic Pedestal', icon: 'calla' },
+  'LWL003': { name: 'Econic Ceiling', icon: 'ceiling-infuse' },
+  'LWW001': { name: 'Resonate Wall', icon: 'classic' },
+  'LWW002': { name: 'Appear Wall', icon: 'classic' },
+  'LWW003': { name: 'Nyro Wall', icon: 'classic' },
+  'LWW004': { name: 'Nyro Pedestal', icon: 'calla' },
+  'LWA010': { name: 'Turaco Wall', icon: 'classic' },
+  'LWA011': { name: 'Fuzo Wall', icon: 'classic' },
+  'LWA012': { name: 'Fuzo Pedestal', icon: 'calla' },
+  'LWA013': { name: 'Daylo Wall', icon: 'classic' },
+  'LWA014': { name: 'Inara Filament Wall', icon: 'classic' },
   'LLA001': { name: 'Amarant Linear Flood', icon: 'amarant' },
-  'LPA001': { name: 'Outdoor Spotlight', icon: 'outdoor_spot' },
+  'LPA001': { name: 'Outdoor Spotlight', icon: 'lily' },
 
   // --------------------------------------------------------------------------------
   // Default - per tutti gli ID sconosciuti
@@ -493,18 +493,26 @@ export const LIGHT_MODELS = {
   'default': { name: 'Light', icon: 'classic' }
 }
 
+// Size of the icon PNGs (assets/default.*/icons and icons/groups): 70×70
+// masks, #333333 with the shape cut out, drawn over a FILL_RECT of the
+// light's or group's color
+export const ICON_IMAGE_SIZE = 70
+
+// A Hue room/zone class → its file in icons/groups/. Every value must be a
+// file there: a missing one showed an empty grey square (the FILL_RECT under
+// the mask). 'Music' and 'Reading' have no icon yet: 'other'
 export const GROUP_ICONS = {
   'Attic': 'attic',
   'Bathroom': 'bathroom',
   'Balcony': 'balcony',
   'Barbecue': 'bbq',
   'Bedroom': 'bedroom',
-  'Carport': 'car',
-  'Closet': 'wardrobe',
+  'Carport': 'carport',
+  'Closet': 'closet',
   'Computer': 'computer',
   'Dining': 'dining',
   'Downstairs': 'downstairs',
-  'Driveway': 'car',
+  'Driveway': 'driveway',
   'Front door': 'front-door',
   'Garage': 'garage',
   'Garden': 'outdoors',
@@ -518,13 +526,13 @@ export const GROUP_ICONS = {
   'Living room': 'living',
   'Lounge': 'lounge',
   'Man cave': 'games',
-  'Music': 'music',
+  'Music': 'other',
   'Nursery': 'nursery',
   'Office': 'office',
   'Other': 'other',
   'Pool': 'pool',
   'Porch': 'porch',
-  'Reading': 'book',
+  'Reading': 'other',
   'Recreation': 'recreation',
   'Staircase': 'stairs',
   'Storage': 'storage',

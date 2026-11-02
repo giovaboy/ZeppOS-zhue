@@ -3,7 +3,7 @@ import { px } from '@zos/utils'
 import { widget, align, text_style, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { getLogger } from '../utils/logger.js'
-import { COLORS, btnPressColor, getGroupIconPath } from '../utils/constants.js'
+import { COLORS, btnPressColor, getGroupIconPath, ICON_IMAGE_SIZE } from '../utils/constants.js'
 import { setStatusBarVisible } from '@zos/ui'
 
 setStatusBarVisible(false)
@@ -177,11 +177,14 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
         radius: px(10)
     })
 
-     container.createWidget(widget.FILL_RECT, {
-            x: startX + itemSpacing,
-            y: yPos + ((itemHeight - iconSize) / 2),
-            w: iconSize,
-            h:  iconSize,
+    // The icon is a mask (#333333 with the shape cut out) over this
+    // rectangle. Inset by 1 px: if the mask lands a pixel off, the card
+    // shows at its edge instead of a white or grey line
+    container.createWidget(widget.FILL_RECT, {
+            x: startX + itemSpacing + 1,
+            y: yPos + ((itemHeight - iconSize) / 2) + 1,
+            w: iconSize - 2,
+            h: iconSize - 2,
             color: isOn ? COLORS.white : COLORS.inactive
         })
 
@@ -192,7 +195,11 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
             w:  iconSize,
             h:  iconSize,
             src:  getGroupIconPath(iconClass),
-            auto_scale: true
+            // The PNGs are ICON_IMAGE_SIZE wide: scaled only where px() makes
+            // the box another size. Scaling an image of the box's own size
+            // left a 1 px line of the rectangle at its top, depending on the
+            // scroll position
+            auto_scale: iconSize !== ICON_IMAGE_SIZE
         })
 
 
