@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Makes setting/logo.js: the app icon (assets/default.r/icon.png, 248×248)
-// halved to 124×124 and inlined as a data URI, for the settings page header
+// Makes setting/logo.js: the wordmark of the app icon (assets/default.r/icon.png)
+// without its white disc, inlined as a data URI, for the settings page header
 // (the settings page can't load the watch's assets). Run again after
 // changing the icon: node tools/gen-settings-logo.cjs
 // (.cjs so that Zeus doesn't bundle it)
@@ -44,21 +44,38 @@ function decode(file) {
   return { w, h, px }
 }
 
-// Each 2×2 block averaged, colors weighted by their alpha
-function halve({ w, h, px }) {
-  const W = w >> 1
-  const H = h >> 1
+// The wordmark alone: the icon's white disc made transparent ("color to
+// alpha" against white, so the letters' antialiased edges keep no white
+// fringe), cropped to the colored letters plus MARGIN px
+const MARGIN = 3
+function wordmark({ w, h, px }) {
+  // The letters: opaque enough, and colored or dark (the disc's own grey
+  // antialiased rim is neither)
+  let x0 = w, y0 = h, x1 = -1, y1 = -1
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = (y * w + x) * 4
+    const [r, g, b, a] = [px[i], px[i + 1], px[i + 2], px[i + 3]]
+    if (a > 128 && (Math.max(r, g, b) - Math.min(r, g, b) > 40 || (r + g + b) / 3 < 160)) {
+      x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y)
+    }
+  }
+  if (x1 < 0) throw new Error('no colored letters found in the icon')
+  x0 = Math.max(0, x0 - MARGIN); y0 = Math.max(0, y0 - MARGIN)
+  x1 = Math.min(w - 1, x1 + MARGIN); y1 = Math.min(h - 1, y1 + MARGIN)
+  const W = x1 - x0 + 1
+  const H = y1 - y0 + 1
   const out = Buffer.alloc(W * H * 4)
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-    let r = 0, g = 0, b = 0, a = 0
-    for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) {
-      const i = ((y * 2 + dy) * w + (x * 2 + dx)) * 4
-      const al = px[i + 3]
-      r += px[i] * al; g += px[i + 1] * al; b += px[i + 2] * al; a += al
-    }
+    const i = ((y + y0) * w + (x + x0)) * 4
     const o = (y * W + x) * 4
-    if (a) { out[o] = Math.round(r / a); out[o + 1] = Math.round(g / a); out[o + 2] = Math.round(b / a) }
-    out[o + 3] = Math.round(a / 4)
+    const srcA = px[i + 3] / 255
+    // How far from white the pixel is: that much of it is ink
+    const inkA = Math.max(255 - px[i], 255 - px[i + 1], 255 - px[i + 2]) / 255
+    const a = inkA * srcA
+    if (inkA > 0) {
+      for (let c = 0; c < 3; c++) out[o + c] = Math.max(0, Math.min(255, Math.round((px[i + c] - 255 * (1 - inkA)) / inkA)))
+    }
+    out[o + 3] = Math.round(a * 255)
   }
   return { w: W, h: H, px: out }
 }
@@ -78,9 +95,12 @@ function encode({ w, h, px }) {
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(raw, { level: 9 })), chunk('IEND', Buffer.alloc(0))])
 }
 
-const png = encode(halve(decode(SRC)))
+const mark = wordmark(decode(SRC))
+const png = encode(mark)
 fs.writeFileSync(OUT, `// Made by tools/gen-settings-logo.cjs from assets/default.r/icon.png: the app
-// icon at 124×124, for the settings page header (do not edit)
+// icon's wordmark (${mark.w}×${mark.h}, no disc), for the settings page header (do not edit)
+export const LOGO_WIDTH = ${mark.w}
+export const LOGO_HEIGHT = ${mark.h}
 export const LOGO_SRC = 'data:image/png;base64,${png.toString('base64')}'
 `)
-console.log(`${path.relative(ROOT, OUT)}: ${png.length} B PNG, ${fs.statSync(OUT).size} B module`)
+console.log(`${path.relative(ROOT, OUT)}: ${mark.w}x${mark.h}, ${png.length} B PNG, ${fs.statSync(OUT).size} B module`)

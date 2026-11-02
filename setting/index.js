@@ -2,7 +2,10 @@ import { gettext } from 'i18n'
 import { DEFAULT_PRESETS, PRESET_TYPES, DEFAULT_USER_SETTINGS } from '../utils/constants'
 import { LOG_KEY } from '../app-side/log.js'
 import { logsEnabled } from '../config.js'
-import { LOGO_SRC } from './logo'
+import { LOGO_SRC, LOGO_WIDTH, LOGO_HEIGHT } from './logo'
+
+// The wordmark's width on the page; its height follows (tools/gen-settings-logo.cjs)
+const LOGO_SHOWN_WIDTH = 200
 
 // Keep in step with app.json version.name (the settings page can't import
 // @zos/app to read it)
@@ -144,10 +147,11 @@ AppSettingsPage({
 
     return View({ style: { background: C.page, padding: '4px 12px 12px', minHeight: '100vh' } }, [Section({}, [
 
-      // ── Header: the app icon (it carries the name) and what the page is for
-      View({ style: { marginTop: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' } }, [
-        Image({ src: LOGO_SRC, width: 96, height: 96, alt: APP_NAME }),
-        note(gettext('SETTINGS_SUBTITLE'), C.textSecondary, { marginTop: '4px' })
+      // ── Header: the app's wordmark (the icon without its disc) and what the
+      // page is for
+      View({ style: { marginTop: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' } }, [
+        Image({ src: LOGO_SRC, width: LOGO_SHOWN_WIDTH, height: Math.round(LOGO_SHOWN_WIDTH * LOGO_HEIGHT / LOGO_WIDTH), alt: APP_NAME }),
+        note(gettext('SETTINGS_SUBTITLE'), C.textSecondary, { marginTop: '12px' })
       ]),
 
       // ── Bridge: state, address, key; how to pair while it isn't; clearing
@@ -166,10 +170,11 @@ AppSettingsPage({
           subStyle: { fontSize: FONT.body, color: C.text }
         }),
         ...(paired ? [
-          View({ style: { marginTop: '12px' } }, [
+          // A column: in a plain View the two texts ran together on one line
+          column([
             label(gettext('BRIDGE_KEY_LABEL')),
             Text({ style: { fontSize: FONT.body, color: C.textSecondary, fontFamily: 'monospace', marginTop: '4px' } }, [maskKey(key)])
-          ])
+          ], { marginTop: '14px' })
         ] : [
           // What a new user needs first: how pairing goes
           View({ style: { marginTop: '14px', padding: '12px', background: C.page, borderRadius: '8px' } }, [
@@ -241,16 +246,14 @@ AppSettingsPage({
       ]),
 
       // ── Demo mode: the app without a bridge
+      // (the switch's own label is the card's title: a title above repeated it)
       card([
-        title(gettext('DEMO_MODE')),
-        note(gettext('DEMO_MODE_DESC')),
-        View({ style: { marginTop: '10px' } }, [
-          Toggle({
-            label: gettext('DEMO_MODE'),
-            value: storage.getItem('hue_demo_mode') === 'true',
-            onChange: (value) => storage.setItem('hue_demo_mode', value ? 'true' : 'false')
-          })
-        ])
+        Toggle({
+          label: gettext('DEMO_MODE'),
+          value: storage.getItem('hue_demo_mode') === 'true',
+          onChange: (value) => storage.setItem('hue_demo_mode', value ? 'true' : 'false')
+        }),
+        note(gettext('DEMO_MODE_DESC'), C.textSecondary, { marginTop: '4px' })
       ]),
 
       // ── Logs (shared rule, ../_shared/zeppos-ai-doc/logging.md): the latest
