@@ -134,3 +134,6 @@ msgstr "Lignes du journal (touchez pour copier)"
 
 msgid "LOGS_CLEAR"
 msgstr "Effacer les journaux"
+
+msgid "CANCEL"
+msgstr "Annuler"

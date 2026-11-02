@@ -134,3 +134,6 @@ msgstr "Protokollzeilen (zum Kopieren tippen)"
 
 msgid "LOGS_CLEAR"
 msgstr "Protokoll löschen"
+
+msgid "CANCEL"
+msgstr "Abbrechen"

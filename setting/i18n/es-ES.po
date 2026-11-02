@@ -134,3 +134,6 @@ msgstr "Líneas de registro (toca para copiar)"
 
 msgid "LOGS_CLEAR"
 msgstr "Borrar registros"
+
+msgid "CANCEL"
+msgstr "Cancelar"

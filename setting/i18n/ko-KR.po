@@ -134,3 +134,6 @@ msgstr "로그 (눌러서 복사)"
 
 msgid "LOGS_CLEAR"
 msgstr "로그 지우기"
+
+msgid "CANCEL"
+msgstr "취소"

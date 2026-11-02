@@ -134,3 +134,6 @@ msgstr "Log lines (tap to copy)"
 
 msgid "LOGS_CLEAR"
 msgstr "Clear logs"
+
+msgid "CANCEL"
+msgstr "Cancel"

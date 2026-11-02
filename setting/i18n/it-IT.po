@@ -134,3 +134,6 @@ msgstr "Righe di log (tocca per copiare)"
 
 msgid "LOGS_CLEAR"
 msgstr "Cancella log"
+
+msgid "CANCEL"
+msgstr "Annulla"

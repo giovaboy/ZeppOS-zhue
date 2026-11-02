@@ -1855,8 +1855,9 @@ AppSideService(
 
     onSettingsChange({ key, newValue, oldValue }) {
       // The Logs box's own writes: no line about them (each line would
-      // write the store again)
-      if (key === LOG_KEY) return
+      // write the store again). Keys 'ui_*' are the settings page's own
+      // (its two-tap confirms): nothing to do here
+      if (key === LOG_KEY || String(key).startsWith('ui_')) return
       clog('Settings changed:', key)
       // Values stay out: the bridge key and address are among them
       if (key === DEMO_MODE) plog(`[settings] demo mode ${newValue === 'true' || newValue === true ? 'on' : 'off'}`)

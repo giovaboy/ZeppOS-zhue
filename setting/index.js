@@ -11,6 +11,40 @@ import { logsEnabled } from '../config.js'
 const APP_VERSION = "1.0.1"
 const APP_NAME = "zhue"
 
+// Destructive actions take two taps, as in zeppamp's settings page: the first
+// stores a confirm key (the page is built again), then the question in red
+// with the action and Cancel side by side. Keys starting with 'ui_' belong to
+// this page only (the side service ignores them)
+const RESET_PRESETS_CONFIRM_KEY = 'ui_reset_presets_confirm'
+const CLEAR_CONFIG_CONFIRM_KEY = 'ui_clear_config_confirm'
+const DANGER = '#db2c2c'
+
+// A Button is as wide as its label: alone in a flex column it takes the
+// card's width (app-settings-ui-components.md, "Observed rendering")
+function actionButton(label, kind, onClick, extra = {}) {
+  return Button({
+    label,
+    onClick,
+    style: kind === 'danger'
+      ? { fontSize: '15px', fontWeight: '500', borderRadius: '24px', background: DANGER, color: 'white', ...extra }
+      : { fontSize: '15px', fontWeight: '500', borderRadius: '24px', background: '#e9ecef', color: '#333', ...extra }
+  })
+}
+
+function confirmAction(storage, key, { label, question, run }) {
+  const column = (children) => View({ style: { display: 'flex', flexDirection: 'column', marginTop: '12px' } }, children)
+  if (storage.getItem(key) !== '1') {
+    return column([actionButton(label, 'danger', () => storage.setItem(key, '1'))])
+  }
+  return column([
+    Text({ paragraph: true, style: { fontSize: '14px', fontWeight: '600', color: DANGER, marginBottom: '10px' } }, [question]),
+    View({ style: { display: 'flex' } }, [
+      View({ style: { flex: 1 } }, [actionButton(label, 'danger', () => { storage.removeItem(key); run() }, { width: '100%' })]),
+      View({ style: { flex: 1, marginLeft: '12px' } }, [actionButton(gettext('CANCEL'), 'control', () => storage.removeItem(key), { width: '100%' })])
+    ])
+  ])
+}
+
 // The bridge key, shortened: enough to tell two keys apart, not enough to
 // use one from a screenshot of this page
 function maskKey(key) {
@@ -556,30 +590,13 @@ AppSettingsPage({
             })()}`]
           ),
 
-          View({
-            style: {
-              //fontSize: '12px',
-              //fontWeight: '500',
-              lineHeight: '35px',
-              borderRadius: '8px',
-              background: '#db2c2c',
-              color: 'white',
-              textAlign: 'left',
-              padding: '0 15px',
-              //margin: '0 5px 0 0',
+          confirmAction(props.settingsStorage, RESET_PRESETS_CONFIRM_KEY, {
+            label: '🔄 ' + gettext('RESET_PRESETS'),
+            question: gettext('RESET_PRESETS_CONFIRM'),
+            run: () => {
+              props.settingsStorage.setItem('hue_favorite_colors', JSON.stringify(DEFAULT_PRESETS))
             }
-          },
-            [TextInput({
-              label: '🔄 ' + gettext('RESET_PRESETS'),
-              labelStyle: { textAlign: 'center' },
-              subStyle: { display: 'none' },
-              disabled: true,
-              placeholder: '🔄 ' + gettext('RESET_PRESETS_CONFIRM'),
-              value: undefined,
-              onChange: () => {
-                props.settingsStorage.setItem('hue_favorite_colors', JSON.stringify(DEFAULT_PRESETS))
-              }
-            })])
+          })
 
 
         ]
@@ -610,40 +627,20 @@ AppSettingsPage({
           ),
 
           // Clear Configuration Button
-          View({
-            style: {
-              //fontSize: '12px',
-              //fontWeight: '500',
-              lineHeight: '35px',
-              borderRadius: '8px',
-              background: '#db2c2c',
-              color: 'white',
-              textAlign: 'left',
-              padding: '0 15px',
-              //margin: '0 5px 0 0',
+          confirmAction(props.settingsStorage, CLEAR_CONFIG_CONFIRM_KEY, {
+            label: '🗑️ ' + gettext('CLEAR_ALL_CONFIG'),
+            question: gettext('CLEAR_ALL_CONFIG_CONFIRM'),
+            run: () => {
+              props.settingsStorage.removeItem('hue_bridge_ip')
+              props.settingsStorage.removeItem('hue_username')
+              props.settingsStorage.removeItem('hue_api_version')
+              props.settingsStorage.setItem('default_tab', 'ROOMS')
+              props.settingsStorage.setItem('hue_show_scenes', 'true')
+              props.settingsStorage.setItem('hue_display_order', 'LIGHTS_FIRST')
+              props.settingsStorage.setItem('hue_demo_mode', 'false')
+              props.settingsStorage.setItem('hue_favorite_colors', JSON.stringify(DEFAULT_PRESETS))
             }
-          },
-            [TextInput({
-              label: '🗑️ ' + gettext('CLEAR_ALL_CONFIG'),
-              labelStyle: { textAlign: 'center' },
-              subStyle: { display: 'none' },
-              disabled: true,
-              placeholder: '🗑️ ' + gettext('CLEAR_ALL_CONFIG_CONFIRM'),
-              value: undefined,
-              onChange: () => {
-                props.settingsStorage.removeItem('hue_bridge_ip')
-                props.settingsStorage.removeItem('hue_username')
-                props.settingsStorage.removeItem('hue_api_version')
-                //props.settingsStorage.setItem('hue_bridge_ip', null)
-                //props.settingsStorage.setItem('hue_username', null)
-                //props.settingsStorage.setItem('hue_api_version', null)
-                props.settingsStorage.setItem('default_tab', 'ROOMS')
-                props.settingsStorage.setItem('hue_show_scenes', 'true')
-                props.settingsStorage.setItem('hue_display_order', 'LIGHTS_FIRST')
-                props.settingsStorage.setItem('hue_demo_mode', 'false')
-                props.settingsStorage.setItem('hue_favorite_colors', JSON.stringify(DEFAULT_PRESETS))
-              }
-            })])
+          })
 
 
 

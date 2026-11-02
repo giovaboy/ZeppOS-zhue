@@ -134,3 +134,6 @@ msgstr "Строки журнала (нажмите, чтобы скопиров
 
 msgid "LOGS_CLEAR"
 msgstr "Очистить журнал"
+
+msgid "CANCEL"
+msgstr "Отмена"
