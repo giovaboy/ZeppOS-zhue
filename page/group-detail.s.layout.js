@@ -3,6 +3,7 @@ import { px } from '@zos/utils'
 import { widget, align, text_style } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { btnPressColor, ICON_IMAGE_SIZE } from '../utils/constants.js'
+import { createScrollView } from '../utils/key-nav.js'
 import { getLogger } from '../utils/logger.js'
 import { setStatusBarVisible } from '@zos/ui'
 
@@ -19,7 +20,7 @@ export const LAYOUT_CONFIG = {
 
 // Funzione principale di rendering chiamata da group_detail.js
 export function renderGroupDetailPage(pageContext, state, viewData, callbacks, COLORS) {
-    const { toggleGroup, retry } = callbacks
+    const { toggleGroup, retry, nav } = callbacks
     const { groupName, isLoading, error } = state
     const userSettings = getApp().globalData.settings
     // Background
@@ -49,6 +50,13 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
         // Durante loading, il click non fa nulla
         click_func: isLoading ? () => { } : toggleGroup
     });
+    // Keys (utils/key-nav.js): the header switches the whole group
+    if (nav) nav.items.push({
+        key: 'group',
+        x: px(10), y: LAYOUT_CONFIG.headerY, w: DEVICE_WIDTH - px(20), h: LAYOUT_CONFIG.headerH, radius: px(8),
+        enabled: !isLoading,
+        select: toggleGroup
+    })
 
     // 1. Gestione Errore
     if (error) {
@@ -75,6 +83,7 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
             radius: px(10),
             click_func: retry
         })
+        if (nav) nav.items.push({ key: 'retry', x: px(140), y: px(350), w: px(200), h: px(60), radius: px(10), select: retry })
         return
     }
 
@@ -103,7 +112,7 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
 
 // The list in a VIEW_CONTAINER
 function renderGroupContentWithViewContainer(pageContext, state, viewData, callbacks, COLORS, startY) {
-    const { applyScene, toggleLight, navigateToLightDetail, onScrollChange } = callbacks
+    const { applyScene, toggleLight, navigateToLightDetail, onScrollChange, nav } = callbacks
     const { data } = viewData
     const { scrollPos_y } = state
 
@@ -124,6 +133,8 @@ function renderGroupContentWithViewContainer(pageContext, state, viewData, callb
 
     // ✅ VIEW_CONTAINER per scrolling
     const containerHeight = DEVICE_HEIGHT - startY
+    // The keys scroll the list through this (utils/key-nav.js)
+    const view = nav ? createScrollView(containerHeight, scrollPos_y, startY) : null
     const viewContainer = pageContext.createTrackedWidget(widget.VIEW_CONTAINER, {
         x: 0,
         y: startY,
@@ -136,6 +147,7 @@ function renderGroupContentWithViewContainer(pageContext, state, viewData, callb
             if (FrameParams.yoffset !== undefined) {
                 //logger.debug('VIEW_CONTAINER scroll_y:', FrameParams.yoffset)
                 onScrollChange(FrameParams.yoffset)
+                if (view) view.track(FrameParams.yoffset)
             }
         }
     })
@@ -144,6 +156,7 @@ function renderGroupContentWithViewContainer(pageContext, state, viewData, callb
 
     // Renderizza ogni item nel VIEW_CONTAINER
     data.forEach((item, index) => {
+        const rowTop = currentY
         if (item.type === 'header') {
             currentY = renderHeader(viewContainer, item, currentY, COLORS)
         } else if (item.type === 'scene') {
@@ -158,8 +171,27 @@ function renderGroupContentWithViewContainer(pageContext, state, viewData, callb
                 () => navigateToLightDetail(item.raw)
             )
         }
+        // Keys: a light opens with SELECT and switches with held SELECT (as a
+        // tap on its icon); a scene is applied with SELECT. Row height: what
+        // the renderer advanced, less the 10 px gap
+        if (view && item.type !== 'header') {
+            const reachable = item.type !== 'light' || item.raw?.reachable !== false
+            nav.items.push({
+                key: `${item.type}:${item.raw?.id ?? item.id ?? index}`,
+                x: px(30), y: rowTop, w: DEVICE_WIDTH - px(60), h: currentY - rowTop - px(10), radius: px(10),
+                parent: viewContainer, view,
+                enabled: reachable,
+                select: item.type === 'scene' ? () => applyScene(item) : () => navigateToLightDetail(item.raw),
+                longSelect: item.type === 'light' ? () => toggleLight(item.raw) : undefined
+            })
+        }
     })
-    // ✅ Fix Padding Bottom
+    if (view) {
+        view.widget = viewContainer
+        view.contentHeight = currentY + px(20)
+        nav.view = view
+    }
+    // Room below the last row
     viewContainer.createWidget(widget.FILL_RECT, {
         x: 0,
         y: currentY,

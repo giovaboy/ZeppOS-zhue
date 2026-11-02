@@ -1,10 +1,11 @@
 import { BasePage } from '@zeppos/zml/base-page'
 import { loggedPage } from '../utils/remote-log.js'
 import { createGate } from '../utils/request-gate.js'
+import { bindKeyNav } from '../utils/key-nav.js'
 import { createWidget, deleteWidget } from '@zos/ui'
 import { exit, push } from '@zos/router'
 import { getText } from '@zos/i18n'
-import { onGesture, onKey, GESTURE_RIGHT, KEY_BACK, KEY_EVENT_CLICK } from '@zos/interaction'
+import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import { setPageBrightTime } from '@zos/display'
 import { renderGroupsPage } from 'zosLoader:./groups.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
@@ -31,6 +32,8 @@ Page(
       Object.assign(this.state, { rooms: [], zones: [], isLoading: false, error: null })
       this.widgets = []
       this._gate = createGate('groups')
+      this._keys = null
+      this._nav = null
 
       this.state.currentTab = app.getCurrentTab()
       this.state.scrollPos_y = app.getGroupsScrollY()
@@ -70,13 +73,13 @@ Page(
         }
       })
 
-      onKey({
-        callback: (key, keyEvent) => {
-          if (key === KEY_BACK && keyEvent === KEY_EVENT_CLICK) {
-            exit()
-          }
-          return true
-        }
+      // Physical buttons: UP / DOWN between the tabs and the groups, SELECT
+      // opens (or switches tab), held SELECT switches the group, BACK leaves
+      // the app (this page is the app's first after the start)
+      this._keys = bindKeyNav({
+        getItems: () => (this._nav && this._nav.items) || [],
+        onBack: () => exit(),
+        label: 'groups'
       })
 
       // Carica SOLO se non abbiamo dati
@@ -221,7 +224,10 @@ Page(
     // --- RENDERING ---
 
     renderPage() {
+      if (this._keys) this._keys.reset()
       this.clearAllWidgets()
+      // Filled by the layout: the items the keys move between
+      const nav = { items: [], view: null }
 
       const rawList = this.state.currentTab === 'ROOMS' ? this.state.rooms : this.state.zones
 
@@ -233,6 +239,7 @@ Page(
       }))
 
       renderGroupsPage(this, this.state, viewData, {
+        nav,
         switchTab: (tab) => this.switchTab(tab),
         refresh: () => this.loadGroupsData(),
         onScrollChange: (y) => this.onScrollChange(y),
@@ -261,9 +268,12 @@ Page(
           }
         }
       })
+      this._nav = nav
+      if (this._keys) this._keys.refocus()
     },
 
     onDestroy() {
+      if (this._keys) this._keys.stop()
       if (this._gate) this._gate.close()
       app.setCurrentTab(this.state.currentTab)
       app.setGroupsScrollY(this.state.scrollPos_y)

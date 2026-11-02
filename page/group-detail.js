@@ -1,6 +1,7 @@
 import { BasePage } from '@zeppos/zml/base-page'
 import { loggedPage } from '../utils/remote-log.js'
 import { createGate } from '../utils/request-gate.js'
+import { bindKeyNav } from '../utils/key-nav.js'
 import { setPageBrightTime } from '@zos/display'
 import { getLogger } from '../utils/logger.js'
 import { getText } from '@zos/i18n'
@@ -49,6 +50,9 @@ Page(
       this.widgets = []
       this.listWidget = null
       this._gate = createGate('group-detail')
+      // The previous instance's keys (see the state reset above)
+      this._keys = null
+      this._nav = null
       // Parse parametri
       let params = {}
       if (typeof p === 'string' && p.startsWith('{')) {
@@ -84,6 +88,13 @@ Page(
     },
 
     build() {
+      // Physical buttons: UP / DOWN between the header and the rows, SELECT
+      // opens a light or applies a scene (the header: switches the group),
+      // held SELECT switches a light, BACK goes back
+      this._keys = bindKeyNav({
+        getItems: () => (this._nav && this._nav.items) || [],
+        label: 'group-detail'
+      })
       setPageBrightTime({ brightTime: 60000 })
 
       // Se non abbiamo dati, carica
@@ -342,7 +353,10 @@ Page(
     },
 
     renderPage() {
+      if (this._keys) this._keys.reset()
       this.clearAllWidgets()
+      // Filled by the layout: the items the keys move between
+      const nav = { items: [], view: null }
       const data = []
 
       const settings = app.globalData.settings || DEFAULT_USER_SETTINGS
@@ -405,6 +419,7 @@ Page(
       const viewData = { data }
 
       renderGroupDetailPage(this, this.state, viewData, {
+        nav,
         toggleGroup: () => this.toggleGroup(),
         retry: () => this.loadGroupDetail(),
         applyScene: (item) => this.applyScene(item),
@@ -412,9 +427,12 @@ Page(
         navigateToLightDetail: (light) => this.navigateToLightDetail(light),
         onScrollChange: (y) => this.onScrollChange(y)
       }, COLORS)
+      this._nav = nav
+      if (this._keys) this._keys.refocus()
     },
 
     onDestroy() {
+      if (this._keys) this._keys.stop()
       if (this._gate) this._gate.close()
       this.clearAllWidgets()
       app.setGroupDetailScrollY(this.state.groupId, this.state.scrollPos_y)

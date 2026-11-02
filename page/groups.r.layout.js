@@ -4,6 +4,7 @@ import { widget, align, text_style, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { getLogger } from '../utils/logger.js'
 import { COLORS, btnPressColor, getGroupIconPath, ICON_IMAGE_SIZE } from '../utils/constants.js'
+import { createScrollView, RING_ON_ACCENT } from '../utils/key-nav.js'
 
 const logger = getLogger('zhue-groups-layout')
 
@@ -18,7 +19,7 @@ export const LAYOUT_CONFIG = {
 }
 
 export function renderGroupsPage(pageContext, state, listData, callbacks) {
-    const { switchTab, refresh } = callbacks
+    const { switchTab, refresh, nav } = callbacks
     const { currentTab, isLoading, error } = state
 
     // 1. Sfondo
@@ -55,6 +56,7 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
             radius: px(10),
             click_func: refresh
         })
+        if (nav) nav.items.push({ key: 'retry', x: px(140), y: px(350), w: px(200), h: px(60), radius: px(10), select: refresh })
         return
     }
 
@@ -94,6 +96,17 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
         click_func: () => switchTab('ZONES')
     })
 
+    // Keys (utils/key-nav.js): the two tabs come first
+    if (nav) {
+        const tabX = [startX, startX + LAYOUT_CONFIG.tabW + LAYOUT_CONFIG.tabXGap]
+        ;['ROOMS', 'ZONES'].forEach((tab, i) => nav.items.push({
+            key: `tab:${tab}`,
+            x: tabX[i], y: LAYOUT_CONFIG.tabY, w: LAYOUT_CONFIG.tabW, h: LAYOUT_CONFIG.tabH, radius: px(8),
+            ringColor: currentTab === tab ? RING_ON_ACCENT : undefined,
+            select: () => switchTab(tab)
+        }))
+    }
+
     // 4. Lista con VIEW_CONTAINER
     const listStartY = LAYOUT_CONFIG.tabY + LAYOUT_CONFIG.tabH + LAYOUT_CONFIG.gapY
     const noun = currentTab === 'ROOMS' ? 'ROOM' : 'ZONE';
@@ -118,13 +131,15 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
 
 // ✅ Rendering con VIEW_CONTAINER
 function renderGroupsList(pageContext, state, listData, startY, callbacks) {
-    const { handleListItemClick, onScrollChange } = callbacks
+    const { handleListItemClick, onScrollChange, nav } = callbacks
     const { scrollPos_y } = state
     const itemHeight = px(100)
     const itemSpacing = px(10)
 
     // Crea VIEW_CONTAINER scrollabile
     const containerHeight = DEVICE_HEIGHT - startY
+    // The keys scroll the list through this (utils/key-nav.js)
+    const view = nav ? createScrollView(containerHeight, scrollPos_y, startY) : null
     const viewContainer = pageContext.createTrackedWidget(widget.VIEW_CONTAINER, {
         x: 0,
         y: startY,
@@ -136,6 +151,7 @@ function renderGroupsList(pageContext, state, listData, startY, callbacks) {
             if (FrameParams.yoffset !== undefined) {
                 //logger.debug('VIEW_CONTAINER scroll_y:', FrameParams.yoffset)
                 onScrollChange(FrameParams.yoffset)
+                if (view) view.track(FrameParams.yoffset)
             }
         }
     })
@@ -143,10 +159,15 @@ function renderGroupsList(pageContext, state, listData, startY, callbacks) {
     // Renderizza ogni gruppo
     let currentY = 0
     listData.forEach((item, index) => {
-        currentY = renderGroupItem(viewContainer, item, index, currentY, itemHeight, handleListItemClick)
+        currentY = renderGroupItem(viewContainer, item, index, currentY, itemHeight, handleListItemClick, view ? { nav, view } : null)
         currentY += itemSpacing
     })
-    // ✅ Fix Padding Bottom
+    if (view) {
+        view.widget = viewContainer
+        view.contentHeight = currentY + px(20)
+        nav.view = view
+    }
+    // Room below the last row
     viewContainer.createWidget(widget.FILL_RECT, {
         x: 0,
         y: currentY,
@@ -158,7 +179,9 @@ function renderGroupsList(pageContext, state, listData, startY, callbacks) {
 }
 
 // ✅ Render singolo gruppo
-function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick) {
+// keyNav: { nav, view } to register the row with the keys (SELECT opens the
+// group, held SELECT switches it, as a tap on the badge)
+function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick, keyNav = null) {
     const isOn = group.on_off === 'ON'
     const startX = px(30)
     const itemSpacing = px(15)
@@ -260,6 +283,14 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick)
         press_color: btnPressColor(badgeColor),
         click_func: () => onItemClick(index, 'on_off')
     });
+
+    if (keyNav) keyNav.nav.items.push({
+        key: `group:${group.raw?.id}`,
+        x: startX, y: yPos, w: DEVICE_WIDTH - startX * 2, h: itemHeight, radius: px(10),
+        parent: container, view: keyNav.view,
+        select: () => onItemClick(index, 'navigate'),
+        longSelect: () => onItemClick(index, 'on_off')
+    })
 
     return yPos + itemHeight
 }
