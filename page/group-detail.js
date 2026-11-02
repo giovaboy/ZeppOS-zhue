@@ -1,5 +1,6 @@
 import { BasePage } from '@zeppos/zml/base-page'
 import { loggedPage } from '../utils/remote-log.js'
+import { createGate } from '../utils/request-gate.js'
 import { setPageBrightTime } from '@zos/display'
 import { getLogger } from '../utils/logger.js'
 import { getText } from '@zos/i18n'
@@ -30,6 +31,24 @@ Page(
 
     onInit(p) {
       logger.debug('Group detail page onInit')
+      // ZML's BasePage hands every instance of this page the same `state`
+      // object (field-notes.md, "Pages and the app"): without this reset a
+      // group opened without cache showed the lights of the previous one, and
+      // build() didn't load its own
+      Object.assign(this.state, {
+        groupId: null,
+        groupType: null,
+        groupName: '',
+        anyOnInitial: null,
+        lights: [],
+        scenes: [],
+        isLoading: false,
+        error: null,
+        scrollPos_y: 0
+      })
+      this.widgets = []
+      this.listWidget = null
+      this._gate = createGate('group-detail')
       // Parse parametri
       let params = {}
       if (typeof p === 'string' && p.startsWith('{')) {
@@ -167,11 +186,17 @@ Page(
       }
     },
 
+    // One request at a time per control; a tap during one waits for it and
+    // reads the state it left
     toggleGroup() {
+      this._gate.run('group', () => this._toggleGroup())
+    },
+
+    _toggleGroup() {
       const anyOn = this.state.lights.some(light => !!light.ison)
       const newState = !anyOn
 
-      this.request({
+      return this.request({
           method: 'TOGGLE_GROUP',
           params: {
             groupId: this.state.groupId,
@@ -212,10 +237,14 @@ Page(
     },
 
     toggleLight(light) {
+      this._gate.run(`light ${light.id}`, () => this._toggleLight(light))
+    },
+
+    _toggleLight(light) {
       const currentOnState = light.ison
       const newState = !currentOnState
 
-      this.request({
+      return this.request({
           method: 'TOGGLE_LIGHT',
           params: {
             lightId: light.id,
@@ -261,8 +290,13 @@ Page(
     },
 
 
+    // A value: only the latest scene tapped waits
     applyScene(scene) {
-      this.request({
+      this._gate.run('scene', () => this._applyScene(scene), true)
+    },
+
+    _applyScene(scene) {
+      return this.request({
           method: 'APPLY_SCENE',
           params: {
             sceneId: scene.id,
@@ -389,6 +423,7 @@ Page(
     },
 
     onDestroy() {
+      if (this._gate) this._gate.close()
       this.clearAllWidgets()
       app.setGroupDetailScrollY(this.state.groupId, this.state.scrollPos_y)
     }

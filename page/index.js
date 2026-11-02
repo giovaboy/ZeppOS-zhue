@@ -38,6 +38,13 @@ Page(
 
     onInit() {
       logger.debug('index page onInit')
+      // BasePage shares `state` between instances of this page (the widget's
+      // header opens it again): every start begins at LOADING
+      this.state.currentState = STATES.LOADING
+      this.state.error = null
+      this.widgets = []
+      this.progressInterval = null
+      this.btCheckInterval = null
     },
 
     build() {
@@ -297,17 +304,11 @@ Page(
       this.clearAllWidgets()
       // Cancel all ongoing operations in app-side
       try {
-        // Cancel pairing (handles pairWithRetry loop)
-        this.request({ method: 'CANCEL_PAIRING' })
-          .catch(err => logger.debug('Cancel pairing failed:', err))
-
-        // Cancel bridge discovery
-        this.request({ method: 'CANCEL_DISCOVERY' })
-          .catch(err => logger.debug('Cancel discovery failed:', err))
-
-        // Cancel data fetch operations
-        this.request({ method: 'CANCEL_FETCH' })
-          .catch(err => logger.debug('Cancel fetch failed:', err))
+        // Pairing loop, bridge discovery and data fetch in one request: the
+        // page is going, its answer is lost anyway (field-notes.md,
+        // "Messaging"), and each request in flight costs ~10 KB
+        this.request({ method: 'CANCEL_ALL' })
+          .catch(err => logger.debug('Cancel all failed:', err))
 
       } catch (e) {
         // If request() itself throws, ignore it

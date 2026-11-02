@@ -1,5 +1,6 @@
 import { BasePage } from '@zeppos/zml/base-page'
 import { loggedPage } from '../utils/remote-log.js'
+import { createGate } from '../utils/request-gate.js'
 import { createWidget, deleteWidget } from '@zos/ui'
 import { exit, push } from '@zos/router'
 import { getText } from '@zos/i18n'
@@ -26,6 +27,10 @@ Page(
 
     onInit(p) {
       logger.debug('Groups page onInit')
+      // BasePage shares `state` between instances of this page: start clean
+      Object.assign(this.state, { rooms: [], zones: [], isLoading: false, error: null })
+      this.widgets = []
+      this._gate = createGate('groups')
 
       this.state.currentTab = app.getCurrentTab()
       this.state.scrollPos_y = app.getGroupsScrollY()
@@ -138,14 +143,20 @@ Page(
         })
     },
 
+    // One request at a time per group; a tap during one waits for it and
+    // reads the state it left
     toggleGroup(groupRaw) {
+      this._gate.run(`group ${groupRaw.id}`, () => this._toggleGroup(groupRaw))
+    },
+
+    _toggleGroup(groupRaw) {
       logger.log('Toggle group:', groupRaw.name)
 
       // Calcolo ottimistico
       const currentOnState = !!(groupRaw.on_off || groupRaw.anyOn)
       const newState = !currentOnState
 
-      this.request({
+      return this.request({
         method: 'TOGGLE_GROUP',
         params: {
           groupId: groupRaw.id,
@@ -253,6 +264,7 @@ Page(
     },
 
     onDestroy() {
+      if (this._gate) this._gate.close()
       app.setCurrentTab(this.state.currentTab)
       app.setGroupsScrollY(this.state.scrollPos_y)
       this.clearAllWidgets()

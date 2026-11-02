@@ -39,6 +39,10 @@ Page(
         logger.error('Failed to parse params:', e)
       }
       
+      // BasePage shares `state` between instances of this page: the status
+      // a failed toggle left showed "Error" on the next tap's page
+      this.state.status = 'loading'
+      this.widgets = []
       this.state.lightId = params.lightId
       this.state.lightName = params.lightName || 'Light'
       
@@ -133,7 +137,10 @@ Page(
       this.request({
           method: 'WIDGET_TOGGLE_LIGHT',
           params: {
-            lightId: this.state.lightId
+            lightId: this.state.lightId,
+            // Names this tap: a request delivered twice toggles the light
+            // once (app-side handleWidgetToggleLight)
+            tapId: `${t0.toString(36)}${Math.floor(Math.random() * 1296).toString(36)}`
           }
         })
         .then(result => {

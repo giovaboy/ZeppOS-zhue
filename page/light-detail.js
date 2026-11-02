@@ -1,5 +1,6 @@
 import { BasePage } from '@zeppos/zml/base-page'
 import { loggedPage } from '../utils/remote-log.js'
+import { createGate } from '../utils/request-gate.js'
 import { localStorage } from '@zos/storage'
 import { setPageBrightTime } from '@zos/display'
 import { setScrollLock } from '@zos/page'
@@ -59,6 +60,27 @@ Page(
     exitGestureListener: null,
 
     onInit(p) {
+      // ZML's BasePage hands every instance of this page the same `state`
+      // object (field-notes.md, "Pages and the app"): what the previous light
+      // left in it is reset here
+      Object.assign(this.state, {
+        lightId: null,
+        lightName: '',
+        light: null,
+        isLoading: false,
+        isDraggingBrightness: false,
+        tempBrightness: 0,
+        brightnessSliderFillWidget: null,
+        brightnessLabel: null,
+        error: null,
+        scrollPos_y: 0,
+        isInWidgetShortcuts: false,
+      })
+      this.widgets = []
+      this.currentModal = null
+      this.exitGestureListener = null
+      this._gate = createGate('light-detail')
+
       let params = {}
       try {
         params = typeof p === 'string' ? JSON.parse(p) : p
@@ -111,7 +133,8 @@ Page(
               autoHide: false,
               onClick: (keyObj) => {
                 if (keyObj.type === MODAL_CONFIRM) {
-                  localStorage.clear()
+                  // Only the shortcuts: the rest of localStorage is not theirs
+                  localStorage.removeItem(WIDGET_SHORTCUTS_KEY)
                 }
                 dialog.show(false)
                 this.currentModal = null
@@ -364,14 +387,15 @@ Page(
 
       if (skipApiCall) return
 
-      this.request({
+      // A value: while one is in flight only the latest waits
+      this._gate.run('brightness', () => this.request({
         method: 'SET_BRIGHTNESS',
         params: { lightId: this.state.lightId, bri: brightness }
       }).then(res => {
         if (res.success) {
           this.updateLight({ bri: brightness })
         }
-      }).catch(e => logger.error(e))
+      }).catch(e => logger.error(e)), true)
     },
 
     getLightCapabilities(light) {
@@ -508,11 +532,17 @@ Page(
         })
     },
 
+    // One toggle at a time: a tap during one waits for it, and reads the state
+    // it left
     toggleLight() {
+      this._gate.run('toggle', () => this._toggleLight())
+    },
+
+    _toggleLight() {
       const currentState = this.state.light.ison
       const newState = !this.state.light.ison
 
-      this.request({
+      return this.request({
         method: 'TOGGLE_LIGHT',
         params: { lightId: this.state.lightId, state: newState }
       })
@@ -536,14 +566,19 @@ Page(
         })
     },
 
+    // A value: only the latest preset tapped waits
     applyPreset(favorite) {
+      this._gate.run('preset', () => this._applyPreset(favorite), true)
+    },
+
+    _applyPreset(favorite) {
       let method = 'SET_BRIGHTNESS'
 
       if (favorite.type === PRESET_TYPES.COLOR || favorite.type === PRESET_TYPES.CT) {
         method = 'SET_COLOR'
       }
 
-      this.request({
+      return this.request({
         method: method,
         params: {
           lightId: this.state.lightId,
@@ -794,8 +829,10 @@ Page(
 
     onDestroy() {
       this.state.isLoading = false
+      if (this._gate) this._gate.close()
       this.clearAllWidgets()
       if (this.exitGestureListener) this.exitGestureListener()
+      this.exitGestureListener = null
       if (this.currentModal) {
         try {
           this.currentModal.show(false)

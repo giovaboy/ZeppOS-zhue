@@ -1,5 +1,6 @@
 import { BasePage } from '@zeppos/zml/base-page'
 import { loggedPage } from '../utils/remote-log.js'
+import { createGate } from '../utils/request-gate.js'
 import { px } from '@zos/utils'
 import { setScrollLock } from '@zos/page'
 import { createWidget, deleteWidget, prop } from '@zos/ui'
@@ -37,6 +38,18 @@ Page(
 
         onInit(p) {
             logger.log('Color Picker Init', p);
+            // BasePage shares `state` between instances of this page: what a
+            // previous picker left (a drag, widget handles) is reset here
+            Object.assign(this.state, {
+                isDragging: false,
+                cursorWidget: null,
+                ctCursorWidget: null,
+                briFillWidget: null,
+                brightnessLabel: null
+            });
+            this.widgets = [];
+            this.exitGestureListener = null;
+            this._gate = createGate('color-picker');
             let params = {};
             try { params = JSON.parse(p) } catch (e) { params = p || {} }
 
@@ -214,10 +227,13 @@ Page(
 
                 this.updateLight(light)
             }
-            this.request({
+            // Color and white share one slot: while one is in flight only the
+            // latest choice waits, so the light ends on what was picked last
+            const bri = this.state.bri;
+            this._gate.run('color', () => this.request({
                 method: 'SET_HS',
-                params: { lightId: this.state.lightId, hue: h, sat: s, bri: this.state.bri }
-            }).catch(e => logger.error(e));
+                params: { lightId: this.state.lightId, hue: h, sat: s, bri }
+            }).catch(e => logger.error(e)), true);
         },
 
         // --- LOGICA DRAG CT (Temperatura) ---
@@ -273,16 +289,17 @@ Page(
                 this.updateLight(light)
             }
 
-            this.request({
+            const bri = this.state.bri
+            this._gate.run('color', () => this.request({
                 method: 'SET_COLOR', // General method usually handles ct too
                 params: {
                     lightId: this.state.lightId,
                     ct: ctVal,
-                    bri: this.state.bri,
+                    bri,
                     hue: null,
                     sat: null
                 }
-            }).catch(e => logger.error('Set CT error:', e))
+            }).catch(e => logger.error('Set CT error:', e)), true)
         },
 
         // --- LOGICA DRAG BRI (Luminosità) ---
@@ -331,10 +348,10 @@ Page(
                 this.updateLight(light)
             }
 
-            this.request({
+            this._gate.run('brightness', () => this.request({
                 method: 'SET_BRIGHTNESS',
                 params: { lightId: this.state.lightId, bri: val }
-            }).catch(e => logger.error('Set brightness error:', e))
+            }).catch(e => logger.error('Set brightness error:', e)), true)
         },
 
         updateLight(light) {
@@ -344,6 +361,7 @@ Page(
         },
 
         onDestroy() {
+            if (this._gate) this._gate.close();
             this.clearWidgets();
             if (this.exitGestureListener) {
                 this.exitGestureListener();

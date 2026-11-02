@@ -104,7 +104,7 @@ const ACTION_METHODS = new Set([
 ])
 
 // The parameters worth a line, none private (not the IP of SET_MANUAL_IP)
-const LOGGED_PARAMS = ['lightId', 'groupId', 'groupType', 'sceneId', 'favoriteId', 'state', 'on', 'bri', 'hue', 'sat', 'ct', 'xy']
+const LOGGED_PARAMS = ['tapId', 'lightId', 'groupId', 'groupType', 'sceneId', 'favoriteId', 'state', 'on', 'bri', 'hue', 'sat', 'ct', 'xy']
 function paramsForLog(params) {
   if (!params || typeof params !== 'object') return ''
   const parts = []
@@ -506,7 +506,7 @@ class HueBridgeManager {
 
     clog('HueBridgeManager initialized:', {
       bridgeIp: this.bridgeIp,
-      username: this.username,
+      key: this.username ? 'set' : 'not set',
       apiVersion: this.apiVersion
     })
   }
@@ -748,9 +748,29 @@ class HueBridgeManager {
     settingsLib.setItem(API_VERSION_KEY, this.apiVersion)
     clog('Hue config saved:', {
       bridgeIp: this.bridgeIp,
-      username: this.username,
+      key: this.username ? 'set' : 'not set',
       apiVersion: this.apiVersion
     })
+  }
+
+  // The bridge's address and key back from the settings storage (demo mode
+  // turned off: the demo's dummy values were in memory)
+  reloadConfig() {
+    this.bridgeIp = settingsLib.getItem(BRIDGE_IP_KEY) || null
+    this.username = settingsLib.getItem(USERNAME_KEY) || null
+    this.apiVersion = settingsLib.getItem(API_VERSION_KEY) || 'v1'
+  }
+
+  // One value changed in the settings storage (the settings page edited the
+  // IP or cleared the config). Only that value: saveConfig() writes the three
+  // one after the other, and re-reading all of them in between would put back
+  // the key a pairing just replaced
+  applyStoredValue(key, value) {
+    if (this.demo) return
+    const v = typeof value === 'string' && value !== '' ? value : null
+    if (key === BRIDGE_IP_KEY) this.bridgeIp = v
+    else if (key === USERNAME_KEY) this.username = v
+    else if (key === API_VERSION_KEY) this.apiVersion = v || 'v1'
   }
 
   clearConfig() {
@@ -828,7 +848,7 @@ class HueBridgeManager {
   async pair() {
     if (this.demo) {
       clog('DEMO MODE: Pairing success')
-      return { success: true, username: this.username, bridgeIp: this.bridgeIp }
+      return { success: true }
     }
     if (!this.bridgeIp) throw new Error('No bridge IP configured')
     clog('Pairing bridge (v1 API)...')
@@ -990,7 +1010,7 @@ class HueBridgeManager {
     this.username = result[0].success.username
     this.apiVersion = 'v1'
     this.saveConfig()
-    return { success: true, username: this.username, bridgeIp: this.bridgeIp }
+    return { success: true }
   }
 
   async checkConnection() {
@@ -1779,6 +1799,18 @@ class HueBridgeManager {
 
 const hueBridge = new HueBridgeManager()
 
+// The widget's taps answered in the last minute (ZML gives up on a request
+// after 60 s), by the id the watch gave each tap
+const WIDGET_TAP_MEMORY_MS = 60000
+const recentWidgetTaps = new Map()
+function rememberWidgetTap(tapId, answer) {
+  const now = Date.now()
+  for (const [id, tap] of recentWidgetTaps) {
+    if (now - tap.at > WIDGET_TAP_MEMORY_MS) recentWidgetTaps.delete(id)
+  }
+  recentWidgetTaps.set(tapId, { at: now, answer })
+}
+
 AppSideService(
   BaseSideService({
     onInit() {
@@ -1811,9 +1843,20 @@ AppSideService(
         case 'data:clear': {
           // Action needed: clear all stored data
           this.settings.clear()
+          hueBridge.reloadConfig()
           clog('Settings cleared!')
           break
         }
+
+        // The settings page edited the bridge's IP or cleared the config:
+        // the bridge manager read them once at start and kept using the old
+        // ones until the Zepp app was restarted
+        case BRIDGE_IP_KEY:
+        case USERNAME_KEY:
+        case API_VERSION_KEY:
+          hueBridge.applyStoredValue(key, newValue)
+          plog(`[settings] bridge config now: bridge ${hueBridge.bridgeIp ? 'set' : 'not set'}, key ${hueBridge.username ? 'set' : 'not set'}${hueBridge.demo ? ' (demo on: used when it is turned off)' : ''}`)
+          break
 
         case DEMO_MODE: {
           // Action needed: update demo mode in memory
@@ -1826,6 +1869,9 @@ AppSideService(
             hueBridge._initDemoState()
             clog('Demo mode enabled - initialized demo state')
           } else {
+            // A service started in demo mode held the demo's dummy address
+            // and key: the real ones come back from the storage
+            hueBridge.reloadConfig()
             clog('Demo mode disabled')
           }
           break
@@ -1841,27 +1887,6 @@ AppSideService(
 
         default:
           clog('Unhandled setting change:', key)
-      }
-    },
-
-    onSettingsChange_old({ key, newValue, oldValue }) {
-      clog('settings changed:', key, ':', oldValue, '>', newValue)
-      switch (key) {
-        case 'data:clear': {
-          this.settings.clear()
-          clog('settings cleared!')
-          break
-        }
-        //case DEMO_MODE:
-        //this.demo = settingsLib.getItem(DEMO_MODE) === 'true'
-        //break
-        // AGGIUNTO: Forziamo il ricaricamento delle impostazioni utente in caso di un cambio rilevante
-        case DEMO_MODE:
-        case SHOW_SCENES:
-        case DISPLAY_ORDER:
-        case FAVORITE_COLORS:
-          hueBridge.getUserSettings() // Ricarica le impostazioni
-          break
       }
     },
 
@@ -2293,9 +2318,11 @@ AppSideService(
       try {
         clog('Getting config status...')
 
+        // Whether they are set, not their values: the watch has no use for
+        // the bridge key
         const status = {
-          bridgeIp: hueBridge.bridgeIp,
-          username: hueBridge.username,
+          hasBridgeIp: !!hueBridge.bridgeIp,
+          hasKey: !!hueBridge.username,
           apiVersion: hueBridge.apiVersion,
           isConfigured: !!(hueBridge.bridgeIp && hueBridge.username)
         }
@@ -2431,7 +2458,26 @@ AppSideService(
       }
     },
 
-    async handleWidgetToggleLight(req, res) {
+    // A pure toggle (reads the light, sends the opposite), so a request
+    // delivered twice (seen ~5 s apart, field-notes.md "Messaging") switched
+    // the light on and back off. The watch names each tap (tapId): a tap seen
+    // already gets the first one's answer, and the light is toggled once
+    async handleWidgetToggleLight(req, firstRes) {
+      const tapId = req.params && req.params.tapId
+      const seen = tapId ? recentWidgetTaps.get(tapId) : null
+      if (seen) {
+        wlog(`[widget] tap ${tapId} delivered again ${Date.now() - seen.at}ms later: answered as the first, light not toggled again`)
+        seen.answer.then(({ err, data }) => firstRes(err, data))
+        return
+      }
+      let settle
+      const answer = new Promise((resolve) => { settle = resolve })
+      if (tapId) rememberWidgetTap(tapId, answer)
+      const res = (err, data) => {
+        settle({ err, data })
+        firstRes(err, data)
+      }
+
       try {
         const { lightId } = req.params
         clog('Widget toggle light:', lightId)
