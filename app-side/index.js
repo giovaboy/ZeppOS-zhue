@@ -63,6 +63,27 @@ function writeLines(msgs) {
     settingsLib.setItem(LOG_KEY, JSON.stringify(lines))
   } catch (e) { /* never throw from the logger */ }
 }
+// The watch sends its lines as [run, number, text] and sends a batch again
+// when its answer doesn't come back (answers are lost across a page change):
+// the highest number stored per run of the watch app says which ones are new.
+// After a restart of this service the text check of writeLines() is left
+// (lines "from the last run")
+const storedWatchSeq = new Map()
+function freshWatchLines(entries) {
+  const fresh = []
+  let skipped = 0
+  for (const entry of [].concat(entries)) {
+    if (!Array.isArray(entry) || entry.length !== 3) continue
+    const [run, seq, text] = entry
+    const last = storedWatchSeq.get(run)
+    if (last !== undefined && seq <= last) { skipped++; continue }
+    storedWatchSeq.set(run, seq)
+    fresh.push(`[w] ${text}`)
+  }
+  if (skipped && logs('trace')) fresh.push(`[log] ${skipped} watch lines already stored, skipped`)
+  return fresh
+}
+
 const writeLog = (msg) => writeLines([msg])
 const plog = (msg) => { if (logs('info')) writeLog(msg) }
 const wlog = (msg) => { if (logs('warn')) writeLog(msg) }
@@ -1893,7 +1914,7 @@ AppSideService(
     onRequest(req, reply) {
       // The watch's lines for the Logs box: stored, never logged themselves
       if (req.method === 'debug.deviceLog') {
-        writeLines([].concat((req.params && req.params.lines) || []).map((line) => `[w] ${line}`))
+        writeLines(freshWatchLines((req.params && req.params.entries) || []))
         reply(null, {})
         return
       }

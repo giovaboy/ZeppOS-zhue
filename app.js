@@ -20,8 +20,15 @@ const LOG_INFO = logs('info')
 const LOG_WARN = logs('warn')
 // Watch lines waiting at most for the phone (the oldest are dropped)
 const REMOTE_LOG_MAX = 100
-// A batch unanswered this long is taken as lost: its lines go again
-const REMOTE_LOG_LOST_MS = 90000
+// A batch unanswered this long is taken as lost: its lines go again. ZML
+// hands an answer to its request through @zos/app's message bus, and an
+// answer arriving after a page change was lost: the watch lines stopped after
+// index → groups until the app closed (zhue, 2026-11-02, watch round trips
+// 1.2–2.4 s). The phone skips lines it already stored (by run and number),
+// so sending again early costs nothing
+const REMOTE_LOG_LOST_MS = 10000
+// This run of the app, to number its lines: [run, seq, text] reach the phone
+const REMOTE_LOG_RUN = Date.now().toString(36)
 // Lines still waiting when the app closes: sent at the next start
 const PENDING_LOG_FILE = 'pending_log.json'
 
@@ -91,11 +98,17 @@ App(
     // If the phone can't be reached they wait (up to REMOTE_LOG_MAX) and go
     // with the next line.
     _sendLog(msg) {
+      this._queueLog(msg)
+      this._flushRemoteLog()
+    },
+
+    // Each line is [run, number, text]: the phone stores a number once
+    _queueLog(msg) {
       remoteConsole.log(`[remote] ${msg}`)
       const queue = this._remoteLog || (this._remoteLog = [])
-      queue.push(`${new Date().toTimeString().slice(0, 8)} ${msg}`)
+      this._remoteLogSeq = (this._remoteLogSeq || 0) + 1
+      queue.push([REMOTE_LOG_RUN, this._remoteLogSeq, `${new Date().toTimeString().slice(0, 8)} ${msg}`])
       if (queue.length > REMOTE_LOG_MAX) queue.splice(0, queue.length - REMOTE_LOG_MAX)
-      this._flushRemoteLog()
     },
 
     // One batch at a time; a batch whose request never settles is taken as
@@ -106,13 +119,14 @@ App(
       if (sending && Date.now() - sending.at > REMOTE_LOG_LOST_MS) {
         this._remoteLog.unshift(...sending.lines)
         this._remoteLogSending = null
+        if (LOG_TRACE) this._queueLog(`[log] a batch of ${sending.lines.length} lines got no answer in ${((Date.now() - sending.at) / 1000).toFixed(1)}s: sent again`)
       }
       if (this._remoteLogSending || !this._remoteLog || !this._remoteLog.length) return
       const lines = this._remoteLog.splice(0)
       const batch = { lines, at: Date.now() }
       this._remoteLogSending = batch
       let sent
-      try { sent = this.request({ method: 'debug.deviceLog', params: { lines } }) } catch (e) { sent = Promise.reject(e) }
+      try { sent = this.request({ method: 'debug.deviceLog', params: { entries: lines } }) } catch (e) { sent = Promise.reject(e) }
       Promise.resolve(sent).then(
         () => { if (this._remoteLogSending === batch) { this._remoteLogSending = null; this._flushRemoteLog() } },
         () => { if (this._remoteLogSending === batch) { this._remoteLogSending = null; this._remoteLog.unshift(...lines) } },
@@ -120,8 +134,8 @@ App(
     },
 
     // The lines not confirmed by the phone (waiting, or in a batch still
-    // unanswered) go to a small file at close; the phone skips a line
-    // "from the last run" it already has...
+    // unanswered) go to a small file at close; the phone skips the ones it
+    // already has (by run and number, or by text if it restarted since)...
     _savePendingLog() {
       try {
         const sending = this._remoteLogSending
@@ -145,7 +159,10 @@ App(
         rmSync({ path: PENDING_LOG_FILE })
         const lines = JSON.parse(text || '[]')
         if (Array.isArray(lines) && lines.length) {
-          this._remoteLog = lines.map((l) => `${l} (from the last run)`).slice(-REMOTE_LOG_MAX)
+          this._remoteLog = lines
+            .filter((l) => Array.isArray(l) && l.length === 3)
+            .map(([run, seq, t]) => [run, seq, `${t} (from the last run)`])
+            .slice(-REMOTE_LOG_MAX)
         }
       } catch (e) { /* never throw from the logger */ }
     },
@@ -285,6 +302,10 @@ App(
       this.globalData.groupsData.zones = apiData.zones || []
       this.globalData.groupsData.hasLoadedOnce = true
       this.globalData.groupsData._timestamp = Date.now()
+      // Fresh data answers any refresh asked before. The flag stayed up once
+      // a light was turned off from its page, and the groups page fetched
+      // again what the index had loaded 2 s before (Logs box, 2026-11-02)
+      this.globalData.needsGroupsRefresh = false
 
       // Update settings if present (including demo_mode)
       if (apiData.userSettings) {
