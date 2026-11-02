@@ -143,3 +143,12 @@ msgstr "Stanze"
 
 msgid "ZONES"
 msgstr "Zone"
+
+msgid "BRIDGE_KEY_LABEL"
+msgstr "Chiave del bridge"
+
+msgid "WATCH_DISPLAY"
+msgstr "Sull'orologio"
+
+msgid "DEMO_MODE_DESC"
+msgstr "Prova l'app senza un Hue Bridge: l'orologio mostra stanze e luci di esempio."

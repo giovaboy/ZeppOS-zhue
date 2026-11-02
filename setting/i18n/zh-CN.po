@@ -143,3 +143,12 @@ msgstr "房间"
 
 msgid "ZONES"
 msgstr "区域"
+
+msgid "BRIDGE_KEY_LABEL"
+msgstr "桥接器密钥"
+
+msgid "WATCH_DISPLAY"
+msgstr "手表显示"
+
+msgid "DEMO_MODE_DESC"
+msgstr "无需 Hue 桥接器即可试用：手表将显示示例房间和灯光。"

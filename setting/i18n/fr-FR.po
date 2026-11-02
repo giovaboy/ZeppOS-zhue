@@ -143,3 +143,12 @@ msgstr "Pièces"
 
 msgid "ZONES"
 msgstr "Zones"
+
+msgid "BRIDGE_KEY_LABEL"
+msgstr "Clé du bridge"
+
+msgid "WATCH_DISPLAY"
+msgstr "Sur la montre"
+
+msgid "DEMO_MODE_DESC"
+msgstr "Essayez l'app sans Hue Bridge : la montre affiche des pièces et des lampes d'exemple."

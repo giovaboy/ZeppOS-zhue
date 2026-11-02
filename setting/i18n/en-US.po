@@ -143,3 +143,12 @@ msgstr "Rooms"
 
 msgid "ZONES"
 msgstr "Zones"
+
+msgid "BRIDGE_KEY_LABEL"
+msgstr "Bridge key"
+
+msgid "WATCH_DISPLAY"
+msgstr "On the watch"
+
+msgid "DEMO_MODE_DESC"
+msgstr "Try the app without a Hue Bridge: the watch shows sample rooms and lights."

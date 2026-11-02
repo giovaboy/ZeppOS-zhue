@@ -143,3 +143,12 @@ msgstr "방"
 
 msgid "ZONES"
 msgstr "구역"
+
+msgid "BRIDGE_KEY_LABEL"
+msgstr "브리지 키"
+
+msgid "WATCH_DISPLAY"
+msgstr "시계 화면"
+
+msgid "DEMO_MODE_DESC"
+msgstr "Hue Bridge 없이 앱을 체험해 보세요: 시계에 예시 방과 조명이 표시됩니다."

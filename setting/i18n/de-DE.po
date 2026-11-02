@@ -143,3 +143,12 @@ msgstr "Zimmer"
 
 msgid "ZONES"
 msgstr "Zonen"
+
+msgid "BRIDGE_KEY_LABEL"
+msgstr "Bridge-Schlüssel"
+
+msgid "WATCH_DISPLAY"
+msgstr "Auf der Uhr"
+
+msgid "DEMO_MODE_DESC"
+msgstr "Die App ohne Hue Bridge ausprobieren: Die Uhr zeigt Beispielräume und -lampen."
