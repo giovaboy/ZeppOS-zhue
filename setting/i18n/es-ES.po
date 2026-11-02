@@ -137,3 +137,9 @@ msgstr "Borrar registros"
 
 msgid "CANCEL"
 msgstr "Cancelar"
+
+msgid "ROOMS"
+msgstr "Habitaciones"
+
+msgid "ZONES"
+msgstr "Zonas"

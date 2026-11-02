@@ -137,3 +137,9 @@ msgstr "Cancella log"
 
 msgid "CANCEL"
 msgstr "Annulla"
+
+msgid "ROOMS"
+msgstr "Stanze"
+
+msgid "ZONES"
+msgstr "Zone"

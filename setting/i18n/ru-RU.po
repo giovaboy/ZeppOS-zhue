@@ -137,3 +137,9 @@ msgstr "Очистить журнал"
 
 msgid "CANCEL"
 msgstr "Отмена"
+
+msgid "ROOMS"
+msgstr "Комнаты"
+
+msgid "ZONES"
+msgstr "Зоны"

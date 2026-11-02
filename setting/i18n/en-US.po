@@ -137,3 +137,9 @@ msgstr "Clear logs"
 
 msgid "CANCEL"
 msgstr "Cancel"
+
+msgid "ROOMS"
+msgstr "Rooms"
+
+msgid "ZONES"
+msgstr "Zones"

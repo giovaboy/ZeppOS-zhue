@@ -137,3 +137,9 @@ msgstr "Effacer les journaux"
 
 msgid "CANCEL"
 msgstr "Annuler"
+
+msgid "ROOMS"
+msgstr "Pièces"
+
+msgid "ZONES"
+msgstr "Zones"

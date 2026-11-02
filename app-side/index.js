@@ -10,6 +10,7 @@ const API_VERSION_KEY = 'hue_api_version'
 const DEMO_MODE = 'hue_demo_mode'
 const SHOW_SCENES = 'hue_show_scenes'
 const DISPLAY_ORDER = 'hue_display_order'
+const DEFAULT_TAB = 'default_tab'
 const FAVORITE_COLORS = 'hue_favorite_colors'
 
 // ── Logs box (shared rule: ../_shared/zeppos-ai-doc/logging.md) ──
@@ -539,6 +540,7 @@ class HueBridgeManager {
     //const show_global_toggle_str = settingsLib.getItem(SHOW_GLOBAL_TOGGLE)
     const show_scenes_str = settingsLib.getItem(SHOW_SCENES)
     const display_order_str = settingsLib.getItem(DISPLAY_ORDER)
+    const default_tab_str = settingsLib.getItem(DEFAULT_TAB)
     const favorite_colors_str = settingsLib.getItem(FAVORITE_COLORS)
     //const widget_shortcuts_str = settingsLib.getItem(WIDGET_SHORTCUTS)
 
@@ -562,6 +564,10 @@ class HueBridgeManager {
 
       display_order: display_order_str !== null ?
         display_order_str : DEFAULT_USER_SETTINGS.display_order,
+
+      // The tab the groups page opens on. It was never sent: the setting
+      // had no effect and the watch always opened on Rooms
+      default_tab: default_tab_str === 'ZONES' ? 'ZONES' : DEFAULT_USER_SETTINGS.default_tab,
 
       favorite_colors: favorite_colors
     }
@@ -1904,6 +1910,7 @@ AppSideService(
         // No action needed - read on-demand
         case SHOW_SCENES:
         case DISPLAY_ORDER:
+        case DEFAULT_TAB:
         case FAVORITE_COLORS:
           clog('User preference updated:', key)
           // Settings automatically picked up next time getUserSettings() is called

@@ -1,5 +1,5 @@
 import { gettext } from 'i18n'
-import { DEFAULT_PRESETS, PRESET_TYPES } from '../utils/constants'
+import { DEFAULT_PRESETS, PRESET_TYPES, DEFAULT_USER_SETTINGS } from '../utils/constants'
 import { LOG_KEY } from '../app-side/log.js'
 import { logsEnabled } from '../config.js'
 //import { getPackageInfo } from '@zos/app'
@@ -42,6 +42,30 @@ function confirmAction(storage, key, { label, question, run }) {
       View({ style: { flex: 1 } }, [actionButton(label, 'danger', () => { storage.removeItem(key); run() }, { width: '100%' })]),
       View({ style: { flex: 1, marginLeft: '12px' } }, [actionButton(gettext('CANCEL'), 'control', () => storage.removeItem(key), { width: '100%' })])
     ])
+  ])
+}
+
+// A choice among a few options, as in zeppamp's settings page: one button per
+// option side by side, the chosen one in the app's purple. A Select can't be
+// styled and doesn't show the choice in its closed state
+// (app-settings-ui-components.md, "Observed rendering")
+const ACCENT = '#984ce5' // the watch's active tab (COLORS.activeTab)
+function choice(title, options, chosen, onPick) {
+  return View({ style: { marginTop: '16px', marginBottom: '8px' } }, [
+    Text({ style: { fontSize: '14px', fontWeight: '600', color: '#333' } }, [title]),
+    View({ style: { display: 'flex', marginTop: '8px' } }, options.map((o, i) =>
+      View({ style: { flex: 1, marginLeft: i ? '8px' : '0' } }, [
+        Button({
+          label: o.label,
+          onClick: () => { if (o.value !== chosen) onPick(o.value) },
+          style: {
+            width: '100%', fontSize: '14px', fontWeight: '500', borderRadius: '24px',
+            background: o.value === chosen ? ACCENT : '#e9ecef',
+            color: o.value === chosen ? 'white' : '#333'
+          }
+        })
+      ])
+    ))
   ])
 }
 
@@ -437,37 +461,27 @@ AppSettingsPage({
                 }
               }),*/
               // Default tab
-              Select({
-                title: gettext('DEFAULT_TAB'),
-                options: [{ name: 'ROOMS', value: 'ROOMS' },
-                { name: 'ZONES', value: 'ZONES' }
-                ],
-                value: props.settingsStorage.getItem('default_tab'),
-                onChange: (value) => {
-                  props.settingsStorage.setItem('default_tab', value)
-                }
-              }),
-              // Show scenes
+              choice(gettext('DEFAULT_TAB'), [
+                { label: gettext('ROOMS'), value: 'ROOMS' },
+                { label: gettext('ZONES'), value: 'ZONES' }
+              ], props.settingsStorage.getItem('default_tab') || DEFAULT_USER_SETTINGS.default_tab,
+              (value) => props.settingsStorage.setItem('default_tab', value)),
+
+              // Show scenes (unset means shown, as the watch reads it)
               Toggle({
                 label: gettext('SHOW_SCENES'),
-                value: props.settingsStorage.getItem('hue_show_scenes') === 'true',
+                value: props.settingsStorage.getItem('hue_show_scenes') !== 'false',
                 onChange: (value) => {
                   props.settingsStorage.setItem('hue_show_scenes', value ? 'true' : 'false')
                 }
               }),
 
               // Display Order
-              Select({
-                title: gettext('DISPLAY_ORDER'),
-                options: [{ name: gettext('LIGHTS_FIRST'), value: 'LIGHTS_FIRST' },
-                { name: gettext('SCENES_FIRST'), value: 'SCENES_FIRST' }
-                ],
-                value: props.settingsStorage.getItem('hue_display_order'),
-                selectedValue: props.settingsStorage.getItem('hue_display_order'),
-                onChange: (value) => {
-                  props.settingsStorage.setItem('hue_display_order', value)
-                }
-              }),
+              choice(gettext('DISPLAY_ORDER'), [
+                { label: gettext('LIGHTS_FIRST'), value: 'LIGHTS_FIRST' },
+                { label: gettext('SCENES_FIRST'), value: 'SCENES_FIRST' }
+              ], props.settingsStorage.getItem('hue_display_order') || DEFAULT_USER_SETTINGS.display_order,
+              (value) => props.settingsStorage.setItem('hue_display_order', value)),
 
               // Debug Mode Toggle
               Toggle({

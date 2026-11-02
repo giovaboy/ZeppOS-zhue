@@ -137,3 +137,9 @@ msgstr "清除日誌"
 
 msgid "CANCEL"
 msgstr "取消"
+
+msgid "ROOMS"
+msgstr "房間"
+
+msgid "ZONES"
+msgstr "區域"

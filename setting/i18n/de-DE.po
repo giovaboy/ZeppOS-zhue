@@ -137,3 +137,9 @@ msgstr "Protokoll löschen"
 
 msgid "CANCEL"
 msgstr "Abbrechen"
+
+msgid "ROOMS"
+msgstr "Zimmer"
+
+msgid "ZONES"
+msgstr "Zonen"
