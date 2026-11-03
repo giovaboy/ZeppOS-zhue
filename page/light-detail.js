@@ -1,13 +1,14 @@
 import { BasePage } from '@zeppos/zml/base-page'
 import { loggedPage } from '../utils/remote-log.js'
 import { createGate } from '../utils/request-gate.js'
+import { createDragGuard } from '../utils/drag-guard.js'
 import { localStorage } from '@zos/storage'
 import { setPageBrightTime } from '@zos/display'
 import { setScrollLock } from '@zos/page'
 import { getText } from '@zos/i18n'
 import { createWidget, deleteWidget, prop, showToast } from '@zos/ui'
 import { back, push } from '@zos/router'
-import { onGesture, GESTURE_RIGHT, createModal, MODAL_CONFIRM, onKey, KEY_SELECT, KEY_BACK, KEY_EVENT_LONG_PRESS, KEY_EVENT_CLICK } from '@zos/interaction'
+import { createModal, MODAL_CONFIRM, onKey, KEY_SELECT, KEY_BACK, KEY_EVENT_LONG_PRESS, KEY_EVENT_CLICK } from '@zos/interaction'
 import { px } from '@zos/utils'
 import { renderLightDetail, LAYOUT_CONFIG } from 'zosLoader:./light-detail.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
@@ -34,7 +35,7 @@ Page(
 
     widgets: [],
     currentModal: null,
-    exitGestureListener: null,
+
 
     onInit(p) {
       // ZML's BasePage hands every instance of this page the same `state`
@@ -55,7 +56,6 @@ Page(
       })
       this.widgets = []
       this.currentModal = null
-      this.exitGestureListener = null
       this._gate = createGate('light-detail')
 
       let params = {}
@@ -137,7 +137,9 @@ Page(
 
       setPageBrightTime({ brightTime: 60000 })
       setScrollLock({ lock: true })
-      this.unlockExitGesture()
+      // The page's one onGesture: right swipe goes back, not while the
+      // brightness slider is dragged (utils/drag-guard.js)
+      this._drag = createDragGuard('light-detail')
 
       this.checkWidgetShortcutStatus()
 
@@ -177,30 +179,6 @@ Page(
       const w = createWidget(type, props)
       this.widgets.push(w)
       return w
-    },
-
-    unlockExitGesture() {
-      if (this.exitGestureListener) {
-        this.exitGestureListener()
-      }
-      this.exitGestureListener = onGesture({
-        callback: (event) => {
-          if (event === GESTURE_RIGHT) {
-            back()
-            return true
-          }
-          return false
-        }
-      })
-    },
-
-    lockExitGesture() {
-      if (this.exitGestureListener) {
-        this.exitGestureListener()
-      }
-      this.exitGestureListener = onGesture({
-        callback: (event) => true
-      })
     },
 
     getFavoriteColors() {
@@ -308,8 +286,7 @@ Page(
       }
 
       if (evtType === 'DOWN') {
-        this.lockExitGesture()
-        //setScrollLock({ lock: true })
+        if (this._drag) this._drag.start()
 
         const newBri = getBrightnessFromX(info.x)
         this.state.isDraggingBrightness = true
@@ -320,6 +297,7 @@ Page(
 
       } else if (evtType === 'MOVE') {
         if (!this.state.isDraggingBrightness) return
+        if (this._drag) this._drag.move()
 
         const newBri = getBrightnessFromX(info.x)
         if (newBri === this.state.tempBrightness) return
@@ -329,9 +307,7 @@ Page(
 
       } else if (evtType === 'UP') {
         if (!this.state.isDraggingBrightness) return
-
-        this.unlockExitGesture()
-        //setScrollLock({ lock: false })
+        if (this._drag) this._drag.end()
 
         if (this.state.tempBrightness !== this.state.light.bri) {
           this.setBrightness(this.state.tempBrightness, false)
@@ -809,8 +785,6 @@ Page(
       this.state.isLoading = false
       if (this._gate) this._gate.close()
       this.clearAllWidgets()
-      if (this.exitGestureListener) this.exitGestureListener()
-      this.exitGestureListener = null
       if (this.currentModal) {
         try {
           this.currentModal.show(false)

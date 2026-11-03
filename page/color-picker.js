@@ -5,7 +5,7 @@ import { px } from '@zos/utils'
 import { setScrollLock } from '@zos/page'
 import { createWidget, deleteWidget, prop } from '@zos/ui'
 import { back } from '@zos/router'
-import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
+import { createDragGuard } from '../utils/drag-guard.js'
 import { getLogger } from '../utils/logger.js'
 import { HUE_RANGE, SAT_RANGE, BRI_RANGE, CT_MIN, CT_MAX, hsb2hex, ct2hexString } from '../utils/constants.js'
 
@@ -34,7 +34,6 @@ Page(
         },
 
         widgets: [],
-        exitGestureListener: null, // Riferimento al listener per lo swipe di uscita
 
         onInit(p) {
             logger.log('Color Picker Init', p);
@@ -48,7 +47,6 @@ Page(
                 brightnessLabel: null
             });
             this.widgets = [];
-            this.exitGestureListener = null;
             this._gate = createGate('color-picker');
             let params = {};
             try { params = JSON.parse(p) } catch (e) { params = p || {} }
@@ -89,40 +87,10 @@ Page(
 
         build() {
             setScrollLock({ lock: true });
-            this.unlockExitGesture();
+            // The page's one onGesture: right swipe goes back, not while the
+            // picker or a slider is dragged (utils/drag-guard.js)
+            this._drag = createDragGuard('color-picker');
             this.render();
-        },
-
-        // --- GESTURE LOCK LOGIC ---
-
-        // La funzione di uscita che viene allegata al listener di ZeppOS
-        exitOnSwipe(event) {
-            if (event === GESTURE_RIGHT) {
-                back();
-                return true;
-            }
-            return false;
-        },
-
-        /** Blocca lo swipe laterale per l'uscita rimuovendo il listener. */
-        lockExitGesture() {
-            if (this.exitGestureListener) {
-                this.exitGestureListener(); // Rimuove il listener
-                this.exitGestureListener = null;
-                logger.debug('Exit gesture LOCKED');
-            }
-        },
-
-        /** Ripristina lo swipe laterale per l'uscita. */
-        unlockExitGesture() {
-            if (this.exitGestureListener) {
-                this.exitGestureListener(); // Rimuove il precedente se esiste
-            }
-            // Crea un nuovo listener e salva il suo distruttore (unlistener)
-            this.exitGestureListener = onGesture({
-                callback: (event) => this.exitOnSwipe(event)
-            });
-            logger.debug('Exit gesture UNLOCKED');
         },
 
         createTrackedWidget(type, props) {
@@ -175,15 +143,16 @@ Page(
             };
 
             if (evt === 'DOWN') {
-                this.lockExitGesture(); // BLOCCA GESTURE
+                if (this._drag) this._drag.start();
                 this.state.isDragging = true;
                 const vals = calcValues(info.x, info.y);
                 this.updateColorUI(vals.hue, vals.sat);
             } else if (evt === 'MOVE' && this.state.isDragging) {
+                if (this._drag) this._drag.move();
                 const vals = calcValues(info.x, info.y);
                 this.updateColorUI(vals.hue, vals.sat);
             } else if (evt === 'UP') {
-                this.unlockExitGesture(); // SBLOCCA GESTURE
+                if (this._drag) this._drag.end();
                 this.state.isDragging = false;
                 const vals = calcValues(info.x, info.y);
                 this.updateColorUI(vals.hue, vals.sat);
@@ -248,15 +217,16 @@ Page(
             };
 
             if (evt === 'DOWN') {
-                this.lockExitGesture(); // BLOCCA GESTURE
+                if (this._drag) this._drag.start();
                 this.state.isDragging = true
                 const val = calcCT(info.y)
                 this.updateCTUI(val)
             } else if (evt === 'MOVE' && this.state.isDragging) {
+                if (this._drag) this._drag.move();
                 const val = calcCT(info.y)
                 this.updateCTUI(val)
             } else if (evt === 'UP') {
-                this.unlockExitGesture(); // SBLOCCA GESTURE
+                if (this._drag) this._drag.end();
                 this.state.isDragging = false;
                 const val = calcCT(info.y);
                 this.updateCTUI(val);
@@ -313,15 +283,16 @@ Page(
             };
 
             if (evt === 'DOWN') {
-                this.lockExitGesture(); // BLOCCA GESTURE
+                if (this._drag) this._drag.start();
                 this.state.isDragging = true
                 const val = calcBri(info.x)
                 this.updateBriUI(val)
             } else if (evt === 'MOVE' && this.state.isDragging) {
+                if (this._drag) this._drag.move();
                 const val = calcBri(info.x)
                 this.updateBriUI(val)
             } else if (evt === 'UP') {
-                this.unlockExitGesture(); // SBLOCCA GESTURE
+                if (this._drag) this._drag.end();
                 this.state.isDragging = false
                 const val = calcBri(info.x)
                 this.sendBri(val)
@@ -363,10 +334,6 @@ Page(
         onDestroy() {
             if (this._gate) this._gate.close();
             this.clearWidgets();
-            if (this.exitGestureListener) {
-                this.exitGestureListener();
-                this.exitGestureListener = null;
-            }
         }
     }))
 )
