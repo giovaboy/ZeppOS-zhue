@@ -31,6 +31,7 @@ Page(
 
     widgets: [],
     progressInterval: null,
+    spinnerInterval: null,
     btCheckInterval: null,
 
     // 🐛 Debug flag - imposta true per vedere logs dettagliati
@@ -44,6 +45,7 @@ Page(
       this.state.error = null
       this.widgets = []
       this.progressInterval = null
+      this.spinnerInterval = null
       this.btCheckInterval = null
     },
 
@@ -115,6 +117,13 @@ Page(
       if (this.progressInterval) {
         clearInterval(this.progressInterval)
         this.progressInterval = null
+      }
+      // The spinner has its own interval: sharing progressInterval with the
+      // bar, it was overwritten and never stopped (10 times a second while
+      // the page stayed open, on a widget already deleted)
+      if (this.spinnerInterval) {
+        clearInterval(this.spinnerInterval)
+        this.spinnerInterval = null
       }
 
       this.widgets.forEach(w => {
@@ -264,9 +273,9 @@ Page(
       let alpha = 255
       let direction = -1
 
-      if (this.progressInterval) clearInterval(this.progressInterval)
+      if (this.spinnerInterval) clearInterval(this.spinnerInterval)
 
-      this.progressInterval = setInterval(() => {
+      this.spinnerInterval = setInterval(() => {
         alpha += direction * 15
         if (alpha < 100) {
           direction = 1
@@ -283,6 +292,7 @@ Page(
 
     animateProgressBar(progressBar) {
       let progress = 0
+      if (this.progressInterval) clearInterval(this.progressInterval)
       this.progressInterval = setInterval(() => {
         if (!this.widgets.includes(progressBar)) {
           clearInterval(this.progressInterval)

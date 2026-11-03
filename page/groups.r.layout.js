@@ -65,6 +65,22 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
     const startX = (DEVICE_WIDTH - totalW) / 2;
     const isRooms = currentTab === 'ROOMS'
 
+    // A larger touch area for each tab: the band above the list, split in
+    // two halves (the tabs sit in the narrow top of a round screen).
+    // Transparent buttons made before the tabs, so under them: a tap on a tab
+    // still shows its pressed color, a tap elsewhere in its half switches too
+    const bandH = LAYOUT_CONFIG.tabY + LAYOUT_CONFIG.tabH + LAYOUT_CONFIG.gapY - px(4);
+    [['ROOMS', 0], ['ZONES', DEVICE_WIDTH / 2]].forEach(([tab, x]) => {
+        const area = pageContext.createTrackedWidget(widget.BUTTON, {
+            x, y: 0, w: DEVICE_WIDTH / 2, h: bandH,
+            text: '',
+            normal_color: 0x000000,
+            press_color: 0x000000,
+            click_func: () => switchTab(tab)
+        });
+        area.setAlpha(0);
+    });
+
     // Tab Rooms
     pageContext.createTrackedWidget(widget.BUTTON, {
         x: startX,
