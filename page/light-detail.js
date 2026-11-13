@@ -299,32 +299,52 @@ Page(
         return Math.max(this.state.light.ison ? 1 : 0, Math.round((positionInTrack / sliderW) * BRI_RANGE))
       }
 
+      // The page scrolls, and a swipe up or down that started on the slider
+      // used to move the brightness (it jumped to the touched point at once)
+      // and lock the scrolling. Now a touch is decided by its first SLIDE_PX
+      // of movement: across, it drags the brightness (and locks the page);
+      // up or down, it is left to the page. A touch that doesn't move sets
+      // the brightness where it lands, on release.
+      const SLIDE_PX = px(12)
+
       if (evtType === 'DOWN') {
-        if (this._drag) this._drag.start()
-        // The page scrolls: not while the finger slides along the slider
-        setScrollLock({ lock: true })
-        this.armDragTimeout()
-
-        const newBri = getBrightnessFromX(info.x)
-        this.state.isDraggingBrightness = true
-        if (newBri === this.state.tempBrightness) return
-
-        this.state.tempBrightness = newBri
-        this.setBrightness(newBri, true)
+        this._slide = { mode: 'pending', x0: info.x, y0: info.y }
 
       } else if (evtType === 'MOVE') {
-        if (!this.state.isDraggingBrightness) return
+        const slide = this._slide
+        if (!slide || slide.mode === 'scroll') return
+        if (slide.mode === 'pending') {
+          const dx = Math.abs(info.x - slide.x0)
+          const dy = Math.abs(info.y - slide.y0)
+          if (dy >= SLIDE_PX && dy >= dx) { slide.mode = 'scroll'; return }
+          if (dx < SLIDE_PX) return
+          // Across: a brightness drag from here on
+          slide.mode = 'drag'
+          if (this._drag) this._drag.start()
+          setScrollLock({ lock: true })
+          this.state.isDraggingBrightness = true
+        }
         if (this._drag) this._drag.move()
         this.armDragTimeout()
 
         const newBri = getBrightnessFromX(info.x)
         if (newBri === this.state.tempBrightness) return
-
         this.state.tempBrightness = newBri
         this.setBrightness(newBri, true)
 
       } else if (evtType === 'UP') {
-        if (!this.state.isDraggingBrightness) return
+        const slide = this._slide
+        this._slide = null
+        if (!slide) return
+        if (slide.mode === 'pending' && info) {
+          // A tap: the brightness where it landed
+          const newBri = getBrightnessFromX(info.x)
+          this.state.tempBrightness = newBri
+          this.setBrightness(newBri, true)
+          if (newBri !== this.state.light.bri) this.setBrightness(newBri, false)
+          return
+        }
+        if (slide.mode !== 'drag') return
         if (this._drag) this._drag.end()
         if (this._dragTimer) { clearTimeout(this._dragTimer); this._dragTimer = null }
         setScrollLock({ lock: false })
@@ -346,6 +366,8 @@ Page(
         this._dragTimer = null
         if (this.state.isDraggingBrightness) {
           warnLog('[light-detail] slider: no release 1.5 s after the last move, drag ended')
+          // As a drag, whatever the touch state says: the page must scroll again
+          this._slide = { mode: 'drag' }
           this.handleBrightnessDrag('UP', null)
         }
       }, 1500)

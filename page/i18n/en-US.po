@@ -205,12 +205,6 @@ msgstr "On"
 msgid "LIGHT_STATE_OFF"
 msgstr "Off"
 
-msgid "COLOR_AND_WHITE"
-msgstr "Color and white"
-
-msgid "WHITE_TEMPERATURE"
-msgstr "White temperature"
-
 msgid "PRESET_DELETE_HINT"
 msgstr "Hold a favorite to delete it"
 

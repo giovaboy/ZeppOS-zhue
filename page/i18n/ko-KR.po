@@ -205,12 +205,6 @@ msgstr "켜짐"
 msgid "LIGHT_STATE_OFF"
 msgstr "꺼짐"
 
-msgid "COLOR_AND_WHITE"
-msgstr "색상 및 흰색"
-
-msgid "WHITE_TEMPERATURE"
-msgstr "흰색 색온도"
-
 msgid "PRESET_DELETE_HINT"
 msgstr "즐겨찾기를 길게 눌러 삭제"
 

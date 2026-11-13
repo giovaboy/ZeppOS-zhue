@@ -205,12 +205,6 @@ msgstr "已开启"
 msgid "LIGHT_STATE_OFF"
 msgstr "已关闭"
 
-msgid "COLOR_AND_WHITE"
-msgstr "颜色和白光"
-
-msgid "WHITE_TEMPERATURE"
-msgstr "白光色温"
-
 msgid "PRESET_DELETE_HINT"
 msgstr "长按收藏可删除"
 

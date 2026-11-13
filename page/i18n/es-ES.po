@@ -205,12 +205,6 @@ msgstr "Encendida"
 msgid "LIGHT_STATE_OFF"
 msgstr "Apagada"
 
-msgid "COLOR_AND_WHITE"
-msgstr "Color y blanco"
-
-msgid "WHITE_TEMPERATURE"
-msgstr "Tono de blanco"
-
 msgid "PRESET_DELETE_HINT"
 msgstr "Mantén pulsado un favorito para eliminarlo"
 

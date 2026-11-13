@@ -205,12 +205,6 @@ msgstr "Включена"
 msgid "LIGHT_STATE_OFF"
 msgstr "Выключена"
 
-msgid "COLOR_AND_WHITE"
-msgstr "Цвет и белый"
-
-msgid "WHITE_TEMPERATURE"
-msgstr "Оттенок белого"
-
 msgid "PRESET_DELETE_HINT"
 msgstr "Удерживайте избранное, чтобы удалить"
 

@@ -2,10 +2,11 @@
 // re-export it): one long page that scrolls as a whole, as Zepp lists do.
 //
 //   name                       title only (it used to be the switch, and
-//   ( lamp )                   grew into a grey disc the size of the
-//   On · 80%                   screen when the light was off)
-//   [ brightness slider ]      every light, while on
-//   [ ● Color and white ]      lights with color or white temperature, while on
+//   ( lamp ) ( palette )       grew into a grey disc the size of the
+//   On                         screen when the light was off); the palette
+//   [ brightness slider ]      (color and white) while on, for lights with
+//                              color or white temperature; brightness for
+//                              every light while on
 //   Favorites                  shown when off too: applying one turns it on
 //   ( ) ( ) ( ) ( ) ( )
 //   ( ) ( +)                   "add the current color": the grid's last tile
@@ -16,7 +17,7 @@
 // dragged. Keys: the items go to callbacks.nav (utils/key-nav.js).
 import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
-import { widget, align, event, text_style, prop } from '@zos/ui'
+import { widget, align, event, text_style, prop, getTextLayout } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { BRI_RANGE, COLORS, PRESET_TYPES, LIGHT_MODELS, ICON_IMAGE_SIZE, btnPressColor, ct2hex, xy2hex, hexStringToInt } from '../../utils/constants.js'
 import { createPageView } from '../../utils/key-nav.js'
@@ -86,14 +87,24 @@ function renderMessage(pageContext, lightName, text, retryFunc, callbacks, isErr
   return { contentHeight: DEVICE_HEIGHT }
 }
 
+// The title's width: what a round screen leaves at that height (a 320 px box
+// was cut by the screen's edge: "Lampadina Abat-jour")
+const TITLE_W = px(280)
+
+// The name, its size reduced (32 down to 24) until it fits; longer still,
+// cut with "…"
 function renderTitle(pageContext, text) {
+  let size = px(32)
+  try {
+    while (size > px(24) && getTextLayout(String(text), { text_size: size, text_width: 0, wrapped: 0 }).width > TITLE_W) size -= px(2)
+  } catch (e) { /* getTextLayout missing: 32 and "…" */ }
   pageContext.createTrackedWidget(widget.TEXT, {
-    x: (DEVICE_WIDTH - CONTENT_W) / 2 + px(20),
+    x: (DEVICE_WIDTH - TITLE_W) / 2,
     y: LAYOUT_CONFIG.headerY,
-    w: CONTENT_W - px(40),
+    w: TITLE_W,
     h: LAYOUT_CONFIG.headerH,
     text,
-    text_size: px(32),
+    text_size: size,
     color: COLORS.text,
     align_h: align.CENTER_H,
     align_v: align.CENTER_V,
@@ -152,8 +163,6 @@ function renderNormalState(pageContext, state, callbacks) {
   y += px(36) + px(14)
   const sliderY = lightOn ? y : null
   if (lightOn) y += LAYOUT_CONFIG.sliderH + px(22)
-  const colorY = lightOn && hasColor ? y : null
-  if (colorY !== null) y += px(60) + px(22)
   const presetsTitleY = y
   y += px(40) + (presets.length ? 0 : px(56)) + px(6)
   const gridY = y
@@ -180,11 +189,13 @@ function renderNormalState(pageContext, state, callbacks) {
 
   // ── The switch: the light's icon in its color, a green ring while on
   renderLampButton(pageContext, powerY, light, lightOn, toggleLightFunc, nav, view)
+  // ── Beside it, the palette: color and white (the lamp already shows the
+  // color; a capsule under the slider repeated it)
+  if (lightOn && hasColor) renderPaletteButton(pageContext, powerY, light, openColorPickerFunc, nav, view, control)
 
-  // ── State line
-  const briPercent = Math.round((light.bri || 0) / BRI_RANGE * 100)
+  // ── State line (the brightness is on the slider)
   const statusText = !reachable ? getText('UNREACHABLE')
-    : lightOn ? `${getText('LIGHT_STATE_ON')} · ${briPercent}%` : getText('LIGHT_STATE_OFF')
+    : getText(lightOn ? 'LIGHT_STATE_ON' : 'LIGHT_STATE_OFF')
   pageContext.createTrackedWidget(widget.TEXT, {
     x: 0, y: statusY, w: DEVICE_WIDTH, h: px(36),
     text: statusText,
@@ -195,9 +206,6 @@ function renderNormalState(pageContext, state, callbacks) {
 
   // ── Brightness (every light, while on)
   if (sliderY !== null) renderBrightnessSlider(pageContext, state, sliderY, setBrightnessDrag, control)
-
-  // ── Color and white
-  if (colorY !== null) renderColorButton(pageContext, colorY, light, caps, openColorPickerFunc, nav, view, control)
 
   // ── Favorites (shown when off too: applying one turns the light on)
   pageContext.createTrackedWidget(widget.TEXT, {
@@ -379,35 +387,6 @@ function renderBrightnessSlider(pageContext, state, sliderY, dragCallback, contr
   }
 }
 
-// A capsule with the light's current color as a swatch, opening the picker
-function renderColorButton(pageContext, y, light, caps, onTap, nav, view, control) {
-  const w = CONTENT_W - px(40)
-  const h = px(60)
-  const box = { x: (DEVICE_WIDTH - w) / 2, y, w, h }
-  pageContext.createTrackedWidget(widget.BUTTON, {
-    ...box,
-    text: '',
-    normal_color: control,
-    press_color: btnPressColor(control),
-    radius: h / 2,
-    click_func: onTap
-  })
-  passThrough(pageContext.createTrackedWidget(widget.CIRCLE, {
-    center_x: box.x + px(34), center_y: y + h / 2,
-    radius: px(16),
-    color: lightColor(light)
-  }))
-  passThrough(pageContext.createTrackedWidget(widget.TEXT, {
-    x: box.x + px(60), y, w: w - px(80), h,
-    text: getText(caps.includes('color') ? 'COLOR_AND_WHITE' : 'WHITE_TEMPERATURE'),
-    text_size: px(24),
-    color: COLORS.text,
-    align_h: align.LEFT, align_v: align.CENTER_V,
-    text_style: text_style.ELLIPSIS
-  }))
-  if (nav) nav.items.push({ key: 'color', ...box, radius: h / 2, view, select: onTap })
-}
-
 // A row with a switch on the right (Zepp: switches on the right of a row)
 function renderWidgetRow(pageContext, y, isOn, onTap, nav, view, control) {
   const w = CONTENT_W - px(20)
@@ -444,4 +423,34 @@ function renderWidgetRow(pageContext, y, isOn, onTap, nav, view, control) {
     color: COLORS.white
   }))
   if (nav) nav.items.push({ key: 'widget', ...box, radius: px(16), view, select: onTap })
+}
+
+// Color and white: a round button with the palette icon beside the lamp. The
+// icon is white with its dots cut out, over a rect of the light's color: the
+// dots show it (no mask square here, so the button may darken when pressed)
+const PALETTE = px(76)
+function renderPaletteButton(pageContext, lampY, light, onTap, nav, view, control) {
+  const cx = DEVICE_WIDTH / 2 + POWER / 2 + px(16) + PALETTE / 2
+  const cy = lampY + POWER / 2
+  const box = { x: cx - PALETTE / 2, y: cy - PALETTE / 2, w: PALETTE, h: PALETTE }
+  pageContext.createTrackedWidget(widget.BUTTON, {
+    ...box,
+    text: '',
+    normal_color: control,
+    press_color: btnPressColor(control),
+    radius: PALETTE / 2,
+    click_func: onTap
+  })
+  const ix = cx - ICON_IMAGE_SIZE / 2
+  const iy = cy - ICON_IMAGE_SIZE / 2
+  passThrough(pageContext.createTrackedWidget(widget.FILL_RECT, {
+    x: ix + px(10), y: iy + px(12), w: ICON_IMAGE_SIZE - px(26), h: ICON_IMAGE_SIZE - px(22),
+    radius: px(8),
+    color: lightColor(light)
+  }))
+  passThrough(pageContext.createTrackedWidget(widget.IMG, {
+    x: ix, y: iy, w: ICON_IMAGE_SIZE, h: ICON_IMAGE_SIZE,
+    src: 'color-picker2.png'
+  }))
+  if (nav) nav.items.push({ key: 'color', ...box, radius: PALETTE / 2, view, select: onTap })
 }

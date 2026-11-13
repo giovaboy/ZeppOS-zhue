@@ -205,12 +205,6 @@ msgstr "Allumée"
 msgid "LIGHT_STATE_OFF"
 msgstr "Éteinte"
 
-msgid "COLOR_AND_WHITE"
-msgstr "Couleur et blanc"
-
-msgid "WHITE_TEMPERATURE"
-msgstr "Teinte de blanc"
-
 msgid "PRESET_DELETE_HINT"
 msgstr "Maintenez un favori pour le supprimer"
 

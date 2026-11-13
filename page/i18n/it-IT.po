@@ -205,12 +205,6 @@ msgstr "Accesa"
 msgid "LIGHT_STATE_OFF"
 msgstr "Spenta"
 
-msgid "COLOR_AND_WHITE"
-msgstr "Colore e bianco"
-
-msgid "WHITE_TEMPERATURE"
-msgstr "Tonalità del bianco"
-
 msgid "PRESET_DELETE_HINT"
 msgstr "Tieni premuto un preferito per eliminarlo"
 

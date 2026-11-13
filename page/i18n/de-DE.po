@@ -205,12 +205,6 @@ msgstr "An"
 msgid "LIGHT_STATE_OFF"
 msgstr "Aus"
 
-msgid "COLOR_AND_WHITE"
-msgstr "Farbe und Weiß"
-
-msgid "WHITE_TEMPERATURE"
-msgstr "Weißton"
-
 msgid "PRESET_DELETE_HINT"
 msgstr "Favorit gedrückt halten zum Löschen"
 
