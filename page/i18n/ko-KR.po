@@ -98,7 +98,7 @@ msgid "BRIGHTNESS"
 msgstr "밝기: "
 
 msgid "PRESETS_TITLE"
-msgstr "프리셋:"
+msgstr "즐겨찾기"
 
 msgid "ERROR_MSG"
 msgstr "오류: "
@@ -197,4 +197,22 @@ msgid "CLEAR_QUICK_TOGGLE_WIDGET_SHORTCUTS"
 msgstr "위젯 토글 단축키를 지우시겠습니까?"
 
 msgid "NO_PRESETS"
-msgstr "사용 가능한 프리셋이 없습니다"
+msgstr "즐겨찾기 없음: +로 현재 색상 추가"
+
+msgid "LIGHT_STATE_ON"
+msgstr "켜짐"
+
+msgid "LIGHT_STATE_OFF"
+msgstr "꺼짐"
+
+msgid "COLOR_AND_WHITE"
+msgstr "색상 및 흰색"
+
+msgid "WHITE_TEMPERATURE"
+msgstr "흰색 색온도"
+
+msgid "PRESET_DELETE_HINT"
+msgstr "즐겨찾기를 길게 눌러 삭제"
+
+msgid "WIDGET_SHORTCUT_ROW"
+msgstr "바로가기 카드에 표시"

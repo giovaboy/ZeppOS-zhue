@@ -19,6 +19,7 @@ import {
   KEY_EVENT_CLICK, KEY_EVENT_LONG_PRESS, KEY_EVENT_PRESS, KEY_EVENT_RELEASE
 } from '@zos/interaction'
 import { getDeviceInfo } from '@zos/device'
+import { getScrollTop, scrollTo } from '@zos/page'
 import { COLORS, btnPressColor } from './constants.js'
 import { devLog, warnLog, LOG_TRACE } from './remote-log.js'
 import { errorText } from './log-text.js'
@@ -72,6 +73,28 @@ export function createScrollView(height, initialPosY = 0, screenTop = 0) {
   }
 }
 
+// The same for a page that scrolls as a whole (a long page, no
+// VIEW_CONTAINER): @zos/page getScrollTop / scrollTo, whose y is negative
+// when scrolled down. Items on it have no parent and use page coordinates.
+export function createPageView(contentHeight) {
+  return {
+    contentHeight,
+    ensureVisible(top, h) {
+      let scrolled = 0
+      try { scrolled = -(getScrollTop() || 0) } catch (e) {}
+      let next = Math.round(top + h / 2 - DEVICE_HEIGHT / 2)
+      if (top - VIEW_MARGIN_TOP < next) next = top - VIEW_MARGIN_TOP
+      else if (top + h + VIEW_MARGIN_BOTTOM > next + DEVICE_HEIGHT) next = top + h + VIEW_MARGIN_BOTTOM - DEVICE_HEIGHT
+      if (this.contentHeight) next = Math.min(next, this.contentHeight - DEVICE_HEIGHT)
+      next = Math.max(0, next)
+      if (next === scrolled) return
+      try { scrollTo({ y: -next }) } catch (e) {
+        warnLog(`[keys] scrollTo failed: ${errorText(e)}`)
+      }
+    }
+  }
+}
+
 // getItems() is read at every key press, so a page that redraws its list
 // always offers its current items.
 // Item: { key, x, y, w, h, radius?, ringColor?, enabled?, select(),
@@ -80,8 +103,12 @@ export function createScrollView(height, initialPosY = 0, screenTop = 0) {
 //   ringColor:  RING_ON_ACCENT for items filled with the ring's color
 //   longSelect: held SELECT (the row's second action)
 //   parent:     the VIEW_CONTAINER the item lives in (omit for page widgets)
-//   view:       the scroll view of that container (createScrollView)
-export function bindKeyNav({ getItems, onBack, label = 'page' }) {
+//   view:       the scroll view of that container (createScrollView), or
+//               of the page (createPageView)
+// onBackLong:            held BACK (none: nothing)
+// onSelectLongUnfocused: held SELECT while no item has the ring
+// isBlocked():           true while a dialog is open: the keys are left to it
+export function bindKeyNav({ getItems, onBack, onBackLong, onSelectLongUnfocused, isBlocked, label = 'page' }) {
   let index = -1
   let ring = null
   let focusedKey = null
@@ -149,6 +176,7 @@ export function bindKeyNav({ getItems, onBack, label = 'page' }) {
 
   function select(long) {
     const item = (getItems() || [])[index]
+    if (!item && long && onSelectLongUnfocused) { onSelectLongUnfocused(); return }
     if (!item || item.enabled === false) return
     if (LOG_TRACE) devLog(`[keys] ${label}: ${long ? 'hold' : 'select'} ${item.key}`)
     if (!long) item.select()
@@ -165,8 +193,11 @@ export function bindKeyNav({ getItems, onBack, label = 'page' }) {
   }
 
   function onKeyEvent(key, keyEvent) {
+    // A dialog is open: the keys are its own
+    if (isBlocked && isBlocked()) return false
     if (key === KEY_BACK) {
       if (keyEvent === KEY_EVENT_CLICK) (onBack || back)()
+      else if (keyEvent === KEY_EVENT_LONG_PRESS && onBackLong) onBackLong()
       return true
     }
     const dir = key === KEY_UP ? -1 : (key === KEY_DOWN || key === KEY_SHORTCUT) ? 1 : 0

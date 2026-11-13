@@ -1226,7 +1226,7 @@ class HueBridgeManager {
   async setLightBrightness(id, bri) {
     if (this.demo) {
       clog(`DEMO MODE: Set brightness for light ${id} to ${bri}`)
-      return this._handleDemoAction(id, { bri: bri, colormode: 'bri' })
+      return this._handleDemoAction(id, { bri: bri, colormode: 'bri', ison: true })
     }
     if (!this.bridgeIp || !this.username)
       throw new Error('Bridge not configured')
@@ -1240,7 +1240,9 @@ class HueBridgeManager {
       url,
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ bri: bri })
+      // on: a brightness preset applied to a light that is off turns it on (the
+      // bridge refuses bri for a light that is off)
+      body: JSON.stringify({ on: true, bri: bri })
     })
     const result = await safeJson(res)
     if (result[0]?.error) throw new Error(result[0].error.description)

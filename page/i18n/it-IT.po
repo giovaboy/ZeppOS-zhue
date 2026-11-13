@@ -98,7 +98,7 @@ msgid "BRIGHTNESS"
 msgstr "Luminosità: "
 
 msgid "PRESETS_TITLE"
-msgstr "Preferiti:"
+msgstr "Preferiti"
 
 msgid "ERROR_MSG"
 msgstr "Errore: "
@@ -197,4 +197,22 @@ msgid "CLEAR_QUICK_TOGGLE_WIDGET_SHORTCUTS"
 msgstr "Eliminare tutti i quick toggle dei widget?"
 
 msgid "NO_PRESETS"
-msgstr "Nessun preset disponibile"
+msgstr "Nessun preferito: aggiungi il colore attuale con +"
+
+msgid "LIGHT_STATE_ON"
+msgstr "Accesa"
+
+msgid "LIGHT_STATE_OFF"
+msgstr "Spenta"
+
+msgid "COLOR_AND_WHITE"
+msgstr "Colore e bianco"
+
+msgid "WHITE_TEMPERATURE"
+msgstr "Tonalità del bianco"
+
+msgid "PRESET_DELETE_HINT"
+msgstr "Tieni premuto un preferito per eliminarlo"
+
+msgid "WIDGET_SHORTCUT_ROW"
+msgstr "Nella card scorciatoie"

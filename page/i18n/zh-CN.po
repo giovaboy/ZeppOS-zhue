@@ -98,7 +98,7 @@ msgid "BRIGHTNESS"
 msgstr "亮度: "
 
 msgid "PRESETS_TITLE"
-msgstr "预设:"
+msgstr "收藏"
 
 msgid "ERROR_MSG"
 msgstr "错误: "
@@ -197,4 +197,22 @@ msgid "CLEAR_QUICK_TOGGLE_WIDGET_SHORTCUTS"
 msgstr "清除小组件切换快捷方式？"
 
 msgid "NO_PRESETS"
-msgstr "暂无预设"
+msgstr "暂无收藏：点 + 添加当前颜色"
+
+msgid "LIGHT_STATE_ON"
+msgstr "已开启"
+
+msgid "LIGHT_STATE_OFF"
+msgstr "已关闭"
+
+msgid "COLOR_AND_WHITE"
+msgstr "颜色和白光"
+
+msgid "WHITE_TEMPERATURE"
+msgstr "白光色温"
+
+msgid "PRESET_DELETE_HINT"
+msgstr "长按收藏可删除"
+
+msgid "WIDGET_SHORTCUT_ROW"
+msgstr "显示在快捷卡片"

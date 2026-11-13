@@ -98,7 +98,7 @@ msgid "BRIGHTNESS"
 msgstr "Brightness: "
 
 msgid "PRESETS_TITLE"
-msgstr "Presets:"
+msgstr "Favorites"
 
 msgid "ERROR_MSG"
 msgstr "Error: "
@@ -197,4 +197,22 @@ msgid "CLEAR_QUICK_TOGGLE_WIDGET_SHORTCUTS"
 msgstr "Clear widget toggles shortcuts?"
 
 msgid "NO_PRESETS"
-msgstr "No presets available"
+msgstr "No favorites yet: add the current color with +"
+
+msgid "LIGHT_STATE_ON"
+msgstr "On"
+
+msgid "LIGHT_STATE_OFF"
+msgstr "Off"
+
+msgid "COLOR_AND_WHITE"
+msgstr "Color and white"
+
+msgid "WHITE_TEMPERATURE"
+msgstr "White temperature"
+
+msgid "PRESET_DELETE_HINT"
+msgstr "Hold a favorite to delete it"
+
+msgid "WIDGET_SHORTCUT_ROW"
+msgstr "In the shortcut card"

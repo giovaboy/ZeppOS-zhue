@@ -98,7 +98,7 @@ msgid "BRIGHTNESS"
 msgstr "Яркость: "
 
 msgid "PRESETS_TITLE"
-msgstr "Пресеты:"
+msgstr "Избранное"
 
 msgid "ERROR_MSG"
 msgstr "Ошибка: "
@@ -197,4 +197,22 @@ msgid "CLEAR_QUICK_TOGGLE_WIDGET_SHORTCUTS"
 msgstr "Очистить ярлыки быстрого переключения виджета?"
 
 msgid "NO_PRESETS"
-msgstr "Нет доступных пресетов"
+msgstr "Нет избранного: добавьте текущий цвет кнопкой +"
+
+msgid "LIGHT_STATE_ON"
+msgstr "Включена"
+
+msgid "LIGHT_STATE_OFF"
+msgstr "Выключена"
+
+msgid "COLOR_AND_WHITE"
+msgstr "Цвет и белый"
+
+msgid "WHITE_TEMPERATURE"
+msgstr "Оттенок белого"
+
+msgid "PRESET_DELETE_HINT"
+msgstr "Удерживайте избранное, чтобы удалить"
+
+msgid "WIDGET_SHORTCUT_ROW"
+msgstr "В карточке ярлыков"

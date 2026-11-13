@@ -98,7 +98,7 @@ msgid "BRIGHTNESS"
 msgstr "Brillo: "
 
 msgid "PRESETS_TITLE"
-msgstr "Ajustes preestablecidos:"
+msgstr "Favoritos"
 
 msgid "ERROR_MSG"
 msgstr "Error: "
@@ -197,4 +197,22 @@ msgid "CLEAR_QUICK_TOGGLE_WIDGET_SHORTCUTS"
 msgstr "¿Limpiar accesos directos de interruptores rápidos del widget?"
 
 msgid "NO_PRESETS"
-msgstr "No hay ajustes preestablecidos disponibles"
+msgstr "Sin favoritos: añade el color actual con +"
+
+msgid "LIGHT_STATE_ON"
+msgstr "Encendida"
+
+msgid "LIGHT_STATE_OFF"
+msgstr "Apagada"
+
+msgid "COLOR_AND_WHITE"
+msgstr "Color y blanco"
+
+msgid "WHITE_TEMPERATURE"
+msgstr "Tono de blanco"
+
+msgid "PRESET_DELETE_HINT"
+msgstr "Mantén pulsado un favorito para eliminarlo"
+
+msgid "WIDGET_SHORTCUT_ROW"
+msgstr "En la tarjeta de accesos"

@@ -1,14 +1,15 @@
 import { BasePage } from '@zeppos/zml/base-page'
-import { loggedPage } from '../utils/remote-log.js'
+import { loggedPage, warnLog } from '../utils/remote-log.js'
 import { createGate } from '../utils/request-gate.js'
 import { createDragGuard } from '../utils/drag-guard.js'
+import { bindKeyNav } from '../utils/key-nav.js'
 import { localStorage } from '@zos/storage'
 import { setPageBrightTime } from '@zos/display'
-import { setScrollLock } from '@zos/page'
+import { setScrollLock, getScrollTop, scrollTo } from '@zos/page'
 import { getText } from '@zos/i18n'
 import { createWidget, deleteWidget, prop, showToast } from '@zos/ui'
 import { back, push } from '@zos/router'
-import { createModal, MODAL_CONFIRM, onKey, KEY_SELECT, KEY_BACK, KEY_EVENT_LONG_PRESS, KEY_EVENT_CLICK } from '@zos/interaction'
+import { createModal, MODAL_CONFIRM } from '@zos/interaction'
 import { px } from '@zos/utils'
 import { renderLightDetail, LAYOUT_CONFIG } from 'zosLoader:./light-detail.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
@@ -98,37 +99,28 @@ Page(
         this.state.isLoading = true
       }
 
-      onKey({
-        callback: (key, keyEvent) => {
-          if (key === KEY_SELECT && keyEvent === KEY_EVENT_LONG_PRESS) {
-            logger.debug('long click select')
-            this.toggleWidgetShortcut()
-          } else if (key === KEY_BACK && keyEvent === KEY_EVENT_LONG_PRESS) {
-            logger.debug('long click back')
-            const dialog = createModal({
-              content: getText('CLEAR_QUICK_TOGGLE_WIDGET_SHORTCUTS'),
-              autoHide: false,
-              onClick: (keyObj) => {
-                if (keyObj.type === MODAL_CONFIRM) {
-                  // Only the shortcuts: the rest of localStorage is not theirs
-                  localStorage.removeItem(WIDGET_SHORTCUTS_KEY)
-                }
-                dialog.show(false)
-                this.currentModal = null
-                this.checkWidgetShortcutStatus()
-                this.renderPage()
-              }
-            })
-            this.currentModal = dialog
-            dialog.show(true)
+      this._keys = null
+      this._nav = null
+    },
 
-
-          } else if (key === KEY_BACK && keyEvent === KEY_EVENT_CLICK) {
-            back()
+    // Held BACK: empty the shortcut card (after a confirmation)
+    askClearWidgetShortcuts() {
+      const dialog = createModal({
+        content: getText('CLEAR_QUICK_TOGGLE_WIDGET_SHORTCUTS'),
+        autoHide: false,
+        onClick: (keyObj) => {
+          if (keyObj.type === MODAL_CONFIRM) {
+            // Only the shortcuts: the rest of localStorage is not theirs
+            localStorage.removeItem(WIDGET_SHORTCUTS_KEY)
           }
-          return true
-        },
+          dialog.show(false)
+          this.currentModal = null
+          this.checkWidgetShortcutStatus()
+          this.renderPage()
+        }
       })
+      this.currentModal = dialog
+      dialog.show(true)
     },
 
     build() {
@@ -136,10 +128,23 @@ Page(
       logger.debug('Initial state - light:', !!this.state.light, 'isLoading:', this.state.isLoading)
 
       setPageBrightTime({ brightTime: 60000 })
-      setScrollLock({ lock: true })
+      // The page is one long list that scrolls as a whole; the slider locks
+      // the scrolling while dragged (handleBrightnessDrag)
+      setScrollLock({ lock: false })
       // The page's one onGesture: right swipe goes back, not while the
       // brightness slider is dragged (utils/drag-guard.js)
       this._drag = createDragGuard('light-detail')
+      // The page's one onKey: UP / DOWN between power, color, favorites, the
+      // add tile and the shortcut row; SELECT acts, held SELECT deletes a
+      // favorite (with no item focused: adds / removes the light from the
+      // shortcut card, as before); held BACK empties the card; BACK goes back
+      this._keys = bindKeyNav({
+        getItems: () => (this._nav && this._nav.items) || [],
+        onBackLong: () => this.askClearWidgetShortcuts(),
+        onSelectLongUnfocused: () => this.toggleWidgetShortcut(),
+        isBlocked: () => !!this.currentModal,
+        label: 'light-detail'
+      })
 
       this.checkWidgetShortcutStatus()
 
@@ -187,7 +192,14 @@ Page(
     },
 
     renderPage() {
+      if (this._keys) this._keys.reset()
+      // The page scrolls as a whole: where it was, to come back to it once
+      // redrawn (a toggle, a preset applied)
+      let scrollTop = 0
+      try { scrollTop = getScrollTop() || 0 } catch (e) {}
       this.clearAllWidgets()
+      // Filled by the layout: the items the keys move between
+      const nav = { items: [], view: null }
 
       const favoriteColors = this.getFavoriteColors()
       const sortedPresets = [...favoriteColors].sort(comparePresets)
@@ -236,8 +248,8 @@ Page(
         }
       }
 
-      // 👇 MODIFICATO: Passa sortedPresets invece di this.state.favoriteColors
       renderLightDetail(this, { ...this.state, favoriteColors: sortedPresets }, {
+        nav,
         toggleLightFunc: () => this.toggleLight(),
         setBrightnessDrag: (evtType, info) => this.handleBrightnessDrag(evtType, info),
         openColorPickerFunc: () => this.openColorPicker(),
@@ -247,10 +259,12 @@ Page(
         retryFunc: () => this.loadLightDetail(),
         getLightBgColor: (hex) => this.getLightBgColor(hex),
         capabilities: (light) => this.getLightCapabilities(light),
-        onScrollChange: (y) => this.onScrollChange(y),
         toggleWidgetShortcutFunc: () => this.toggleWidgetShortcut(),
         isInWidgetShortcuts: this.state.isInWidgetShortcuts
       })
+      this._nav = nav
+      if (scrollTop) { try { scrollTo({ y: scrollTop }) } catch (e) {} }
+      if (this._keys) this._keys.refocus()
     },
 
     openColorPicker() {
@@ -287,6 +301,9 @@ Page(
 
       if (evtType === 'DOWN') {
         if (this._drag) this._drag.start()
+        // The page scrolls: not while the finger slides along the slider
+        setScrollLock({ lock: true })
+        this.armDragTimeout()
 
         const newBri = getBrightnessFromX(info.x)
         this.state.isDraggingBrightness = true
@@ -298,6 +315,7 @@ Page(
       } else if (evtType === 'MOVE') {
         if (!this.state.isDraggingBrightness) return
         if (this._drag) this._drag.move()
+        this.armDragTimeout()
 
         const newBri = getBrightnessFromX(info.x)
         if (newBri === this.state.tempBrightness) return
@@ -308,6 +326,8 @@ Page(
       } else if (evtType === 'UP') {
         if (!this.state.isDraggingBrightness) return
         if (this._drag) this._drag.end()
+        if (this._dragTimer) { clearTimeout(this._dragTimer); this._dragTimer = null }
+        setScrollLock({ lock: false })
 
         if (this.state.tempBrightness !== this.state.light.bri) {
           this.setBrightness(this.state.tempBrightness, false)
@@ -315,6 +335,20 @@ Page(
 
         this.state.isDraggingBrightness = false
       }
+    },
+
+    // A slider drag whose release never came (the finger left the slider)
+    // ends by itself 1.5 s after its last move: the value is sent and the page
+    // scrolls again
+    armDragTimeout() {
+      if (this._dragTimer) clearTimeout(this._dragTimer)
+      this._dragTimer = setTimeout(() => {
+        this._dragTimer = null
+        if (this.state.isDraggingBrightness) {
+          warnLog('[light-detail] slider: no release 1.5 s after the last move, drag ended')
+          this.handleBrightnessDrag('UP', null)
+        }
+      }, 1500)
     },
 
     setBrightness(brightness, skipApiCall = false) {
@@ -556,7 +590,9 @@ Page(
               colormode = favorite.xy ? 'xy' : 'hs'
             }
 
+            // A favorite turns the light on (the side service sends on: true)
             this.updateLight({
+              ison: true,
               hex: favorite.hex,
               bri: favorite.bri,
               hue: favorite.hue,
@@ -783,6 +819,8 @@ Page(
 
     onDestroy() {
       this.state.isLoading = false
+      if (this._keys) this._keys.stop()
+      if (this._dragTimer) { clearTimeout(this._dragTimer); this._dragTimer = null }
       if (this._gate) this._gate.close()
       this.clearAllWidgets()
       if (this.currentModal) {

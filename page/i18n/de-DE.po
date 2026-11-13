@@ -98,7 +98,7 @@ msgid "BRIGHTNESS"
 msgstr "Helligkeit: "
 
 msgid "PRESETS_TITLE"
-msgstr "Voreinstellungen:"
+msgstr "Favoriten"
 
 msgid "ERROR_MSG"
 msgstr "Fehler: "
@@ -197,4 +197,22 @@ msgid "CLEAR_QUICK_TOGGLE_WIDGET_SHORTCUTS"
 msgstr "Widget-Toggles-Kurzbefehle löschen?"
 
 msgid "NO_PRESETS"
-msgstr "Keine Voreinstellungen verfügbar"
+msgstr "Noch keine Favoriten: aktuelle Farbe mit + hinzufügen"
+
+msgid "LIGHT_STATE_ON"
+msgstr "An"
+
+msgid "LIGHT_STATE_OFF"
+msgstr "Aus"
+
+msgid "COLOR_AND_WHITE"
+msgstr "Farbe und Weiß"
+
+msgid "WHITE_TEMPERATURE"
+msgstr "Weißton"
+
+msgid "PRESET_DELETE_HINT"
+msgstr "Favorit gedrückt halten zum Löschen"
+
+msgid "WIDGET_SHORTCUT_ROW"
+msgstr "In der Schnellzugriffskarte"

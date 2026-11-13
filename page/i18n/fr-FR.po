@@ -98,7 +98,7 @@ msgid "BRIGHTNESS"
 msgstr "Luminosité : "
 
 msgid "PRESETS_TITLE"
-msgstr "Préréglages :"
+msgstr "Favoris"
 
 msgid "ERROR_MSG"
 msgstr "Erreur : "
@@ -197,4 +197,22 @@ msgid "CLEAR_QUICK_TOGGLE_WIDGET_SHORTCUTS"
 msgstr "Effacer les raccourcis de basculement du widget ?"
 
 msgid "NO_PRESETS"
-msgstr "Aucun préréglage disponible"
+msgstr "Aucun favori : ajoutez la couleur actuelle avec +"
+
+msgid "LIGHT_STATE_ON"
+msgstr "Allumée"
+
+msgid "LIGHT_STATE_OFF"
+msgstr "Éteinte"
+
+msgid "COLOR_AND_WHITE"
+msgstr "Couleur et blanc"
+
+msgid "WHITE_TEMPERATURE"
+msgstr "Teinte de blanc"
+
+msgid "PRESET_DELETE_HINT"
+msgstr "Maintenez un favori pour le supprimer"
+
+msgid "WIDGET_SHORTCUT_ROW"
+msgstr "Dans la carte raccourcis"
