@@ -118,6 +118,24 @@ function bodySize(body) {
   return ''
 }
 
+// The home's scenes, kept this long on the phone (getScenesForGroup)
+const SCENES_CACHE_MS = 60000
+
+// A command the watch sent with withState (a favorite applied) gets the light
+// as it is now in its reply: the watch asked for it with GET_LIGHT_DETAIL
+// right after, a second round trip (~1-1.5 s). Not for the live drags, which
+// send the same requests at every step. A failed read leaves the reply as it
+// was (the watch reads the light itself then).
+async function withLightState(params, reply) {
+  if (!params || !params.withState) return reply
+  try {
+    return { ...reply, light: await hueBridge.getLightDetail(params.lightId) }
+  } catch (e) {
+    wlog(`[req] light ${params.lightId}: state after the command not read: ${errorText(e)}`)
+    return reply
+  }
+}
+
 // Requests that carry out a user's action: logged at info. The rest (reads,
 // cancels) at trace
 const ACTION_METHODS = new Set([
@@ -152,6 +170,7 @@ function resultForLog(data) {
     if (Array.isArray(d.scenes)) parts.push(`${d.scenes.length} scenes`)
     if (d.light) parts.push(`light ${d.light.ison ? 'on' : 'off'}${d.light.reachable === false ? ' (unreachable)' : ''}`)
   }
+  if (data.light) parts.push(`light ${data.light.ison ? 'on' : 'off'}${data.light.reachable === false ? ' (unreachable)' : ''}`)
   if (Array.isArray(data.bridges)) parts.push(`${data.bridges.length} bridges`)
   if (data.connected !== undefined) parts.push(data.connected ? 'connected' : `not connected (${data.reason || '?'})`)
   if (data.newState !== undefined) parts.push(`now ${data.newState ? 'on' : 'off'}`)
@@ -685,6 +704,7 @@ class HueBridgeManager {
   // The bridge's address and key back from the settings storage (demo mode
   // turned off: the demo's dummy values were in memory)
   reloadConfig() {
+    this._scenes = null
     this.bridgeIp = settingsLib.getItem(BRIDGE_IP_KEY) || null
     this.username = settingsLib.getItem(USERNAME_KEY) || null
     this.apiVersion = settingsLib.getItem(API_VERSION_KEY) || 'v1'
@@ -696,6 +716,7 @@ class HueBridgeManager {
   // the key a pairing just replaced
   applyStoredValue(key, value) {
     if (this.demo) return
+    this._scenes = null
     const v = typeof value === 'string' && value !== '' ? value : null
     if (key === BRIDGE_IP_KEY) this.bridgeIp = v
     else if (key === USERNAME_KEY) this.username = v
@@ -928,25 +949,6 @@ class HueBridgeManager {
     return { success: true }
   }
 
-  async checkConnection() {
-    if (this.demo) {
-      clog('DEMO MODE: Connection check success')
-      return { connected: true }
-    }
-    if (!this.bridgeIp || !this.username) {
-      clog('Not configured')
-      return { connected: false, reason: 'Not configured' }
-    }
-    try {
-      clog('configured')
-      await this.getLights()
-      return { connected: true }
-    } catch (e) {
-      cerr('Connection failed:', e)
-      return { connected: false, reason: e.message }
-    }
-  }
-
   async getGroups() {
     if (this.demo) {
       clog('DEMO MODE: Get groups mock')
@@ -1057,13 +1059,14 @@ class HueBridgeManager {
 
       return { lights, scenes }
     }
-    // Get lights in group
-    const allLights = await this.getLights()
-
-    // For V1, get group info
+    // The lights, the group and its scenes at once (they were read one after
+    // the other: ~450-700 ms on the phone per group opened)
     const url = `http://${this.bridgeIp}/api/${this.username}/groups/${groupId}`
-    const res = await hueFetch({ url, method: 'GET' })
-    const group = await safeJson(res)
+    const [allLights, group, scenes] = await Promise.all([
+      this.getLights(),
+      hueFetch({ url, method: 'GET' }).then(safeJson),
+      this.getScenesForGroup(groupId)
+    ])
 
     if (Array.isArray(group) && group[0]?.error)
       throw new Error(group[0].error.description)
@@ -1071,9 +1074,6 @@ class HueBridgeManager {
     // Filter lights
     const groupLightIds = group.lights || []
     const lights = allLights.filter(l => groupLightIds.includes(l.id))
-
-    // Get scenes for this group
-    const scenes = await this.getScenesForGroup(groupId)
 
     return { lights, scenes }
   }
@@ -1085,12 +1085,19 @@ class HueBridgeManager {
         .filter(s => s.group === groupId)
         .map(s => ({ id: s.id, name: s.name, color: s.color }))
     }
-    const url = `http://${this.bridgeIp}/api/${this.username}/scenes`
-    const res = await hueFetch({ url, method: 'GET' })
-    const scenes = await safeJson(res)
-
-    if (Array.isArray(scenes) && scenes[0]?.error)
-      return []
+    // Every scene of the home (17 KB on a test bridge) for a few of one
+    // group: kept SCENES_CACHE_MS, they change rarely
+    const cached = this._scenes
+    let scenes = cached && Date.now() - cached.at < SCENES_CACHE_MS ? cached.all : null
+    if (!scenes) {
+      const url = `http://${this.bridgeIp}/api/${this.username}/scenes`
+      const res = await hueFetch({ url, method: 'GET' })
+      scenes = await safeJson(res)
+      if (Array.isArray(scenes) && scenes[0]?.error) return []
+      this._scenes = { at: Date.now(), all: scenes }
+    } else if (logs('trace')) {
+      vlog(`[hue] scenes from the cache (${Math.round((Date.now() - cached.at) / 1000)}s old)`)
+    }
 
     return Object.entries(scenes)
       .filter(([id, s]) => s.group === groupId)
@@ -1600,8 +1607,8 @@ AppSideService(
           this.handleRemoveFavoriteColor(req, res)
           break
 
-        case 'CHECK_CONNECTION':
-          this.handleCheckConnection(res)
+        case 'START':
+          this.handleStart(res)
           break
 
         case 'DISCOVER_BRIDGES':
@@ -1698,13 +1705,29 @@ AppSideService(
       }
     },
 
-    async handleCheckConnection(res) {
+    // The app's first request: whether the bridge answers, with its groups in
+    // the same reply. It was CHECK_CONNECTION (every light read only to see
+    // that the bridge answered) then GET_GROUPS: two round trips from the
+    // watch, ~1-1.5 s each, at every start. Reading the groups tells as much
+    // (an unknown key or an unreachable bridge fails the same way).
+    async handleStart(res) {
+      if (!hueBridge.demo && (!hueBridge.bridgeIp || !hueBridge.username)) {
+        res(null, { connected: false, reason: 'Not configured' })
+        return
+      }
       try {
-        clog('Checking connection...')
-        const status = await hueBridge.checkConnection()
-        res(null, status)
+        const groups = await hueBridge.getGroups()
+        res(null, {
+          connected: true,
+          success: true,
+          data: {
+            rooms: groups.rooms,
+            zones: groups.zones,
+            userSettings: hueBridge.getUserSettings()
+          }
+        })
       } catch (error) {
-        cerr('Check connection error:', error)
+        cerr('Start error:', error)
         res(null, { connected: false, reason: error.message })
       }
     },
@@ -1768,7 +1791,7 @@ AppSideService(
         clog(`Set brightness ${lightId} to ${bri}`)
 
         await hueBridge.setLightBrightness(lightId, bri)
-        res(null, { success: true })
+        res(null, await withLightState(req.params, { success: true }))
       } catch (error) {
         cerr('Set brightness error:', error)
         res({ error: error.message })
@@ -1819,7 +1842,7 @@ AppSideService(
         })
 
         await hueBridge.setLightColor(lightId, colorParams)
-        res(null, { success: true })
+        res(null, await withLightState(req.params, { success: true }))
       } catch (error) {
         cerr('Set color error:', error)
         res({ error: error.message })

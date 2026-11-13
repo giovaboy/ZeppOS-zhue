@@ -600,7 +600,10 @@ Page(
           sat: favorite.sat,
           bri: favorite.bri,
           xy: favorite.xy,
-          ct: favorite.ct
+          ct: favorite.ct,
+          // The reply carries the light as it is now (one round trip, where a
+          // GET_LIGHT_DETAIL followed)
+          withState: true
         }
       })
         .then(res => {
@@ -626,7 +629,14 @@ Page(
               ct: favorite.ct,
               colormode: colormode
             })
-            this.loadLightDetail()
+            if (res.light) {
+              // The light as the bridge has it now: shown at once
+              this.updateLight(res.light)
+              this.state.tempBrightness = this.state.light.bri || 0
+              this.renderPage()
+            } else {
+              this.loadLightDetail()
+            }
           }
         })
         .catch(err => {

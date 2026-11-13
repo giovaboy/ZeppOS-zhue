@@ -152,11 +152,13 @@ Page(
       }
 
       logger.log('Checking initial connection...')
-      this.request({ method: 'CHECK_CONNECTION' })
+      // One round trip: the phone checks the bridge and brings its groups
+      // (it was a check, then a second request for the groups)
+      this.request({ method: 'START' })
         .then(result => {
-          if (result.connected) {
-            this.setState(STATES.FETCHING_DATA)
-            this.fetchAllData()
+          if (result.connected && result.data) {
+            app.setGroupsData(result.data)
+            this.setState(STATES.SUCCESS)
           } else {
             this.setState(STATES.SEARCHING_BRIDGE)
             this.startBridgeSearch()
