@@ -330,7 +330,10 @@ Page(
         const newBri = getBrightnessFromX(info.x)
         if (newBri === this.state.tempBrightness) return
         this.state.tempBrightness = newBri
-        this.setBrightness(newBri, true)
+        // Live: the light follows the finger. setBrightness goes through the
+        // request queue, where only the latest value waits behind the one in
+        // flight; the release sends the last one
+        this.setBrightness(newBri, false)
 
       } else if (evtType === 'UP') {
         const slide = this._slide

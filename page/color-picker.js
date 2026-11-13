@@ -151,6 +151,7 @@ Page(
                 if (this._drag) this._drag.move();
                 const vals = calcValues(info.x, info.y);
                 this.updateColorUI(vals.hue, vals.sat);
+                this.sendColor(vals.hue, vals.sat, false); // live: the light follows
             } else if (evt === 'UP') {
                 if (this._drag) this._drag.end();
                 this.state.isDragging = false;
@@ -178,7 +179,29 @@ Page(
             }
         },
 
-        sendColor(h, s) {
+        // While dragging (final false) the light follows the finger: each move
+        // goes through the request queue, where only the latest value waits
+        // behind the one in flight (one request at a time, at the pace of the
+        // Bluetooth link); the same value isn't sent twice. On release (final)
+        // the last value is sent and the cache updated.
+        liveSend(kind, value, final, send) {
+            const last = this._lastSent || (this._lastSent = {});
+            const text = JSON.stringify(value);
+            if (!final && last[kind] === text) return;
+            last[kind] = text;
+            send();
+        },
+
+        sendColor(h, s, final = true) {
+            if (!final) {
+                const bri = this.state.bri;
+                this.liveSend('color', [h, s, bri], false, () => this._gate.run('color', () => this.request({
+                    method: 'SET_HS',
+                    params: { lightId: this.state.lightId, hue: h, sat: s, bri }
+                }).catch(e => logger.error(e)), true));
+                return;
+            }
+            this._lastSent = null;
             // ✅ SEMPRE aggiorna cache locale (UI feedback immediato)
             const light = app.getLightData(this.state.lightId)
             if (light) {
@@ -225,6 +248,7 @@ Page(
                 if (this._drag) this._drag.move();
                 const val = calcCT(info.y)
                 this.updateCTUI(val)
+                this.sendCT(val, false) // live: the light follows
             } else if (evt === 'UP') {
                 if (this._drag) this._drag.end();
                 this.state.isDragging = false;
@@ -245,7 +269,16 @@ Page(
             }
         },
 
-        sendCT(ctVal) {
+        sendCT(ctVal, final = true) {
+            if (!final) {
+                const bri = this.state.bri
+                this.liveSend('color', ['ct', ctVal, bri], false, () => this._gate.run('color', () => this.request({
+                    method: 'SET_COLOR',
+                    params: { lightId: this.state.lightId, ct: ctVal, bri, hue: null, sat: null }
+                }).catch(e => logger.error('Set CT error:', e)), true))
+                return
+            }
+            this._lastSent = null
             // ✅ SEMPRE aggiorna cache locale
             const light = app.getLightData(this.state.lightId)
             if (light) {
@@ -291,6 +324,7 @@ Page(
                 if (this._drag) this._drag.move();
                 const val = calcBri(info.x)
                 this.updateBriUI(val)
+                this.sendBri(val, false) // live: the light follows
             } else if (evt === 'UP') {
                 if (this._drag) this._drag.end();
                 this.state.isDragging = false
@@ -311,7 +345,15 @@ Page(
             }
         },
 
-        sendBri(val) {
+        sendBri(val, final = true) {
+            if (!final) {
+                this.liveSend('brightness', val, false, () => this._gate.run('brightness', () => this.request({
+                    method: 'SET_BRIGHTNESS',
+                    params: { lightId: this.state.lightId, bri: val }
+                }).catch(e => logger.error('Set brightness error:', e)), true))
+                return
+            }
+            this._lastSent = null
             // ✅ SEMPRE aggiorna cache locale
             const light = app.getLightData(this.state.lightId)
             if (light) {

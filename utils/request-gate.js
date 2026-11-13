@@ -28,7 +28,9 @@ export function createGate(label) {
         warnLog(`[${label}] ${key}: tap dropped, one already waiting`)
         return
       }
-      if (LOG_TRACE) devLog(`[${label}] ${key}: ${slot.next ? 'waiting value replaced' : 'tap waits for the request in flight'}`)
+      // One line when something starts waiting; a live drag replaces the
+      // waiting value at every move, silently
+      if (LOG_TRACE && !slot.next) devLog(`[${label}] ${key}: waits for the request in flight`)
       slot.next = fn
       return
     }
