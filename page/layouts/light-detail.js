@@ -2,7 +2,7 @@
 // re-export it): one long page that scrolls as a whole, as Zepp lists do.
 //
 //   name                       title only (it used to be the switch, and
-//   ( power )                  grew into a grey disc the size of the
+//   ( lamp )                   grew into a grey disc the size of the
 //   On · 80%                   screen when the light was off)
 //   [ brightness slider ]      every light, while on
 //   [ ● Color and white ]      lights with color or white temperature, while on
@@ -16,9 +16,9 @@
 // dragged. Keys: the items go to callbacks.nav (utils/key-nav.js).
 import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
-import { widget, align, event, text_style } from '@zos/ui'
+import { widget, align, event, text_style, prop } from '@zos/ui'
 import { getText } from '@zos/i18n'
-import { BRI_RANGE, COLORS, PRESET_TYPES, btnPressColor, ct2hex, xy2hex, hexStringToInt } from '../../utils/constants.js'
+import { BRI_RANGE, COLORS, PRESET_TYPES, LIGHT_MODELS, ICON_IMAGE_SIZE, btnPressColor, ct2hex, xy2hex, hexStringToInt } from '../../utils/constants.js'
 import { createPageView } from '../../utils/key-nav.js'
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
@@ -178,8 +178,8 @@ function renderNormalState(pageContext, state, callbacks) {
 
   renderTitle(pageContext, lightName)
 
-  // ── Power: green while on, dark grey while off
-  renderPowerButton(pageContext, powerY, lightOn, toggleLightFunc, nav, view)
+  // ── The switch: the light's icon in its color, a green ring while on
+  renderLampButton(pageContext, powerY, light, lightOn, toggleLightFunc, nav, view)
 
   // ── State line
   const briPercent = Math.round((light.bri || 0) / BRI_RANGE * 100)
@@ -286,38 +286,53 @@ function renderNormalState(pageContext, state, callbacks) {
   return { contentHeight }
 }
 
-// A round button with a power symbol drawn on it: an arc open at the top and
-// a bar (no image: it keeps its color on any background)
-function renderPowerButton(pageContext, y, lightOn, onTap, nav, view) {
+// The switch: a round button with the light's own icon in its color (grey
+// while off), as in the group's list, and a ring that says the state (green
+// on, grey off).
+// The icon is a mask, #333333 with the shape cut out, over a FILL_RECT of the
+// color: the button must stay #333333 (COLORS.lightBg) for the mask's square
+// not to show, so it doesn't darken when pressed; the ring does (−28.6%,
+// Zepp: visual feedback for every press)
+function renderLampButton(pageContext, y, light, lightOn, onTap, nav, view) {
   const cx = DEVICE_WIDTH / 2
   const cy = y + POWER / 2
-  const fill = lightOn ? COLORS.success : COLORS.lightBg
-  const ink = lightOn ? COLORS.white : COLORS.inactive
   const box = { x: cx - POWER / 2, y, w: POWER, h: POWER }
-  pageContext.createTrackedWidget(widget.BUTTON, {
+  const ringColor = lightOn ? COLORS.success : COLORS.toggleOff
+  const reachable = light.reachable !== false
+  const swatch = lightOn && reachable ? lightColor(light) : COLORS.inactive
+  const icon = `icons/${(LIGHT_MODELS[light.modelid] || LIGHT_MODELS.default).icon}.png`
+
+  const button = pageContext.createTrackedWidget(widget.BUTTON, {
     ...box,
     text: '',
-    normal_color: fill,
-    press_color: btnPressColor(fill),
+    normal_color: COLORS.lightBg,
+    press_color: COLORS.lightBg,
     radius: POWER / 2,
     click_func: onTap
   })
-  const r = px(24)
-  const lw = px(6)
-  // 0° is three o'clock; the gap is centered on twelve (-90°)
-  passThrough(pageContext.createTrackedWidget(widget.ARC, {
-    x: cx - r, y: cy - r + px(3), w: r * 2, h: r * 2,
-    radius: r,
-    start_angle: -50,
-    end_angle: 230,
-    line_width: lw,
-    color: ink
-  }))
+  // Inset by 1 px under the mask: a mask a pixel off shows the button, not a
+  // line of this color (see the groups layout)
   passThrough(pageContext.createTrackedWidget(widget.FILL_RECT, {
-    x: cx - lw / 2, y: cy - r - px(6), w: lw, h: r + px(4),
-    radius: lw / 2,
-    color: ink
+    x: cx - ICON_IMAGE_SIZE / 2 + 1, y: cy - ICON_IMAGE_SIZE / 2 + 1,
+    w: ICON_IMAGE_SIZE - 2, h: ICON_IMAGE_SIZE - 2,
+    color: swatch
   }))
+  passThrough(pageContext.createTrackedWidget(widget.IMG, {
+    x: cx - ICON_IMAGE_SIZE / 2, y: cy - ICON_IMAGE_SIZE / 2,
+    w: ICON_IMAGE_SIZE, h: ICON_IMAGE_SIZE,
+    src: icon
+  }))
+  const ring = passThrough(pageContext.createTrackedWidget(widget.STROKE_RECT, {
+    ...box,
+    radius: POWER / 2,
+    line_width: px(5),
+    color: ringColor
+  }))
+  // The ring darkens while pressed (where the button takes listeners)
+  try {
+    button.addEventListener(event.CLICK_DOWN, () => { try { ring.setProperty(prop.MORE, { ...box, radius: POWER / 2, line_width: px(5), color: btnPressColor(ringColor) }) } catch (e) {} })
+    button.addEventListener(event.CLICK_UP, () => { try { ring.setProperty(prop.MORE, { ...box, radius: POWER / 2, line_width: px(5), color: ringColor }) } catch (e) {} })
+  } catch (e) {}
   if (nav) nav.items.push({ key: 'power', ...box, radius: POWER / 2, view, select: onTap })
 }
 
