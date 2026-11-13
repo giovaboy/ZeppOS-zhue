@@ -4,6 +4,7 @@ import { widget, align, text_style } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { btnPressColor, ICON_IMAGE_SIZE } from '../utils/constants.js'
 import { createScrollView } from '../utils/key-nav.js'
+import { startDot } from '../utils/pulse.js'
 import { getLogger } from '../utils/logger.js'
 import { setStatusBarVisible } from '@zos/ui'
 
@@ -101,6 +102,8 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
             align_h: align.CENTER_H,
             align_v: align.CENTER_V
         })
+        // A pulsing dot above the text (Zepp: a loading state is animated)
+        startDot(pageContext, { cx: DEVICE_WIDTH / 2, cy: DEVICE_HEIGHT / 2 - px(80) })
         return
     }
 

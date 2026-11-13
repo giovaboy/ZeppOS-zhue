@@ -21,6 +21,7 @@ import { widget, align, event, text_style, prop, getTextLayout } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { BRI_RANGE, COLORS, PRESET_TYPES, LIGHT_MODELS, ICON_IMAGE_SIZE, btnPressColor, ct2hex, xy2hex, hexStringToInt } from '../../utils/constants.js'
 import { createPageView } from '../../utils/key-nav.js'
+import { startDot } from '../../utils/pulse.js'
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
@@ -50,14 +51,14 @@ export function renderLightDetail(pageContext, state, callbacks) {
   const { light, lightName, isLoading, error } = state
   const { retryFunc } = callbacks
 
-  if (isLoading) return renderMessage(pageContext, lightName, getText('LOADING'), null, callbacks)
+  if (isLoading) return renderMessage(pageContext, lightName, getText('LOADING'), null, callbacks, false, true)
   if (error) return renderMessage(pageContext, lightName, error, retryFunc, callbacks, true)
   if (!light) return renderMessage(pageContext, lightName, getText('NO_DATA'), retryFunc, callbacks)
   return renderNormalState(pageContext, state, callbacks)
 }
 
 // Loading, error, no data: the name, a line, an optional retry button
-function renderMessage(pageContext, lightName, text, retryFunc, callbacks, isError = false) {
+function renderMessage(pageContext, lightName, text, retryFunc, callbacks, isError = false, loading = false) {
   const { nav } = callbacks
   pageContext.createTrackedWidget(widget.FILL_RECT, {
     x: 0, y: 0, w: DEVICE_WIDTH, h: DEVICE_HEIGHT, color: COLORS.background
@@ -71,6 +72,8 @@ function renderMessage(pageContext, lightName, text, retryFunc, callbacks, isErr
     align_h: align.CENTER_H, align_v: align.CENTER_V,
     text_style: text_style.WRAP
   })
+  // Loading: a pulsing dot above the text (Zepp: a loading state is animated)
+  if (loading) startDot(pageContext, { cx: DEVICE_WIDTH / 2, cy: DEVICE_HEIGHT / 2 - px(90) })
   if (retryFunc) {
     const btn = { x: DEVICE_WIDTH / 2 - px(90), y: DEVICE_HEIGHT / 2 + px(60), w: px(180), h: px(56) }
     pageContext.createTrackedWidget(widget.BUTTON, {

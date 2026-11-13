@@ -3,6 +3,7 @@ import { loggedPage, warnLog } from '../utils/remote-log.js'
 import { createGate } from '../utils/request-gate.js'
 import { createDragGuard } from '../utils/drag-guard.js'
 import { bindKeyNav } from '../utils/key-nav.js'
+import { busyOn, stopPulses, contrastColor } from '../utils/pulse.js'
 import { localStorage } from '@zos/storage'
 import { setPageBrightTime } from '@zos/display'
 import { setScrollLock, getScrollTop, scrollTo } from '@zos/page'
@@ -13,7 +14,7 @@ import { createModal, MODAL_CONFIRM } from '@zos/interaction'
 import { px } from '@zos/utils'
 import { renderLightDetail, LAYOUT_CONFIG } from 'zosLoader:./light-detail.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
-import { COLORS, comparePresets, HUE_RANGE, SAT_RANGE, BRI_RANGE, DEFAULT_PRESETS, PRESET_TYPES, WIDGET_SHORTCUTS_KEY, MAX_WIDGET_SHORTCUTS, DEFAULT_WIDGET_SHORTCUTS, hsb2hex, ct2hex, ct2hexString, xy2hex, normalizeHex, DEFAULT_USER_SETTINGS } from '../utils/constants.js'
+import { COLORS, comparePresets, hexStringToInt, HUE_RANGE, SAT_RANGE, BRI_RANGE, DEFAULT_PRESETS, PRESET_TYPES, WIDGET_SHORTCUTS_KEY, MAX_WIDGET_SHORTCUTS, DEFAULT_WIDGET_SHORTCUTS, hsb2hex, ct2hex, ct2hexString, xy2hex, normalizeHex, DEFAULT_USER_SETTINGS } from '../utils/constants.js'
 
 const logger = getLogger('zhue-light-detail-page')
 const app = getApp()
@@ -192,6 +193,8 @@ Page(
     },
 
     renderPage() {
+      // Animations of the previous drawing (their widgets go with it)
+      stopPulses(this)
       if (this._keys) this._keys.reset()
       // The page scrolls as a whole: where it was, to come back to it once
       // redrawn (a toggle, a preset applied)
@@ -548,7 +551,7 @@ Page(
     // One toggle at a time: a tap during one waits for it, and reads the state
     // it left
     toggleLight() {
-      this._gate.run('toggle', () => this._toggleLight())
+      this._gate.run('toggle', () => busyOn(this, 'power', () => this._toggleLight()))
     },
 
     _toggleLight() {
@@ -581,7 +584,7 @@ Page(
 
     // A value: only the latest preset tapped waits
     applyPreset(favorite) {
-      this._gate.run('preset', () => this._applyPreset(favorite), true)
+      this._gate.run('preset', () => busyOn(this, `preset:${favorite.id}`, () => this._applyPreset(favorite), contrastColor(hexStringToInt(favorite.hex))), true)
     },
 
     _applyPreset(favorite) {
@@ -683,7 +686,8 @@ Page(
         newFavorite.hex = '#FFFFFF'
       }
 
-      this.request({
+      // The add tile breathes until the phone answered
+      busyOn(this, 'add', () => this.request({
         method: 'ADD_FAVORITE_COLOR',
         params: { colorData: newFavorite }
       })
@@ -698,7 +702,7 @@ Page(
         .catch(err => {
           showToast({ text: getText('FAILED_TO_ADD_FAVORITE') })
           logger.error('Failed to add favorite color:', err)
-        })
+        }))
     },
 
     deletePreset(favorite) {
@@ -855,6 +859,7 @@ Page(
     onDestroy() {
       this.state.isLoading = false
       if (this._keys) this._keys.stop()
+      stopPulses(this)
       if (this._dragTimer) { clearTimeout(this._dragTimer); this._dragTimer = null }
       if (this._gate) this._gate.close()
       this.clearAllWidgets()

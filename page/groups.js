@@ -2,6 +2,7 @@ import { BasePage } from '@zeppos/zml/base-page'
 import { loggedPage } from '../utils/remote-log.js'
 import { createGate } from '../utils/request-gate.js'
 import { bindKeyNav } from '../utils/key-nav.js'
+import { busyOn, stopPulses } from '../utils/pulse.js'
 import { createWidget, deleteWidget } from '@zos/ui'
 import { exit, push } from '@zos/router'
 import { getText } from '@zos/i18n'
@@ -149,7 +150,7 @@ Page(
     // One request at a time per group; a tap during one waits for it and
     // reads the state it left
     toggleGroup(groupRaw) {
-      this._gate.run(`group ${groupRaw.id}`, () => this._toggleGroup(groupRaw))
+      this._gate.run(`group ${groupRaw.id}`, () => busyOn(this, `group:${groupRaw.id}`, () => this._toggleGroup(groupRaw)))
     },
 
     _toggleGroup(groupRaw) {
@@ -224,6 +225,8 @@ Page(
     // --- RENDERING ---
 
     renderPage() {
+      // Animations of the previous drawing (their widgets go with it)
+      stopPulses(this)
       if (this._keys) this._keys.reset()
       this.clearAllWidgets()
       // Filled by the layout: the items the keys move between
@@ -274,6 +277,7 @@ Page(
 
     onDestroy() {
       if (this._keys) this._keys.stop()
+      stopPulses(this)
       if (this._gate) this._gate.close()
       app.setCurrentTab(this.state.currentTab)
       app.setGroupsScrollY(this.state.scrollPos_y)

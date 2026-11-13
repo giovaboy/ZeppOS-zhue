@@ -5,6 +5,7 @@ import { getText } from '@zos/i18n'
 import { getLogger } from '../utils/logger.js'
 import { COLORS, btnPressColor, getGroupIconPath, ICON_IMAGE_SIZE } from '../utils/constants.js'
 import { createScrollView, RING_ON_ACCENT } from '../utils/key-nav.js'
+import { startDot } from '../utils/pulse.js'
 
 const logger = getLogger('zhue-groups-layout')
 
@@ -139,6 +140,8 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
             align_h: align.CENTER_H,
             align_v: align.CENTER_V
         })
+        // Loading: a pulsing dot above the text (Zepp: always animated)
+        if (isLoading) startDot(pageContext, { cx: DEVICE_WIDTH / 2, cy: DEVICE_HEIGHT / 2 - px(80) })
         return
     }
 

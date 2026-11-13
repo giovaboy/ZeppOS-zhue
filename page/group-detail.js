@@ -2,6 +2,7 @@ import { BasePage } from '@zeppos/zml/base-page'
 import { loggedPage } from '../utils/remote-log.js'
 import { createGate } from '../utils/request-gate.js'
 import { bindKeyNav } from '../utils/key-nav.js'
+import { busyOn, stopPulses } from '../utils/pulse.js'
 import { setPageBrightTime } from '@zos/display'
 import { getLogger } from '../utils/logger.js'
 import { getText } from '@zos/i18n'
@@ -192,7 +193,7 @@ Page(
     // One request at a time per control; a tap during one waits for it and
     // reads the state it left
     toggleGroup() {
-      this._gate.run('group', () => this._toggleGroup())
+      this._gate.run('group', () => busyOn(this, 'group', () => this._toggleGroup()))
     },
 
     _toggleGroup() {
@@ -240,7 +241,7 @@ Page(
     },
 
     toggleLight(light) {
-      this._gate.run(`light ${light.id}`, () => this._toggleLight(light))
+      this._gate.run(`light ${light.id}`, () => busyOn(this, `light:${light.id}`, () => this._toggleLight(light)))
     },
 
     _toggleLight(light) {
@@ -295,7 +296,7 @@ Page(
 
     // A value: only the latest scene tapped waits
     applyScene(scene) {
-      this._gate.run('scene', () => this._applyScene(scene), true)
+      this._gate.run('scene', () => busyOn(this, `scene:${scene.id}`, () => this._applyScene(scene)), true)
     },
 
     _applyScene(scene) {
@@ -353,6 +354,8 @@ Page(
     },
 
     renderPage() {
+      // Animations of the previous drawing (their widgets go with it)
+      stopPulses(this)
       if (this._keys) this._keys.reset()
       this.clearAllWidgets()
       // Filled by the layout: the items the keys move between
@@ -433,6 +436,7 @@ Page(
 
     onDestroy() {
       if (this._keys) this._keys.stop()
+      stopPulses(this)
       if (this._gate) this._gate.close()
       this.clearAllWidgets()
       app.setGroupDetailScrollY(this.state.groupId, this.state.scrollPos_y)
