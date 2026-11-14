@@ -4,6 +4,7 @@ import { widget, align, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { HUE_RANGE, SAT_RANGE, BRI_RANGE, CT_MIN, CT_MAX, COLORS, hsb2hex, btnPressColor } from '../utils/constants.js'
 import { renderTabs as renderTabs2Up, TAB_Y, TAB_H } from '../utils/tabs.js'
+import { renderCTBar, ctBarBox } from './layouts/ct-bar.js'
 import { setStatusBarVisible } from '@zos/ui'
 
 setStatusBarVisible(false)
@@ -19,7 +20,9 @@ export const LAYOUT_CONFIG = {
     sliderW: px(300),
     sliderH: px(50),
     sliderX: (DEVICE_WIDTH - px(300)) / 2,
-    sliderY: DEVICE_HEIGHT - px(55) // In basso
+    sliderY: DEVICE_HEIGHT - px(55), // In basso
+    // The color temperature bar, between the tabs and the slider
+    ctBar: ctBarBox(TAB_Y + TAB_H, DEVICE_HEIGHT - px(55))
 }
 
 export function renderColorPickerPage(pageContext, state, callbacks) {
@@ -108,48 +111,8 @@ function renderHueSatPicker(pageContext, state, callbacks) {
 }
 
 function renderCTPicker(pageContext, state, callbacks) {
-    const { pickerX, pickerY, pickerSize } = LAYOUT_CONFIG;
-    // CT range: 153 (Freddo) - 500 (Caldo)
-    const { ct } = state;
-    const { onDragCT } = callbacks;
-
-    // Cursore (Barra orizzontale o pallino?) Pallino
-    const cursorSize = px(36);
-    const ctPickerW = cursorSize * 2;
-
-    pageContext.createTrackedWidget(widget.IMG, {
-        x: (DEVICE_WIDTH - ctPickerW) / 2,
-        y: pickerY,
-        w: ctPickerW,
-        h: pickerSize,
-        auto_scale: true,
-        // A pill: its ends are transparent in the image (an IMG ignores
-        // radius), made by tools/gen-ct-picker.cjs at this size
-        src: 'ct-picker.png'
-    })
-
-    // Mappa CT su Y
-    const validCt = Math.max(CT_MIN, Math.min(CT_MAX, ct));
-    const normalizedY = (validCt - CT_MIN) / (CT_MAX - CT_MIN);
-    const posY = pickerY + (normalizedY * pickerSize);
-    const posX = pickerX + (pickerSize / 2); // Centrato orizzontalmente
-
-    const cursor = pageContext.createTrackedWidget(widget.FILL_RECT, {
-        x: posX - cursorSize / 2, y: posY - cursorSize / 2,
-        w: cursorSize, h: cursorSize,
-        color: 0xffffff, radius: cursorSize / 2,
-        line_width: 4, line_color: 0x000000
-    });
-    pageContext.state.ctCursorWidget = cursor;
-
-    // Hitbox
-    const hitbox = pageContext.createTrackedWidget(widget.FILL_RECT, {
-        x: (DEVICE_WIDTH - ctPickerW) / 2, y: pickerY, w: ctPickerW, h: pickerSize,
-        color: 0, alpha: 0
-    });
-    hitbox.addEventListener(event.CLICK_DOWN, (info) => onDragCT('DOWN', info));
-    hitbox.addEventListener(event.MOVE, (info) => onDragCT('MOVE', info));
-    hitbox.addEventListener(event.CLICK_UP, (info) => onDragCT('UP', info));
+    // A horizontal pill, the knob inside it (page/layouts/ct-bar.js)
+    renderCTBar(pageContext, LAYOUT_CONFIG.ctBar, state.ct, callbacks.onDragCT)
 }
 
 

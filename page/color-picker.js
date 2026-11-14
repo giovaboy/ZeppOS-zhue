@@ -11,6 +11,7 @@ import { HUE_RANGE, SAT_RANGE, BRI_RANGE, CT_MIN, CT_MAX, hsb2hex, ct2hexString 
 
 // Import Layout
 import { renderColorPickerPage, LAYOUT_CONFIG } from 'zosLoader:./color-picker.[pf].layout.js'
+import { xToCt, ctToKnobX, kelvinText } from './layouts/ct-bar.js'
 
 const logger = getLogger('zhue-color-picker-page')
 const app = getApp()
@@ -29,6 +30,7 @@ Page(
             isDragging: false,
             cursorWidget: null,
             ctCursorWidget: null,
+            ctLabelWidget: null,
             briFillWidget: null,
             brightnessLabel: null
         },
@@ -43,6 +45,7 @@ Page(
                 isDragging: false,
                 cursorWidget: null,
                 ctCursorWidget: null,
+                ctLabelWidget: null,
                 briFillWidget: null,
                 brightnessLabel: null
             });
@@ -108,6 +111,7 @@ Page(
             this.widgets = [];
             this.state.cursorWidget = null;
             this.state.ctCursorWidget = null;
+            this.state.ctLabelWidget = null;
             this.state.briFillWidget = null;
             this.state.brightnessLabel = null;
         },
@@ -230,29 +234,23 @@ Page(
 
         // --- LOGICA DRAG CT (Temperatura) ---
         handleCTDrag(evt, info) {
-            const { pickerX, pickerY, pickerSize } = LAYOUT_CONFIG;
-
-            const calcCT = (y) => {
-                let nY = (y - pickerY) / pickerSize;
-                nY = Math.max(0, Math.min(1, nY));
-                // 0 = Freddo (CT_MIN), 1 = Caldo (CT_MAX)
-                return Math.round(CT_MIN + nY * (CT_MAX - CT_MIN));
-            };
+            // Horizontal: warm on the left, cold on the right (layouts/ct-bar.js)
+            const calcCT = (x) => xToCt(LAYOUT_CONFIG.ctBar, x);
 
             if (evt === 'DOWN') {
                 if (this._drag) this._drag.start();
                 this.state.isDragging = true
-                const val = calcCT(info.y)
+                const val = calcCT(info.x)
                 this.updateCTUI(val)
             } else if (evt === 'MOVE' && this.state.isDragging) {
                 if (this._drag) this._drag.move();
-                const val = calcCT(info.y)
+                const val = calcCT(info.x)
                 this.updateCTUI(val)
                 this.sendCT(val, false) // live: the light follows
             } else if (evt === 'UP') {
                 if (this._drag) this._drag.end();
                 this.state.isDragging = false;
-                const val = calcCT(info.y);
+                const val = calcCT(info.x);
                 this.updateCTUI(val);
                 this.sendCT(val);
             }
@@ -262,10 +260,10 @@ Page(
             this.state.ct = ctVal
 
             if (this.state.ctCursorWidget) {
-                const { pickerY, pickerSize } = LAYOUT_CONFIG;
-                const nY = (ctVal - CT_MIN) / (CT_MAX - CT_MIN);
-                const y = pickerY + nY * pickerSize - px(18); // center
-                this.state.ctCursorWidget.setProperty(prop.Y, y);
+                this.state.ctCursorWidget.setProperty(prop.X, ctToKnobX(LAYOUT_CONFIG.ctBar, ctVal));
+            }
+            if (this.state.ctLabelWidget) {
+                this.state.ctLabelWidget.setProperty(prop.TEXT, kelvinText(ctVal));
             }
         },
 
