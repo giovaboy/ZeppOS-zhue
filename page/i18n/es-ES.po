@@ -137,7 +137,7 @@ msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "El ajuste ya existe"
 
 msgid "WIDGET_NOT_CONFIGURED"
-msgstr "Añade luces desde su página en zhue: activa «En la tarjeta de accesos»"
+msgstr "Añade luces y habitaciones desde su página en zhue: activa «Acceso directo»"
 
 msgid "TOGGLING"
 msgstr "Cambiando estado..."
@@ -209,4 +209,4 @@ msgid "PRESET_DELETE_HINT"
 msgstr "Mantén pulsado un favorito para eliminarlo"
 
 msgid "WIDGET_SHORTCUT_ROW"
-msgstr "En la tarjeta de accesos"
+msgstr "Acceso directo"

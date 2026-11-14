@@ -11,7 +11,7 @@
 //   ( ) ( ) ( ) ( ) ( )
 //   ( ) ( +)                   "add the current color": the grid's last tile
 //   Hold a favorite to delete it
-//   [ In the shortcut card  ◯ ]
+//   Shortcut  ◯                (page/layouts/card-row.js)
 //
 // The page scrolls (setScrollLock off); the page locks it while the slider is
 // dragged. Keys: the items go to callbacks.nav (utils/key-nav.js).
@@ -22,6 +22,7 @@ import { getText } from '@zos/i18n'
 import { BRI_RANGE, COLORS, PRESET_TYPES, LIGHT_MODELS, ICON_IMAGE_SIZE, btnPressColor, ct2hex, xy2hex, hexStringToInt } from '../../utils/constants.js'
 import { createPageView } from '../../utils/key-nav.js'
 import { startDot } from '../../utils/pulse.js'
+import { renderCardRow, CARD_ROW_H } from './card-row.js'
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
@@ -173,7 +174,7 @@ function renderNormalState(pageContext, state, callbacks) {
   const hintY = presets.length ? y : null
   if (hintY !== null) y += px(56)
   const widgetY = toggleWidgetShortcutFunc ? y + px(10) : null
-  if (widgetY !== null) y = widgetY + px(72)
+  if (widgetY !== null) y = widgetY + CARD_ROW_H
   const contentHeight = y + px(100) // room at the bottom of a round screen
 
   const view = nav ? createPageView(contentHeight) : null
@@ -283,10 +284,10 @@ function renderNormalState(pageContext, state, callbacks) {
     })
   }
 
-  // ── In the shortcut card: a row with a switch (it was a 20 px star at the
+  // ── Shortcut: a switch on the page's background (it was a 20 px star at the
   // screen's top edge, or a held SELECT)
   if (widgetY !== null) {
-    renderWidgetRow(pageContext, widgetY, !!isInWidgetShortcuts, toggleWidgetShortcutFunc, nav, view, control)
+    renderCardRow((t, p) => pageContext.createTrackedWidget(t, p), widgetY, !!isInWidgetShortcuts, toggleWidgetShortcutFunc, { nav, view })
   }
 
   // Room at the bottom: the page scrolls past the last row
@@ -388,44 +389,6 @@ function renderBrightnessSlider(pageContext, state, sliderY, dragCallback, contr
     hitbox.addEventListener(event.MOVE, (info) => dragCallback('MOVE', info))
     hitbox.addEventListener(event.CLICK_UP, (info) => dragCallback('UP', info))
   }
-}
-
-// A row with a switch on the right (Zepp: switches on the right of a row)
-function renderWidgetRow(pageContext, y, isOn, onTap, nav, view, control) {
-  const w = CONTENT_W - px(20)
-  const h = px(72)
-  const box = { x: (DEVICE_WIDTH - w) / 2, y, w, h }
-  pageContext.createTrackedWidget(widget.BUTTON, {
-    ...box,
-    text: '',
-    normal_color: control,
-    press_color: btnPressColor(control),
-    radius: px(16),
-    click_func: onTap
-  })
-  const trackW = px(64)
-  const trackH = px(36)
-  const trackX = box.x + w - px(20) - trackW
-  passThrough(pageContext.createTrackedWidget(widget.TEXT, {
-    x: box.x + px(20), y, w: trackX - box.x - px(30), h,
-    text: getText('WIDGET_SHORTCUT_ROW'),
-    text_size: px(22),
-    color: COLORS.text,
-    align_h: align.LEFT, align_v: align.CENTER_V,
-    text_style: text_style.WRAP
-  }))
-  passThrough(pageContext.createTrackedWidget(widget.FILL_RECT, {
-    x: trackX, y: y + (h - trackH) / 2, w: trackW, h: trackH,
-    radius: trackH / 2,
-    color: isOn ? COLORS.activeTab : COLORS.toggleOff
-  }))
-  passThrough(pageContext.createTrackedWidget(widget.CIRCLE, {
-    center_x: isOn ? trackX + trackW - trackH / 2 : trackX + trackH / 2,
-    center_y: y + h / 2,
-    radius: trackH / 2 - px(4),
-    color: COLORS.white
-  }))
-  if (nav) nav.items.push({ key: 'widget', ...box, radius: px(16), view, select: onTap })
 }
 
 // Color and white: a round button with the palette icon beside the lamp. The

@@ -137,7 +137,7 @@ msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "Preset already exists"
 
 msgid "WIDGET_NOT_CONFIGURED"
-msgstr "Add lights from their page in zhue: switch on «In the shortcut card»"
+msgstr "Add lights and rooms from their page in zhue: switch on «Shortcut»"
 
 msgid "TOGGLING"
 msgstr "Toggling..."
@@ -209,4 +209,4 @@ msgid "PRESET_DELETE_HINT"
 msgstr "Hold a favorite to delete it"
 
 msgid "WIDGET_SHORTCUT_ROW"
-msgstr "In the shortcut card"
+msgstr "Shortcut"

@@ -137,7 +137,7 @@ msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "Пресет уже существует"
 
 msgid "WIDGET_NOT_CONFIGURED"
-msgstr "Добавляйте лампы на их странице в zhue: включите «В карточке ярлыков»"
+msgstr "Добавляйте лампы и комнаты на их странице в zhue: включите «Ярлык»"
 
 msgid "TOGGLING"
 msgstr "Переключение..."
@@ -209,4 +209,4 @@ msgid "PRESET_DELETE_HINT"
 msgstr "Удерживайте избранное, чтобы удалить"
 
 msgid "WIDGET_SHORTCUT_ROW"
-msgstr "В карточке ярлыков"
+msgstr "Ярлык"

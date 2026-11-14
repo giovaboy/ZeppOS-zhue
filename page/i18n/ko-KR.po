@@ -137,7 +137,7 @@ msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "이미 존재하는 프리셋입니다"
 
 msgid "WIDGET_NOT_CONFIGURED"
-msgstr "zhue의 조명 페이지에서 추가: «바로가기 카드에 표시» 켜기"
+msgstr "zhue의 조명·방 페이지에서 추가: «바로가기» 켜기"
 
 msgid "TOGGLING"
 msgstr "전환 중..."
@@ -209,4 +209,4 @@ msgid "PRESET_DELETE_HINT"
 msgstr "즐겨찾기를 길게 눌러 삭제"
 
 msgid "WIDGET_SHORTCUT_ROW"
-msgstr "바로가기 카드에 표시"
+msgstr "바로가기"

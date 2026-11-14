@@ -137,7 +137,7 @@ msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "預設已存在"
 
 msgid "WIDGET_NOT_CONFIGURED"
-msgstr "在 zhue 的燈光頁面新增：開啟「顯示在捷徑卡片」"
+msgstr "在 zhue 的燈光或房間頁面新增：開啟「捷徑」"
 
 msgid "TOGGLING"
 msgstr "正在切換..."
@@ -209,4 +209,4 @@ msgid "PRESET_DELETE_HINT"
 msgstr "長按收藏可刪除"
 
 msgid "WIDGET_SHORTCUT_ROW"
-msgstr "顯示在捷徑卡片"
+msgstr "捷徑"

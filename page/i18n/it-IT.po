@@ -137,7 +137,7 @@ msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "Colore preferito già presente"
 
 msgid "WIDGET_NOT_CONFIGURED"
-msgstr "Aggiungi le luci dalla loro pagina in zhue: attiva «Nella card scorciatoie»"
+msgstr "Aggiungi luci e stanze dalla loro pagina in zhue: attiva «Scorciatoia»"
 
 msgid "TOGGLING"
 msgstr "Cambio stato..."
@@ -209,4 +209,4 @@ msgid "PRESET_DELETE_HINT"
 msgstr "Tieni premuto un preferito per eliminarlo"
 
 msgid "WIDGET_SHORTCUT_ROW"
-msgstr "Nella card scorciatoie"
+msgstr "Scorciatoia"

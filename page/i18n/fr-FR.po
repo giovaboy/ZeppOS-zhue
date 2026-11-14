@@ -137,7 +137,7 @@ msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "Ce préréglage existe déjà"
 
 msgid "WIDGET_NOT_CONFIGURED"
-msgstr "Ajoutez des lampes depuis leur page dans zhue : activez « Dans la carte raccourcis »"
+msgstr "Ajoutez lampes et pièces depuis leur page dans zhue : activez « Raccourci »"
 
 msgid "TOGGLING"
 msgstr "Changement d'état..."
@@ -209,4 +209,4 @@ msgid "PRESET_DELETE_HINT"
 msgstr "Maintenez un favori pour le supprimer"
 
 msgid "WIDGET_SHORTCUT_ROW"
-msgstr "Dans la carte raccourcis"
+msgstr "Raccourci"

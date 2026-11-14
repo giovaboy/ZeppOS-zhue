@@ -38,6 +38,9 @@ const NO_BUTTONS_TEXT_HINT_H = px(100)
 const MIN_WIDGET_H = PADDING_Y + HEADER_H + NO_BUTTONS_TEXT_HINT_H + PADDING_Y
 
 // Colors
+// The ring of an entry that is off
+const CARD_OFF_RING = 0x777777
+
 const COLOR_HEADER = COLORS.activeTab || 0x984ce5
 const COLOR_HEADER_PRESS = btnPressColor ? btnPressColor(COLOR_HEADER) : 0x6a35a0
 
@@ -268,7 +271,9 @@ AppWidget({
         ...box,
         radius: TILE_RADIUS,
         line_width: px(3),
-        color: isOn ? COLORS.success : COLORS.toggleOff
+        // Off: a mid grey (#444444 vanished on the #333333 tile), so off reads
+        // apart from an unknown state (no ring)
+        color: isOn ? COLORS.success : CARD_OFF_RING
       }))
     }
   },

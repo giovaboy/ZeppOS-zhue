@@ -137,7 +137,7 @@ msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "Voreinstellung existiert bereits"
 
 msgid "WIDGET_NOT_CONFIGURED"
-msgstr "Lampen auf ihrer Seite in zhue hinzufügen: «In der Schnellzugriffskarte» einschalten"
+msgstr "Lampen und Räume auf ihrer Seite in zhue hinzufügen: «Verknüpfung» einschalten"
 
 msgid "TOGGLING"
 msgstr "Schalte um..."
@@ -209,4 +209,4 @@ msgid "PRESET_DELETE_HINT"
 msgstr "Favorit gedrückt halten zum Löschen"
 
 msgid "WIDGET_SHORTCUT_ROW"
-msgstr "In der Schnellzugriffskarte"
+msgstr "Verknüpfung"

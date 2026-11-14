@@ -188,7 +188,7 @@ function renderGroupContentWithViewContainer(pageContext, state, viewData, callb
         }
     })
     // The group in the shortcut card: a row with a switch, at the end
-    if (toggleCardFunc) currentY = renderCardRow(viewContainer, currentY + px(10), !!isInCard, toggleCardFunc, { nav, view }) + px(10)
+    if (toggleCardFunc) currentY = renderCardRow((t, p) => viewContainer.createWidget(t, p), currentY + px(6), !!isInCard, toggleCardFunc, { nav, view, parent: viewContainer }) + px(10)
 
     if (view) {
         view.widget = viewContainer
