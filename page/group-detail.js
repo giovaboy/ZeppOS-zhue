@@ -3,11 +3,11 @@ import { loggedPage } from '../utils/remote-log.js'
 import { createGate } from '../utils/request-gate.js'
 import { bindKeyNav } from '../utils/key-nav.js'
 import { busyOn, stopPulses } from '../utils/pulse.js'
-import { rememberLight, rememberLights } from '../utils/shortcuts.js'
+import { rememberLight, rememberLights, rememberGroups, isInCard, toggleInCard, groupCardState } from '../utils/shortcuts.js'
 import { setPageBrightTime } from '@zos/display'
 import { getLogger } from '../utils/logger.js'
 import { getText } from '@zos/i18n'
-import { createWidget, deleteWidget } from '@zos/ui'
+import { createWidget, deleteWidget, showToast } from '@zos/ui'
 import { push } from '@zos/router'
 import { renderGroupDetailPage } from 'zosLoader:./group-detail.[pf].layout.js'
 import { DEFAULT_USER_SETTINGS, COLORS, LIGHT_MODELS, ct2hex, xy2hex, hexStringToInt } from '../utils/constants.js'
@@ -43,6 +43,8 @@ Page(
         groupType: null,
         groupName: '',
         anyOnInitial: null,
+        groupClass: null,
+        isInCard: false,
         lights: [],
         scenes: [],
         isLoading: false,
@@ -72,6 +74,8 @@ Page(
         this.state.groupType = params.groupType
         this.state.groupName = params.groupName
         this.state.anyOnInitial = params.anyOn
+        this.state.groupClass = params.groupClass || null
+        this.state.isInCard = isInCard('group', params.groupId)
         this.state.scrollPos_y = app.getGroupDetailScrollY(this.state.groupId)
       }
 
@@ -123,6 +127,7 @@ Page(
       this.state.scenes = data.scenes || []
       // The shortcut card shows these lights as last seen
       rememberLights(this.state.lights.map((l) => [l.id, l]))
+      rememberGroups([[this.state.groupId, { anyOn: this.state.lights.some((l) => !!l.ison) }]])
 
       logger.log(`Processed ${this.state.lights.length} lights, ${this.state.scenes.length} scenes`)
 
@@ -221,6 +226,7 @@ Page(
             })
             // The shortcut card shows them as last seen
             rememberLights(this.state.lights.map((l) => [l.id, l]))
+            rememberGroups([[this.state.groupId, { anyOn: newState }]])
 
             const cachedGroup = app.getGroupDetailCache(this.state.groupId)
             if (cachedGroup) {
@@ -322,6 +328,26 @@ Page(
           }
         })
         .catch(err => logger.error('Apply scene error:', err))
+    },
+
+    // The group in the shortcut card, or out of it (the row at the end of the
+    // list); added with its state, so the card shows it at once
+    toggleCardEntry() {
+      const anyOn = this.state.lights.some((l) => !!l.ison)
+      const result = toggleInCard({
+        kind: 'group',
+        groupId: this.state.groupId,
+        name: this.state.groupName,
+        groupClass: this.state.groupClass,
+        ...groupCardState({ anyOn })
+      })
+      if (result === 'full') {
+        showToast({ text: getText('WIDGET_SLOTS_FULL') })
+        return
+      }
+      this.state.isInCard = result === 'added'
+      showToast({ text: getText(result === 'added' ? 'ADDED_TO_WIDGET' : 'REMOVED_FROM_WIDGET') })
+      this.renderPage()
     },
 
     navigateToLightDetail(light) {
@@ -434,7 +460,9 @@ Page(
         applyScene: (item) => this.applyScene(item),
         toggleLight: (light) => this.toggleLight(light),
         navigateToLightDetail: (light) => this.navigateToLightDetail(light),
-        onScrollChange: (y) => this.onScrollChange(y)
+        onScrollChange: (y) => this.onScrollChange(y),
+        toggleCardFunc: () => this.toggleCardEntry(),
+        isInCard: this.state.isInCard
       }, COLORS)
       this._nav = nav
       if (this._keys) this._keys.refocus()

@@ -3,6 +3,7 @@ import { loggedPage } from '../utils/remote-log.js'
 import { createGate } from '../utils/request-gate.js'
 import { bindKeyNav } from '../utils/key-nav.js'
 import { busyOn, stopPulses } from '../utils/pulse.js'
+import { rememberGroups } from '../utils/shortcuts.js'
 import { createWidget, deleteWidget } from '@zos/ui'
 import { exit, push } from '@zos/router'
 import { getText } from '@zos/i18n'
@@ -127,6 +128,8 @@ Page(
           if (result.success && result.data) {
             // ✅ Salva nel global store
             app.setGroupsData(result.data)
+            // The shortcut card shows its groups as last seen
+            rememberGroups([...(result.data.rooms || []), ...(result.data.zones || [])].map((g) => [g.id, g]))
 
             // ✅ Aggiorna anche lo stato locale per il render
             this.state.rooms = result.data.rooms || []
@@ -186,6 +189,7 @@ Page(
 
             // 3. ✅ Aggiorna la cache del dettaglio!
             app.updateGroupStatusInCache(groupRaw.id, newState)
+            rememberGroups([[groupRaw.id, { anyOn: newState }]])
             globalData._timestamp = Date.now()
 
             this.renderPage()
@@ -261,6 +265,7 @@ Page(
               groupId: item.raw.id,
               groupType: item.raw.type,
               groupName: item.raw.name,
+              groupClass: item.raw.class,
               anyOn: item.raw.anyOn || item.raw.on_off
             })
 

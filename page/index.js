@@ -8,7 +8,7 @@ import { getText } from '@zos/i18n'
 import { px } from '@zos/utils'
 import { setPageBrightTime } from '@zos/display'
 import { getLogger } from '../utils/logger.js'
-import { cardLightIds, rememberLights } from '../utils/shortcuts.js'
+import { cardLightIds, rememberLights, rememberGroups } from '../utils/shortcuts.js'
 
 const STATES = {
   LOADING: 'LOADING',
@@ -162,6 +162,8 @@ Page(
             app.setGroupsData(result.data)
             // The shortcut card's lights as they are now (each app start)
             if (result.cardLights) rememberLights(result.cardLights.map((l) => [l.id, l]))
+            // ...and its groups: their states are in the groups of the reply
+            rememberGroups([...(result.data.rooms || []), ...(result.data.zones || [])].map((g) => [g.id, g]))
             this.setState(STATES.SUCCESS)
           } else {
             this.setState(STATES.SEARCHING_BRIDGE)

@@ -5,6 +5,7 @@ import { getText } from '@zos/i18n'
 import { btnPressColor, ICON_IMAGE_SIZE } from '../utils/constants.js'
 import { createScrollView } from '../utils/key-nav.js'
 import { startDot } from '../utils/pulse.js'
+import { renderCardRow } from './layouts/card-row.js'
 import { getLogger } from '../utils/logger.js'
 
 const logger = getLogger('zhue-group-detail-page')
@@ -112,7 +113,7 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
 
 // The list in a VIEW_CONTAINER
 function renderGroupContentWithViewContainer(pageContext, state, viewData, callbacks, COLORS, startY) {
-    const { applyScene, toggleLight, navigateToLightDetail, onScrollChange, nav } = callbacks
+    const { applyScene, toggleLight, navigateToLightDetail, onScrollChange, nav, toggleCardFunc, isInCard } = callbacks
     const { data } = viewData
     const { scrollPos_y } = state
 
@@ -186,6 +187,9 @@ function renderGroupContentWithViewContainer(pageContext, state, viewData, callb
             })
         }
     })
+    // The group in the shortcut card: a row with a switch, at the end
+    if (toggleCardFunc) currentY = renderCardRow(viewContainer, currentY + px(10), !!isInCard, toggleCardFunc, { nav, view }) + px(10)
+
     if (view) {
         view.widget = viewContainer
         view.contentHeight = currentY + px(20)

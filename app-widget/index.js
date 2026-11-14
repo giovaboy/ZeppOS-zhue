@@ -5,7 +5,7 @@ import { localStorage } from '@zos/storage'
 import { push } from '@zos/router'
 import { px } from '@zos/utils'
 import { getText } from '@zos/i18n'
-import { COLORS, MAX_WIDGET_SHORTCUTS, WIDGET_SHORTCUTS_KEY, DEFAULT_WIDGET_SHORTCUTS, LIGHT_MODELS, ICON_IMAGE_SIZE, CARD_STATE_FRESH_MS, btnPressColor } from '../utils/constants'
+import { COLORS, MAX_WIDGET_SHORTCUTS, WIDGET_SHORTCUTS_KEY, DEFAULT_WIDGET_SHORTCUTS, LIGHT_MODELS, ICON_IMAGE_SIZE, CARD_STATE_FRESH_MS, getGroupIconPath, btnPressColor } from '../utils/constants'
 import { getLogger } from '../utils/logger.js'
 
 const logger = getLogger('zhue-app-widget')
@@ -78,7 +78,8 @@ AppWidget({
     this.loadShortcuts()
 
     // Filter configured shortcuts
-    this.state.configuredShortcuts = this.state.shortcuts.filter(s => s && s.lightId !== null)
+    // A light (lightId) or a group (kind 'group', groupId); empty slots have neither
+    this.state.configuredShortcuts = this.state.shortcuts.filter(s => s && (s.lightId != null || s.groupId != null))
 
     logger.debug('Configured shortcuts:', this.state.configuredShortcuts.length)
 
@@ -101,7 +102,8 @@ AppWidget({
     this.loadShortcuts()
 
     // Recalculate configured shortcuts
-    this.state.configuredShortcuts = this.state.shortcuts.filter(s => s && s.lightId !== null)
+    // A light (lightId) or a group (kind 'group', groupId); empty slots have neither
+    this.state.configuredShortcuts = this.state.shortcuts.filter(s => s && (s.lightId != null || s.groupId != null))
 
     // Recalculate height
     const widgetHeight = this.calculateWidgetHeight()
@@ -205,7 +207,7 @@ AppWidget({
       const iconY = cellY
 
       const shortcut = this.state.configuredShortcuts[i]
-      const buttonText = this.truncateName(shortcut.lightName || 'Light', 60)
+      const buttonText = this.truncateName(shortcut.name || shortcut.lightName || 'Light', 60)
 
       logger.debug(`Button ${i}: row=${row}, col=${col}, cellX=${cellX}, iconX=${iconX}`)
 
@@ -258,7 +260,8 @@ AppWidget({
     }))
     passThrough(this.createTrackedWidget(widget.IMG, {
       x: ix, y: iy, w: ICON_IMAGE_SIZE, h: ICON_IMAGE_SIZE,
-      src: `icons/${(LIGHT_MODELS[shortcut.modelid] || LIGHT_MODELS.default).icon}.png`
+      // A light: its model's icon; a group: its room / zone class's
+      src: shortcut.kind === 'group' ? getGroupIconPath(shortcut.groupClass || 'Other') : `icons/${(LIGHT_MODELS[shortcut.modelid] || LIGHT_MODELS.default).icon}.png`
     }))
     if (isOn || isOff) {
       passThrough(this.createTrackedWidget(widget.STROKE_RECT, {
@@ -282,13 +285,12 @@ AppWidget({
   },
 
   onShortcutClick(shortcut) {
-    logger.log('Widget: Shortcut clicked:', shortcut.lightId, shortcut.lightName)
+    logger.log('Widget: Shortcut clicked:', shortcut.kind || 'light', shortcut.lightId ?? shortcut.groupId)
     push({
       url: 'page/quick-toggle',
-      params: JSON.stringify({
-        lightId: shortcut.lightId,
-        lightName: shortcut.lightName
-      })
+      params: JSON.stringify(shortcut.kind === 'group'
+        ? { kind: 'group', groupId: shortcut.groupId, name: shortcut.name }
+        : { lightId: shortcut.lightId, lightName: shortcut.lightName })
     })
   },
 

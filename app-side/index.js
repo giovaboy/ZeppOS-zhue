@@ -139,6 +139,31 @@ async function cardLightStates(ids) {
   }
 }
 
+// ...and its groups (rooms, zones): on while any of their lights is
+async function cardGroupStates(ids) {
+  if (!Array.isArray(ids) || !ids.length) return undefined
+  try {
+    const wanted = new Set(ids.map(String))
+    const { rooms = [], zones = [] } = await hueBridge.getGroups()
+    return [...rooms, ...zones]
+      .filter((g) => wanted.has(String(g.id)))
+      .map((g) => ({ id: g.id, anyOn: !!g.anyOn }))
+  } catch (e) {
+    wlog(`[card] states of ${ids.length} card groups not read: ${errorText(e)}`)
+    return undefined
+  }
+}
+
+// Both, for the reply to a tap on the card: a light switched may change a
+// group's state too
+async function cardStates(params) {
+  const [cardLights, cardGroups] = await Promise.all([
+    cardLightStates(params && params.cardLightIds),
+    cardGroupStates(params && params.cardGroupIds)
+  ])
+  return { cardLights, cardGroups }
+}
+
 // A command the watch sent with withState (a favorite applied) gets the light
 // as it is now in its reply: the watch asked for it with GET_LIGHT_DETAIL
 // right after, a second round trip (~1-1.5 s). Not for the live drags, which
@@ -157,10 +182,9 @@ async function withLightState(params, reply) {
 // Requests that carry out a user's action: logged at info. The rest (reads,
 // cancels) at trace
 const ACTION_METHODS = new Set([
-  'TOGGLE_LIGHT', 'SET_BRIGHTNESS', 'SET_COLOR', 'SET_HS', 'SET_XY', 'ALL_LIGHTS',
-  'TOGGLE_GROUP', 'APPLY_SCENE', 'WIDGET_TOGGLE_LIGHT', 'PAIR', 'DISCOVER_BRIDGES',
-  'SET_MANUAL_IP', 'CLEAR_CONFIG', 'ADD_FAVORITE_COLOR', 'REMOVE_FAVORITE_COLOR',
-  'RESET_FAVORITE_COLORS'
+  'TOGGLE_LIGHT', 'SET_BRIGHTNESS', 'SET_COLOR', 'SET_HS', 'TOGGLE_GROUP', 'APPLY_SCENE',
+  'WIDGET_TOGGLE_LIGHT', 'WIDGET_TOGGLE_GROUP', 'PAIR', 'DISCOVER_BRIDGES',
+  'ADD_FAVORITE_COLOR', 'REMOVE_FAVORITE_COLOR'
 ])
 
 // The parameters worth a line, none private (not the IP of SET_MANUAL_IP)
@@ -189,6 +213,7 @@ function resultForLog(data) {
     if (d.light) parts.push(`light ${d.light.ison ? 'on' : 'off'}${d.light.reachable === false ? ' (unreachable)' : ''}`)
   }
   if (Array.isArray(data.cardLights)) parts.push(`${data.cardLights.length} card lights`)
+  if (Array.isArray(data.cardGroups)) parts.push(`${data.cardGroups.length} card groups`)
   if (data.light) parts.push(`light ${data.light.ison ? 'on' : 'off'}${data.light.reachable === false ? ' (unreachable)' : ''}`)
   if (Array.isArray(data.bridges)) parts.push(`${data.bridges.length} bridges`)
   if (data.connected !== undefined) parts.push(data.connected ? 'connected' : `not connected (${data.reason || '?'})`)
@@ -1510,6 +1535,28 @@ function rememberWidgetTap(tapId, answer) {
   recentWidgetTaps.set(tapId, { at: now, answer })
 }
 
+// A tap on the card toggles (reads the state, sends the opposite), so a
+// request delivered twice (seen ~5 s apart, field-notes.md "Messaging") would
+// switch it on and back off. The watch names each tap (tapId): a tap seen
+// already gets the first one's answer (and null is returned: nothing to do);
+// else the reply function to use, which also keeps the answer for a repeat
+function tapReply(req, firstRes) {
+  const tapId = req.params && req.params.tapId
+  const seen = tapId ? recentWidgetTaps.get(tapId) : null
+  if (seen) {
+    wlog(`[widget] tap ${tapId} delivered again ${Date.now() - seen.at}ms later: answered as the first, not toggled again`)
+    seen.answer.then(({ err, data }) => firstRes(err, data))
+    return null
+  }
+  let settle
+  const answer = new Promise((resolve) => { settle = resolve })
+  if (tapId) rememberWidgetTap(tapId, answer)
+  return (err, data) => {
+    settle({ err, data })
+    firstRes(err, data)
+  }
+}
+
 AppSideService(
   BaseSideService({
     onInit() {
@@ -1672,6 +1719,10 @@ AppSideService(
 
         case 'APPLY_SCENE':
           this.handleApplyScene(req, res)
+          break
+
+        case 'WIDGET_TOGGLE_GROUP':
+          this.handleWidgetToggleGroup(req, res)
           break
 
         case 'WIDGET_TOGGLE_LIGHT':
@@ -1989,25 +2040,40 @@ AppSideService(
       }
     },
 
-    // A pure toggle (reads the light, sends the opposite), so a request
-    // delivered twice (seen ~5 s apart, field-notes.md "Messaging") switched
-    // the light on and back off. The watch names each tap (tapId): a tap seen
-    // already gets the first one's answer, and the light is toggled once
+    // A group (room, zone) on the card: off if any of its lights is on, else
+    // on, as the badge of the groups list. Answered with the states of every
+    // card entry, as a light's tap (a tap delivered twice: see tapReply)
+    async handleWidgetToggleGroup(req, firstRes) {
+      const res = tapReply(req, firstRes)
+      if (!res) return
+      try {
+        const { groupId } = req.params
+        let anyOn
+        if (hueBridge.demo) {
+          const group = hueBridge.DEMO_STATE.groups[groupId]
+          if (!group) { res({ error: 'Demo group not found' }); return }
+          anyOn = !!group.anyOn
+        } else {
+          if (!hueBridge.bridgeIp || !hueBridge.username) { res({ error: 'Bridge not configured' }); return }
+          const url = `http://${hueBridge.bridgeIp}/api/${hueBridge.username}/groups/${groupId}`
+          const group = await safeJson(await hueFetch({ url, method: 'GET' }))
+          if (Array.isArray(group) && group[0]?.error) throw new Error(group[0].error.description)
+          anyOn = !!(group.state && group.state.any_on)
+        }
+        const newState = !anyOn
+        await hueBridge.toggleGroup(groupId, newState)
+        res(null, { success: true, newState, ...(await cardStates(req.params)) })
+      } catch (error) {
+        cerr('Widget toggle group error:', error)
+        res({ error: error.message })
+      }
+    },
+
+    // A pure toggle of a light from the card (see tapReply for a tap
+    // delivered twice)
     async handleWidgetToggleLight(req, firstRes) {
-      const tapId = req.params && req.params.tapId
-      const seen = tapId ? recentWidgetTaps.get(tapId) : null
-      if (seen) {
-        wlog(`[widget] tap ${tapId} delivered again ${Date.now() - seen.at}ms later: answered as the first, light not toggled again`)
-        seen.answer.then(({ err, data }) => firstRes(err, data))
-        return
-      }
-      let settle
-      const answer = new Promise((resolve) => { settle = resolve })
-      if (tapId) rememberWidgetTap(tapId, answer)
-      const res = (err, data) => {
-        settle({ err, data })
-        firstRes(err, data)
-      }
+      const res = tapReply(req, firstRes)
+      if (!res) return
 
       try {
         const { lightId } = req.params
@@ -2026,7 +2092,7 @@ AppSideService(
           const newState = !light.ison
           hueBridge._handleDemoAction(lightId, { ison: newState })
 
-          res(null, { success: true, newState, cardLights: await cardLightStates(req.params.cardLightIds) })
+          res(null, { success: true, newState, ...(await cardStates(req.params)) })
           return
         }
 
@@ -2055,7 +2121,7 @@ AppSideService(
 
         // With the true state of every card light: each tap brings the whole
         // card in line with the lights
-        res(null, { success: true, newState, cardLights: await cardLightStates(req.params.cardLightIds) })
+        res(null, { success: true, newState, ...(await cardStates(req.params)) })
       } catch (error) {
         cerr('Widget toggle light error:', error)
         res({ error: error.message })

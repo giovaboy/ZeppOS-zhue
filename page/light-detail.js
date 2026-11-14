@@ -4,7 +4,7 @@ import { createGate } from '../utils/request-gate.js'
 import { createDragGuard } from '../utils/drag-guard.js'
 import { bindKeyNav } from '../utils/key-nav.js'
 import { busyOn, stopPulses, contrastColor } from '../utils/pulse.js'
-import { rememberLight, cardState } from '../utils/shortcuts.js'
+import { rememberLight, cardState, isInCard, toggleInCard } from '../utils/shortcuts.js'
 import { localStorage } from '@zos/storage'
 import { setPageBrightTime } from '@zos/display'
 import { setScrollLock, getScrollTop, scrollTo } from '@zos/page'
@@ -15,7 +15,7 @@ import { createModal, MODAL_CONFIRM } from '@zos/interaction'
 import { px } from '@zos/utils'
 import { renderLightDetail, LAYOUT_CONFIG } from 'zosLoader:./light-detail.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
-import { COLORS, comparePresets, hexStringToInt, HUE_RANGE, SAT_RANGE, BRI_RANGE, DEFAULT_PRESETS, PRESET_TYPES, WIDGET_SHORTCUTS_KEY, MAX_WIDGET_SHORTCUTS, DEFAULT_WIDGET_SHORTCUTS, hsb2hex, ct2hex, ct2hexString, xy2hex, normalizeHex, DEFAULT_USER_SETTINGS } from '../utils/constants.js'
+import { COLORS, comparePresets, hexStringToInt, HUE_RANGE, SAT_RANGE, BRI_RANGE, DEFAULT_PRESETS, PRESET_TYPES, WIDGET_SHORTCUTS_KEY, hsb2hex, ct2hex, ct2hexString, xy2hex, normalizeHex, DEFAULT_USER_SETTINGS } from '../utils/constants.js'
 
 const logger = getLogger('zhue-light-detail-page')
 const app = getApp()
@@ -776,88 +776,32 @@ Page(
     onScrollChange(y) {
       this.state.scrollPos_y = y
     },
-    // ==========================================
-    // WIDGET SHORTCUTS METHODS
-    // ==========================================
 
-    getWidgetShortcuts() {
-      try {
-        const stored = localStorage.getItem(WIDGET_SHORTCUTS_KEY)
-        if (stored) {
-          const parsed = JSON.parse(stored)
-          if (Array.isArray(parsed) && parsed.length === MAX_WIDGET_SHORTCUTS) {
-            return parsed
-          }
-        }
-      } catch (e) {
-        logger.error('Failed to load widget shortcuts:', e)
-      }
-      return [...DEFAULT_WIDGET_SHORTCUTS]
-    },
-
-    saveWidgetShortcuts(shortcuts) {
-      try {
-        localStorage.setItem(WIDGET_SHORTCUTS_KEY, JSON.stringify(shortcuts))
-        logger.debug('Widget shortcuts saved')
-        return true
-      } catch (e) {
-        logger.error('Failed to save widget shortcuts:', e)
-        return false
-      }
-    },
+    // ==========================================
+    // THE SHORTCUT CARD (utils/shortcuts.js: lights and groups)
+    // ==========================================
 
     checkWidgetShortcutStatus() {
       if (!this.state.lightId) return
-
-      const shortcuts = this.getWidgetShortcuts()
-      this.state.isInWidgetShortcuts = shortcuts.some(s => s.lightId === this.state.lightId)
-      logger.debug('Light in widget shortcuts:', this.state.isInWidgetShortcuts)
+      this.state.isInWidgetShortcuts = isInCard('light', this.state.lightId)
     },
 
+    // The light in the card, or out of it; added with its state, so the card
+    // shows it in its color at once
     toggleWidgetShortcut() {
-      const lightId = this.state.lightId
-      const lightName = this.state.lightName || this.state.light?.name || 'Light'
-      const modelid = this.state.light?.modelid || 'default'
-
-      const shortcuts = this.getWidgetShortcuts()
-
-      if (this.state.isInWidgetShortcuts) {
-        // RIMUOVI dalla lista
-        const index = shortcuts.findIndex(s => s.lightId === lightId)
-        if (index !== -1) {
-          shortcuts[index] = { lightId: null, lightName: null, modelid: null }
-          this.saveWidgetShortcuts(shortcuts)
-          this.state.isInWidgetShortcuts = false
-          showToast({ text: getText('REMOVED_FROM_WIDGET') || 'Removed from widget' })
-          this.renderPage()
-        }
-      } else {
-        // AGGIUNGI alla lista
-        // Trova primo slot vuoto
-        const emptyIndex = shortcuts.findIndex(s => s.lightId === null)
-
-        if (emptyIndex === -1) {
-          // Nessuno slot libero
-          showToast({ text: getText('WIDGET_SLOTS_FULL') || 'Widget full! Remove a light first.' })
-          return
-        }
-
-        // Controlla se già presente (safety check)
-        if (shortcuts.some(s => s.lightId === lightId)) {
-          this.state.isInWidgetShortcuts = true
-          showToast({ text: getText('ALREADY_IN_WIDGET') || 'Already in widget' })
-          this.renderPage()
-          return
-        }
-
-        // Aggiungi
-        // With its state, so the card shows it in its color at once
-        shortcuts[emptyIndex] = { lightId, lightName, modelid, ...(this.state.light ? cardState(this.state.light) : {}) }
-        this.saveWidgetShortcuts(shortcuts)
-        this.state.isInWidgetShortcuts = true
-        showToast({ text: getText('ADDED_TO_WIDGET') || 'Added to widget!' })
-        this.renderPage()
+      const result = toggleInCard({
+        lightId: this.state.lightId,
+        lightName: this.state.lightName || this.state.light?.name || 'Light',
+        modelid: this.state.light?.modelid || 'default',
+        ...(this.state.light ? cardState(this.state.light) : {})
+      })
+      if (result === 'full') {
+        showToast({ text: getText('WIDGET_SLOTS_FULL') })
+        return
       }
+      this.state.isInWidgetShortcuts = result === 'added'
+      showToast({ text: getText(result === 'added' ? 'ADDED_TO_WIDGET' : 'REMOVED_FROM_WIDGET') })
+      this.renderPage()
     },
 
     onDestroy() {

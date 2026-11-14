@@ -4,7 +4,7 @@
 
 import { BasePage } from '@zeppos/zml/base-page'
 import { loggedPage, infoLog, warnLog } from '../utils/remote-log.js'
-import { rememberOnOff, rememberLights, cardLightIds } from '../utils/shortcuts.js'
+import { rememberOnOff, rememberLights, rememberGroups, cardLightIds, cardGroupIds } from '../utils/shortcuts.js'
 import { back } from '@zos/router'
 import { createWidget, widget, deleteWidget, align } from '@zos/ui'
 import { getDeviceInfo } from '@zos/device'
@@ -44,8 +44,10 @@ Page(
       // a failed toggle left showed "Error" on the next tap's page
       this.state.status = 'loading'
       this.widgets = []
-      this.state.lightId = params.lightId
-      this.state.lightName = params.lightName || 'Light'
+      // A light, or a group (room, zone) from the card: kind 'group'
+      this.state.kind = params.kind === 'group' ? 'group' : 'light'
+      this.state.lightId = this.state.kind === 'group' ? params.groupId : params.lightId
+      this.state.lightName = params.name || params.lightName || 'Light'
       
       if (!this.state.lightId) {
         logger.error('No lightId provided!')
@@ -129,29 +131,34 @@ Page(
     doToggle() {
       logger.log('Toggling light:', this.state.lightId)
       if (!connectStatus()) {
-        warnLog(`[quick-toggle] light ${this.state.lightId}: phone not connected, nothing sent`)
+        warnLog(`[quick-toggle] ${this.state.kind} ${this.state.lightId}: phone not connected, nothing sent`)
         this.goBackAfterDelay(1000)
         return // Early exit if not connected
       }
       const t0 = Date.now()
       // Usa ZML request per comunicare con app-side
+      const isGroup = this.state.kind === 'group'
       this.request({
-          method: 'WIDGET_TOGGLE_LIGHT',
+          method: isGroup ? 'WIDGET_TOGGLE_GROUP' : 'WIDGET_TOGGLE_LIGHT',
           params: {
-            lightId: this.state.lightId,
+            ...(isGroup ? { groupId: this.state.lightId } : { lightId: this.state.lightId }),
             // Names this tap: a request delivered twice toggles the light
             // once (app-side handleWidgetToggleLight)
             tapId: `${t0.toString(36)}${Math.floor(Math.random() * 1296).toString(36)}`,
-            // The phone answers with the states of all the card's lights
-            cardLightIds: cardLightIds()
+            // The phone answers with the states of all the card's entries
+            cardLightIds: cardLightIds(),
+            cardGroupIds: cardGroupIds()
           }
         })
         .then(result => {
           logger.log('Toggle result:', result)
-          if (result.success) infoLog(`[quick-toggle] light ${this.state.lightId} now ${result.newState ? 'on' : 'off'}, ${Date.now() - t0}ms from the tap`)
-          // The card shows it so when it comes back (only on / off is known)
-          if (result.success && result.cardLights) rememberLights(result.cardLights.map((l) => [l.id, l]))
-          else if (result.success) rememberOnOff(this.state.lightId, result.newState)
+          if (result.success) infoLog(`[quick-toggle] ${this.state.kind} ${this.state.lightId} now ${result.newState ? 'on' : 'off'}, ${Date.now() - t0}ms from the tap`)
+          // The card shows every entry as it is now when it comes back
+          if (result.success) {
+            if (result.cardLights) rememberLights(result.cardLights.map((l) => [l.id, l]))
+            if (result.cardGroups) rememberGroups(result.cardGroups.map((g) => [g.id, g]))
+            if (!result.cardLights && !result.cardGroups) rememberOnOff(this.state.kind, this.state.lightId, result.newState)
+          }
           this.state.status = result.success ? 'success' : 'error'
           // Torna indietro
           this.goBackAfterDelay(200)
