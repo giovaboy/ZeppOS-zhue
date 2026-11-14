@@ -169,7 +169,7 @@ Page(
       this.createTrackedWidget(widget.TEXT, {
         x: px(40), y: nameY + px(48), w: DEVICE_WIDTH - px(80), h: px(64),
         text: line,
-        text_size: px(26),
+        text_size: px(24),
         color,
         align_h: align.CENTER_H, align_v: align.TOP,
         text_style: text_style.WRAP

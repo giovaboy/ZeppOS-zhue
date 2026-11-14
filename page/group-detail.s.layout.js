@@ -217,7 +217,7 @@ function renderHeader(container, item, yPos, COLORS) {
         w: DEVICE_WIDTH,
         h: px(50),
         text: item.name,
-        text_size: px(26),
+        text_size: px(24),
         color: COLORS.sectionHeader,
         align_h: align.CENTER_H,
         align_v: align.CENTER_V
@@ -266,7 +266,7 @@ function renderSceneItem(container, scene, yPos, COLORS, onTap) {
         w: px(360),
         h: itemHeight,
         text: scene.name,
-        text_size: px(30),
+        text_size: px(28),
         color: 0xFFFFFF,
         align_h: align.LEFT,
         align_v: align.CENTER_V

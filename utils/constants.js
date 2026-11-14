@@ -1,15 +1,19 @@
 export const COLORS = {
   background: 0x000000,
   text: 0xffffff,
-  textSubtitle: 0xaaaaaa,
-  highlight: 0x0055ff,
+  // One grey for every secondary text (subtitles, off, hints): it was
+  // #AAAAAA, #B3B3B3 or #999999 depending on the page
+  textSubtitle: 0xb3b3b3,
+  // The app's one accent (activeTab): what is touched or chosen. Buttons
+  // like Retry and the pairing screens used three blues
+  highlight: 0x984ce5,
   // Greys with RGB 1–46 are to be avoided on Zepp OS (design-guidelines.md,
   // "Color"): pure black or color_sys_item (#333333) instead
   cardBg: 0x333333,
   activeTab: 0x984ce5, //0x0055ff,
   activeTabText: 0xffffff,
   inactiveTab: 0x333333,
-  inactiveTabText: 0xAAAAAA,
+  inactiveTabText: 0xb3b3b3,
   warningBg: 0x333300,
   highlightText: 0xffffff,
   warning: 0xff6600,
@@ -18,14 +22,14 @@ export const COLORS = {
   error: 0xff0000,
   inactive: 0xb3b3b3, //0x666666,
   // A "Loading…" text: #666666 on black is 3.7:1, under the 4.5:1 text needs
-  loading: 0x999999,
+  loading: 0xb3b3b3,
   roomIndicator: 0x0000cc,
   zoneIndicator: 0x009900,
   lightBg: 0x333333, //light background, same color as the light icons mask (#FFFFFF opacity 20%) color_sys_item_bg per zeppos doc
-  sceneBg: 0x0a2540,
+  sceneBg: 0x333333, // as every row (it was a dark blue): the scene's dot tells it
   toggleOn: 0x00aa00,
   toggleOff: 0x444444,
-  sectionHeader: 0x0088ff,
+  sectionHeader: 0x984ce5, // section titles ("Lights", "Scenes", "Favorites"): the accent
   sliderBg: 0x333333, // slider track: color_sys_item
   sliderFill: 0xffffff,
   briText: 0xcccccc,

@@ -100,7 +100,7 @@ function renderSearchingBridge(pageContext, animateSpinner, animateProgressBar) 
     w: DEVICE_WIDTH,
     h: px(60),
     text: getText('HUE_BRIDGE'),
-    text_size: px(40),
+    text_size: px(34),
     color: COLORS.text,
     align_h: align.CENTER_H,
     align_v: align.CENTER_V
@@ -123,7 +123,7 @@ function renderSearchingBridge(pageContext, animateSpinner, animateProgressBar) 
     w: DEVICE_WIDTH - px(80),
     h: px(80),
     text: getText('SEARCHING_BRIDGE'),
-    text_size: px(26),
+    text_size: px(24),
     color: COLORS.text,
     align_h: align.CENTER_H,
     align_v: align.CENTER_V,
@@ -174,7 +174,7 @@ function renderWaitingForPress(pageContext, animateProgressBar) {
     w: DEVICE_WIDTH,
     h: px(50),
     text: getText('BRIDGE_FOUND'),
-    text_size: px(38),
+    text_size: px(34),
     color: COLORS.warningText,
     align_h: align.CENTER_H,
     align_v: align.CENTER_V
@@ -236,7 +236,7 @@ function renderError(pageContext, error, retryFunc) {
     w: DEVICE_WIDTH,
     h: px(50),
     text: getText('CONNECTION_ERROR'),
-    text_size: px(36),
+    text_size: px(34),
     color: COLORS.error,
     align_h: align.CENTER_H,
     align_v: align.CENTER_V
@@ -309,7 +309,7 @@ function renderBluetoothError(pageContext, error, retryFunc) {
     w: DEVICE_WIDTH - px(40),
     h: px(60),
     text: getText('BT_NOT_CONNECTED'),
-    text_size: px(26),
+    text_size: px(24),
     color: COLORS.error,
     align_h: align.CENTER_H,
     align_v: align.CENTER_V
@@ -336,7 +336,7 @@ function renderBluetoothError(pageContext, error, retryFunc) {
     w: DEVICE_WIDTH - px(60),
     h: px(60),
     text: getText('BT_AUTO_RETRY'),
-    text_size: px(16),
+    text_size: px(20),
     color: COLORS.textSubtitle,
     align_h: align.CENTER_H,
     align_v: align.CENTER_V

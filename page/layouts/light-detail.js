@@ -68,7 +68,7 @@ function renderMessage(pageContext, lightName, text, retryFunc, callbacks, isErr
   pageContext.createTrackedWidget(widget.TEXT, {
     x: px(40), y: DEVICE_HEIGHT / 2 - px(60), w: DEVICE_WIDTH - px(80), h: px(100),
     text: text || getText('ERROR'),
-    text_size: px(26),
+    text_size: px(24),
     color: isError ? COLORS.error : COLORS.loading,
     align_h: align.CENTER_H, align_v: align.CENTER_V,
     text_style: text_style.WRAP
@@ -80,9 +80,9 @@ function renderMessage(pageContext, lightName, text, retryFunc, callbacks, isErr
     pageContext.createTrackedWidget(widget.BUTTON, {
       ...btn,
       text: getText('RETRY'),
-      text_size: px(26),
-      normal_color: COLORS.color_sys_key,
-      press_color: btnPressColor(COLORS.color_sys_key),
+      text_size: px(24),
+      normal_color: COLORS.highlight,
+      press_color: btnPressColor(COLORS.highlight),
       radius: btn.h / 2,
       click_func: retryFunc
     })
@@ -206,8 +206,8 @@ function renderNormalState(pageContext, state, callbacks) {
   pageContext.createTrackedWidget(widget.TEXT, {
     x: 0, y: presetsTitleY, w: DEVICE_WIDTH, h: px(40),
     text: getText('PRESETS_TITLE'),
-    text_size: px(26),
-    color: COLORS.text,
+    text_size: px(24),
+    color: COLORS.sectionHeader,
     align_h: align.CENTER_H, align_v: align.CENTER_V
   })
   if (!presets.length) {
