@@ -81,7 +81,7 @@ export function startBreath(owner, { x, y, w, h, radius = 0, parent = null, labe
 }
 
 // A disc of `size` centered on (cx, cy) that pulses
-export function startDot(owner, { cx, cy, size = px(18), color = COLORS.activeTab, parent = null, label = 'loading' }) {
+export function startDot(owner, { cx, cy, size = px(18), color = COLORS.white, parent = null, label = 'loading' }) {
   const disc = make(parent, widget.FILL_RECT, {
     x: cx - size / 2, y: cy - size / 2, w: size, h: size, radius: size / 2, color
   })
