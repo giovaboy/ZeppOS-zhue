@@ -11,8 +11,7 @@ import { HUE_RANGE, SAT_RANGE, BRI_RANGE, hsb2hex, ct2hexString } from '../utils
 
 // Import Layout
 import { renderColorPickerPage, LAYOUT_CONFIG } from 'zosLoader:./color-picker.[pf].layout.js'
-import { xToCt, ctToKnobX, kelvinText } from './layouts/ct-bar.js'
-import { xyToHs, moveWheelCursor } from './layouts/hs-wheel.js'
+import { xyToHs, xyToCt, moveHsCursor, moveCtCursor } from './layouts/wheel.js'
 
 const logger = getLogger('zhue-color-picker-page')
 const app = getApp()
@@ -30,8 +29,7 @@ Page(
             mode: 'color',
             isDragging: false,
             cursorWidgets: null,
-            ctCursorWidget: null,
-            ctLabelWidget: null,
+            ctCursorWidgets: null,
             briFillWidget: null,
             brightnessLabel: null
         },
@@ -45,8 +43,7 @@ Page(
             Object.assign(this.state, {
                 isDragging: false,
                 cursorWidgets: null,
-                ctCursorWidget: null,
-                ctLabelWidget: null,
+                ctCursorWidgets: null,
                 briFillWidget: null,
                 brightnessLabel: null
             });
@@ -111,8 +108,7 @@ Page(
             });
             this.widgets = [];
             this.state.cursorWidgets = null;
-            this.state.ctCursorWidget = null;
-            this.state.ctLabelWidget = null;
+            this.state.ctCursorWidgets = null;
             this.state.briFillWidget = null;
             this.state.brightnessLabel = null;
         },
@@ -132,7 +128,7 @@ Page(
 
         // --- LOGICA DRAG COLOR (Hue/Sat) ---
         handleColorDrag(evt, info) {
-            // A point on the color wheel → hue, sat (layouts/hs-wheel.js)
+            // A point on the color wheel → hue, sat (layouts/wheel.js)
             const calcValues = (x, y) => xyToHs(LAYOUT_CONFIG.wheel, x, y);
 
             if (evt === 'DOWN') {
@@ -157,7 +153,7 @@ Page(
         updateColorUI(h, s) {
             this.state.hue = h;
             this.state.sat = s;
-            moveWheelCursor(this, LAYOUT_CONFIG.wheel, h, s);
+            moveHsCursor(this, LAYOUT_CONFIG.wheel, h, s);
         },
 
         // While dragging (final false) the light follows the finger: each move
@@ -211,37 +207,33 @@ Page(
 
         // --- LOGICA DRAG CT (Temperatura) ---
         handleCTDrag(evt, info) {
-            // Horizontal: warm on the left, cold on the right (layouts/ct-bar.js)
-            const calcCT = (x) => xToCt(LAYOUT_CONFIG.ctBar, x);
+            // The white wheel: warm at the top, cold at the bottom; the cursor
+            // follows the finger (layouts/wheel.js)
+            const calcCT = (x, y) => xyToCt(LAYOUT_CONFIG.wheel, x, y);
 
             if (evt === 'DOWN') {
                 if (this._drag) this._drag.start();
                 this.state.isDragging = true
-                const val = calcCT(info.x)
-                this.updateCTUI(val)
+                const val = calcCT(info.x, info.y);
+                this.updateCTUI(val.ct, val.x, val.y);
             } else if (evt === 'MOVE' && this.state.isDragging) {
                 if (this._drag) this._drag.move();
-                const val = calcCT(info.x)
-                this.updateCTUI(val)
-                this.sendCT(val, false) // live: the light follows
+                const val = calcCT(info.x, info.y);
+                this.updateCTUI(val.ct, val.x, val.y);
+                this.sendCT(val.ct, false) // live: the light follows
             } else if (evt === 'UP') {
                 if (this._drag) this._drag.end();
                 this.state.isDragging = false;
-                const val = calcCT(info.x);
-                this.updateCTUI(val);
-                this.sendCT(val);
+                const val = calcCT(info.x, info.y);
+                this.updateCTUI(val.ct, val.x, val.y);
+                this.sendCT(val.ct);
             }
         },
 
-        updateCTUI(ctVal) {
+        // x, y: the cursor's point (where the finger is)
+        updateCTUI(ctVal, x, y) {
             this.state.ct = ctVal
-
-            if (this.state.ctCursorWidget) {
-                this.state.ctCursorWidget.setProperty(prop.X, ctToKnobX(LAYOUT_CONFIG.ctBar, ctVal));
-            }
-            if (this.state.ctLabelWidget) {
-                this.state.ctLabelWidget.setProperty(prop.TEXT, kelvinText(ctVal));
-            }
+            moveCtCursor(this, LAYOUT_CONFIG.wheel, ctVal, x, y);
         },
 
         sendCT(ctVal, final = true) {

@@ -4,8 +4,7 @@ import { widget, align, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { BRI_RANGE, COLORS } from '../utils/constants.js'
 import { renderTabs as renderTabs2Up, TAB_Y, TAB_H } from '../utils/tabs.js'
-import { renderCTBar, ctBarBox } from './layouts/ct-bar.js'
-import { renderWheel, wheelBox } from './layouts/hs-wheel.js'
+import { renderHsWheel, renderCtWheel, wheelBox } from './layouts/wheel.js'
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
@@ -16,8 +15,7 @@ export const LAYOUT_CONFIG = {
     sliderX: (DEVICE_WIDTH - px(300)) / 2,
     sliderY: DEVICE_HEIGHT - px(90), // In basso
     // The color temperature bar, between the tabs and the slider
-    ctBar: ctBarBox(TAB_Y + TAB_H, DEVICE_HEIGHT - px(90)),
-    // The color wheel, between the tabs and the slider's touch area (20 above it)
+    // The wheels (color, white), between the tabs and the slider's touch area
     wheel: wheelBox(TAB_Y + TAB_H + px(6), DEVICE_HEIGHT - px(90) - px(20))
 }
 
@@ -57,13 +55,13 @@ function renderTabs(pageContext, currentMode, onTabSwitch) {
 }
 
 function renderHueSatPicker(pageContext, state, callbacks) {
-    // A color wheel, the cursor in a white ring (page/layouts/hs-wheel.js)
-    renderWheel(pageContext, LAYOUT_CONFIG.wheel, state.hue, state.sat, callbacks.onDragColor)
+    // A color wheel, the cursor in a white ring (page/layouts/wheel.js)
+    renderHsWheel(pageContext, LAYOUT_CONFIG.wheel, state.hue, state.sat, callbacks.onDragColor)
 }
 
 function renderCTPicker(pageContext, state, callbacks) {
-    // A horizontal pill, the knob inside it (page/layouts/ct-bar.js)
-    renderCTBar(pageContext, LAYOUT_CONFIG.ctBar, state.ct, callbacks.onDragCT)
+    // A wheel, warm at the top, cold at the bottom (page/layouts/wheel.js)
+    renderCtWheel(pageContext, LAYOUT_CONFIG.wheel, state.ct, callbacks.onDragCT)
 }
 
 
