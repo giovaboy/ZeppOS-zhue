@@ -210,3 +210,15 @@ msgstr "长按收藏可删除"
 
 msgid "WIDGET_SHORTCUT_ROW"
 msgstr "快捷方式"
+
+msgid "QT_TURNING_ON"
+msgstr "正在开启…"
+
+msgid "QT_TURNING_OFF"
+msgstr "正在关闭…"
+
+msgid "GROUP_STATE_ON"
+msgstr "灯已开启"
+
+msgid "GROUP_STATE_OFF"
+msgstr "灯已关闭"

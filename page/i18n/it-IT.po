@@ -210,3 +210,15 @@ msgstr "Tieni premuto un preferito per eliminarlo"
 
 msgid "WIDGET_SHORTCUT_ROW"
 msgstr "Scorciatoia"
+
+msgid "QT_TURNING_ON"
+msgstr "Accendo…"
+
+msgid "QT_TURNING_OFF"
+msgstr "Spengo…"
+
+msgid "GROUP_STATE_ON"
+msgstr "Luci accese"
+
+msgid "GROUP_STATE_OFF"
+msgstr "Luci spente"

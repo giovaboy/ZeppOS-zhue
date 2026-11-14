@@ -210,3 +210,15 @@ msgstr "Mantén pulsado un favorito para eliminarlo"
 
 msgid "WIDGET_SHORTCUT_ROW"
 msgstr "Acceso directo"
+
+msgid "QT_TURNING_ON"
+msgstr "Encendiendo…"
+
+msgid "QT_TURNING_OFF"
+msgstr "Apagando…"
+
+msgid "GROUP_STATE_ON"
+msgstr "Luces encendidas"
+
+msgid "GROUP_STATE_OFF"
+msgstr "Luces apagadas"

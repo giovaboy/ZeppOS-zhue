@@ -210,3 +210,15 @@ msgstr "Hold a favorite to delete it"
 
 msgid "WIDGET_SHORTCUT_ROW"
 msgstr "Shortcut"
+
+msgid "QT_TURNING_ON"
+msgstr "Turning on…"
+
+msgid "QT_TURNING_OFF"
+msgstr "Turning off…"
+
+msgid "GROUP_STATE_ON"
+msgstr "Lights on"
+
+msgid "GROUP_STATE_OFF"
+msgstr "Lights off"

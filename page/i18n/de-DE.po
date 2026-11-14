@@ -210,3 +210,15 @@ msgstr "Favorit gedrückt halten zum Löschen"
 
 msgid "WIDGET_SHORTCUT_ROW"
 msgstr "Verknüpfung"
+
+msgid "QT_TURNING_ON"
+msgstr "Schalte ein…"
+
+msgid "QT_TURNING_OFF"
+msgstr "Schalte aus…"
+
+msgid "GROUP_STATE_ON"
+msgstr "Lampen an"
+
+msgid "GROUP_STATE_OFF"
+msgstr "Lampen aus"

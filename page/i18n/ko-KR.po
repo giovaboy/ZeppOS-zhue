@@ -210,3 +210,15 @@ msgstr "즐겨찾기를 길게 눌러 삭제"
 
 msgid "WIDGET_SHORTCUT_ROW"
 msgstr "바로가기"
+
+msgid "QT_TURNING_ON"
+msgstr "켜는 중…"
+
+msgid "QT_TURNING_OFF"
+msgstr "끄는 중…"
+
+msgid "GROUP_STATE_ON"
+msgstr "조명 켜짐"
+
+msgid "GROUP_STATE_OFF"
+msgstr "조명 꺼짐"

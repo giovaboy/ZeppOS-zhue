@@ -210,3 +210,15 @@ msgstr "Удерживайте избранное, чтобы удалить"
 
 msgid "WIDGET_SHORTCUT_ROW"
 msgstr "Ярлык"
+
+msgid "QT_TURNING_ON"
+msgstr "Включаю…"
+
+msgid "QT_TURNING_OFF"
+msgstr "Выключаю…"
+
+msgid "GROUP_STATE_ON"
+msgstr "Свет включён"
+
+msgid "GROUP_STATE_OFF"
+msgstr "Свет выключен"

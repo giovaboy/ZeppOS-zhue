@@ -210,3 +210,15 @@ msgstr "Maintenez un favori pour le supprimer"
 
 msgid "WIDGET_SHORTCUT_ROW"
 msgstr "Raccourci"
+
+msgid "QT_TURNING_ON"
+msgstr "Allumage…"
+
+msgid "QT_TURNING_OFF"
+msgstr "Extinction…"
+
+msgid "GROUP_STATE_ON"
+msgstr "Lumières allumées"
+
+msgid "GROUP_STATE_OFF"
+msgstr "Lumières éteintes"
