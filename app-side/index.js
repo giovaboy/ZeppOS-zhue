@@ -1756,7 +1756,9 @@ AppSideService(
         clog('Adding favorite color:', colorData)
 
         const result = hueBridge.addFavoriteColor(colorData)
-        res(null, result)
+        // The settings in the same reply: the watch used to ask for them
+        // (GET_USER_SETTINGS), one more round trip of ~1.7 s
+        res(null, { ...result, settings: hueBridge.getUserSettings() })
       } catch (error) {
         cerr('Add favorite color error:', error)
         res({ error: error.message })
@@ -1768,7 +1770,7 @@ AppSideService(
         const { favoriteId } = req.params
         clog('Removing favorite color at index:', favoriteId)
         const result = hueBridge.removeFavoriteColor(favoriteId)
-        res(null, result)
+        res(null, { ...result, settings: hueBridge.getUserSettings() })
       } catch (error) {
         cerr('Remove favorite color error:', error)
         res({ error: error.message })

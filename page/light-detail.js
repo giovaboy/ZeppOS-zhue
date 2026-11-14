@@ -695,7 +695,7 @@ Page(
         .then(result => {
           logger.debug('Add favorite color result:', result)
           if (result.success && result.added) {
-            this.reloadFavoriteColors()
+            this.reloadFavoriteColors(result.settings)
           } else if (result.success && !result.added) {
             showToast({ text: getText('DUPLICATE_FAVORITE_COLOR') })
           }
@@ -733,7 +733,7 @@ Page(
             })
               .then(result => {
                 if (result.success) {
-                  this.reloadFavoriteColors()
+                  this.reloadFavoriteColors(result.settings)
                 }
               })
           }
@@ -745,7 +745,14 @@ Page(
       dialog.show(true)
     },
 
-    reloadFavoriteColors() {
+    // settings: from the add/remove reply (the phone sends them along); asked
+    // for only when missing (an older phone side)
+    reloadFavoriteColors(settings) {
+      if (settings) {
+        app.updateSettings(settings)
+        this.renderPage()
+        return
+      }
       this.request({ method: 'GET_USER_SETTINGS' })
         .then(settingsResult => {
           if (settingsResult.success && settingsResult.settings) {

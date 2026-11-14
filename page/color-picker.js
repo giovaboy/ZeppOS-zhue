@@ -171,10 +171,11 @@ Page(
 
         sendColor(h, s, final = true) {
             if (!final) {
-                const bri = this.state.bri;
-                this.liveSend('color', [h, s, bri], false, () => this._gate.run('color', () => this.request({
+                // bri read when the request leaves: a queued color must not bring back
+                // the brightness it was queued with (the slider may have moved since)
+                this.liveSend('color', [h, s, this.state.bri], false, () => this._gate.run('color', () => this.request({
                     method: 'SET_HS',
-                    params: { lightId: this.state.lightId, hue: h, sat: s, bri }
+                    params: { lightId: this.state.lightId, hue: h, sat: s, bri: this.state.bri }
                 }).catch(e => logger.error(e)), true));
                 return;
             }
@@ -198,10 +199,11 @@ Page(
             }
             // Color and white share one slot: while one is in flight only the
             // latest choice waits, so the light ends on what was picked last
-            const bri = this.state.bri;
+            // bri read when the request leaves: a queued color must not bring back
+            // the brightness it was queued with (the slider may have moved since)
             this._gate.run('color', () => this.request({
                 method: 'SET_HS',
-                params: { lightId: this.state.lightId, hue: h, sat: s, bri }
+                params: { lightId: this.state.lightId, hue: h, sat: s, bri: this.state.bri }
             }).catch(e => logger.error(e)), true);
         },
 
@@ -238,10 +240,11 @@ Page(
 
         sendCT(ctVal, final = true) {
             if (!final) {
-                const bri = this.state.bri
-                this.liveSend('color', ['ct', ctVal, bri], false, () => this._gate.run('color', () => this.request({
+                // bri read when the request leaves: a queued color must not bring back
+                // the brightness it was queued with (the slider may have moved since)
+                this.liveSend('color', ['ct', ctVal, this.state.bri], false, () => this._gate.run('color', () => this.request({
                     method: 'SET_COLOR',
-                    params: { lightId: this.state.lightId, ct: ctVal, bri, hue: null, sat: null }
+                    params: { lightId: this.state.lightId, ct: ctVal, bri: this.state.bri, hue: null, sat: null }
                 }).catch(e => logger.error('Set CT error:', e)), true))
                 return
             }
@@ -259,13 +262,14 @@ Page(
                 this.updateLight(light)
             }
 
-            const bri = this.state.bri
+            // bri read when the request leaves: a queued color must not bring back
+            // the brightness it was queued with (the slider may have moved since)
             this._gate.run('color', () => this.request({
                 method: 'SET_COLOR', // General method usually handles ct too
                 params: {
                     lightId: this.state.lightId,
                     ct: ctVal,
-                    bri,
+                    bri: this.state.bri,
                     hue: null,
                     sat: null
                 }
