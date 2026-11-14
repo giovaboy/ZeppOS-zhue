@@ -153,8 +153,9 @@ function renderCTPicker(pageContext, state, callbacks) {
         w: ctPickerW,
         h: pickerSize,
         auto_scale: true,
-        src: 'ct-picker.png',
-        radius: 5
+        // A pill: its ends are transparent in the image (an IMG ignores
+        // radius), made by tools/gen-ct-picker.cjs at this size
+        src: 'ct-picker.png'
     })
 
     // Mappa CT su Y
