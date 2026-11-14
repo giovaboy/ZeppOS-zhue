@@ -79,6 +79,11 @@ export const DEFAULT_USER_SETTINGS = {
 // Widget shortcuts storage key (device localStorage)
 export const WIDGET_SHORTCUTS_KEY = 'widget_shortcuts'
 export const MAX_WIDGET_SHORTCUTS = 9
+// The shortcut card shows a light on or off only while its state was
+// confirmed less than this long ago (utils/shortcuts.js); an older state is
+// shown as unknown: the lights may have changed meanwhile (the Hue app, a
+// switch), and the card cannot ask the phone
+export const CARD_STATE_FRESH_MS = 30 * 60 * 1000
 
 // Default widget shortcuts
 export const DEFAULT_WIDGET_SHORTCUTS = Array.from(

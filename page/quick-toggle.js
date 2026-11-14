@@ -4,7 +4,7 @@
 
 import { BasePage } from '@zeppos/zml/base-page'
 import { loggedPage, infoLog, warnLog } from '../utils/remote-log.js'
-import { rememberOnOff } from '../utils/shortcuts.js'
+import { rememberOnOff, rememberLights, cardLightIds } from '../utils/shortcuts.js'
 import { back } from '@zos/router'
 import { createWidget, widget, deleteWidget, align } from '@zos/ui'
 import { getDeviceInfo } from '@zos/device'
@@ -141,14 +141,17 @@ Page(
             lightId: this.state.lightId,
             // Names this tap: a request delivered twice toggles the light
             // once (app-side handleWidgetToggleLight)
-            tapId: `${t0.toString(36)}${Math.floor(Math.random() * 1296).toString(36)}`
+            tapId: `${t0.toString(36)}${Math.floor(Math.random() * 1296).toString(36)}`,
+            // The phone answers with the states of all the card's lights
+            cardLightIds: cardLightIds()
           }
         })
         .then(result => {
           logger.log('Toggle result:', result)
           if (result.success) infoLog(`[quick-toggle] light ${this.state.lightId} now ${result.newState ? 'on' : 'off'}, ${Date.now() - t0}ms from the tap`)
           // The card shows it so when it comes back (only on / off is known)
-          if (result.success) rememberOnOff(this.state.lightId, result.newState)
+          if (result.success && result.cardLights) rememberLights(result.cardLights.map((l) => [l.id, l]))
+          else if (result.success) rememberOnOff(this.state.lightId, result.newState)
           this.state.status = result.success ? 'success' : 'error'
           // Torna indietro
           this.goBackAfterDelay(200)

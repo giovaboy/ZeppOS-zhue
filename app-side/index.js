@@ -121,6 +121,24 @@ function bodySize(body) {
 // The home's scenes, kept this long on the phone (getScenesForGroup)
 const SCENES_CACHE_MS = 60000
 
+// The lights of the watch's shortcut card as they are now: the card can't
+// ask the phone, so the watch sends their ids with START (each app start) and
+// with a toggle from the card, and keeps what comes back for the card. One
+// read of every light; a failure leaves the reply without them
+async function cardLightStates(ids) {
+  if (!Array.isArray(ids) || !ids.length) return undefined
+  try {
+    const wanted = new Set(ids.map(String))
+    const all = await hueBridge.getLights()
+    return all
+      .filter((l) => wanted.has(String(l.id)))
+      .map((l) => ({ id: l.id, ison: l.ison, reachable: l.reachable, colormode: l.colormode, hex: l.hex, ct: l.ct, xy: l.xy, bri: l.bri, modelid: l.modelid }))
+  } catch (e) {
+    wlog(`[card] states of ${ids.length} card lights not read: ${errorText(e)}`)
+    return undefined
+  }
+}
+
 // A command the watch sent with withState (a favorite applied) gets the light
 // as it is now in its reply: the watch asked for it with GET_LIGHT_DETAIL
 // right after, a second round trip (~1-1.5 s). Not for the live drags, which
@@ -170,6 +188,7 @@ function resultForLog(data) {
     if (Array.isArray(d.scenes)) parts.push(`${d.scenes.length} scenes`)
     if (d.light) parts.push(`light ${d.light.ison ? 'on' : 'off'}${d.light.reachable === false ? ' (unreachable)' : ''}`)
   }
+  if (Array.isArray(data.cardLights)) parts.push(`${data.cardLights.length} card lights`)
   if (data.light) parts.push(`light ${data.light.ison ? 'on' : 'off'}${data.light.reachable === false ? ' (unreachable)' : ''}`)
   if (Array.isArray(data.bridges)) parts.push(`${data.bridges.length} bridges`)
   if (data.connected !== undefined) parts.push(data.connected ? 'connected' : `not connected (${data.reason || '?'})`)
@@ -1608,7 +1627,7 @@ AppSideService(
           break
 
         case 'START':
-          this.handleStart(res)
+          this.handleStart(req, res)
           break
 
         case 'DISCOVER_BRIDGES':
@@ -1710,13 +1729,17 @@ AppSideService(
     // that the bridge answered) then GET_GROUPS: two round trips from the
     // watch, ~1-1.5 s each, at every start. Reading the groups tells as much
     // (an unknown key or an unreachable bridge fails the same way).
-    async handleStart(res) {
+    async handleStart(req, res) {
       if (!hueBridge.demo && (!hueBridge.bridgeIp || !hueBridge.username)) {
         res(null, { connected: false, reason: 'Not configured' })
         return
       }
       try {
-        const groups = await hueBridge.getGroups()
+        // The shortcut card's lights read at the same time (cardLightStates)
+        const [groups, cardLights] = await Promise.all([
+          hueBridge.getGroups(),
+          cardLightStates(req.params && req.params.cardLightIds)
+        ])
         res(null, {
           connected: true,
           success: true,
@@ -1724,7 +1747,8 @@ AppSideService(
             rooms: groups.rooms,
             zones: groups.zones,
             userSettings: hueBridge.getUserSettings()
-          }
+          },
+          cardLights
         })
       } catch (error) {
         cerr('Start error:', error)
@@ -2002,7 +2026,7 @@ AppSideService(
           const newState = !light.ison
           hueBridge._handleDemoAction(lightId, { ison: newState })
 
-          res(null, { success: true, newState })
+          res(null, { success: true, newState, cardLights: await cardLightStates(req.params.cardLightIds) })
           return
         }
 
@@ -2029,7 +2053,9 @@ AppSideService(
           body: JSON.stringify({ on: newState })
         })
 
-        res(null, { success: true, newState })
+        // With the true state of every card light: each tap brings the whole
+        // card in line with the lights
+        res(null, { success: true, newState, cardLights: await cardLightStates(req.params.cardLightIds) })
       } catch (error) {
         cerr('Widget toggle light error:', error)
         res({ error: error.message })

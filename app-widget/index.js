@@ -5,7 +5,7 @@ import { localStorage } from '@zos/storage'
 import { push } from '@zos/router'
 import { px } from '@zos/utils'
 import { getText } from '@zos/i18n'
-import { COLORS, MAX_WIDGET_SHORTCUTS, WIDGET_SHORTCUTS_KEY, DEFAULT_WIDGET_SHORTCUTS, LIGHT_MODELS, ICON_IMAGE_SIZE, btnPressColor } from '../utils/constants'
+import { COLORS, MAX_WIDGET_SHORTCUTS, WIDGET_SHORTCUTS_KEY, DEFAULT_WIDGET_SHORTCUTS, LIGHT_MODELS, ICON_IMAGE_SIZE, CARD_STATE_FRESH_MS, btnPressColor } from '../utils/constants'
 import { getLogger } from '../utils/logger.js'
 
 const logger = getLogger('zhue-app-widget')
@@ -228,8 +228,11 @@ AppWidget({
   },
 
   // The light as zhue last saw it (utils/shortcuts.js; the card can't ask
-  // the phone): its model's icon over its color, grey while off or unknown,
-  // and a green ring while on, as on the light's page. The icon is a
+  // the phone): its model's icon over its color with a green ring while on,
+  // grey with a grey ring while off, as on the light's page. Only while the
+  // state was confirmed less than CARD_STATE_FRESH_MS ago (an app start, a
+  // tap on the card, the light seen in the app): older, it is unknown, grey
+  // with no ring (the lights may have changed meanwhile). The icon is a
   // #333333 mask: it sits on a tile of that grey, whatever the card's own
   // background (#303030 in the simulator). The tile doesn't darken when
   // pressed (the mask's square would show); the tap opens quick-toggle at once
@@ -246,7 +249,9 @@ AppWidget({
     })
     const ix = x + (ICON_SIZE - ICON_IMAGE_SIZE) / 2
     const iy = y + (ICON_SIZE - ICON_IMAGE_SIZE) / 2
-    const isOn = shortcut.ison === true
+    const fresh = typeof shortcut.at === 'number' && Date.now() - shortcut.at < CARD_STATE_FRESH_MS
+    const isOn = fresh && shortcut.ison === true
+    const isOff = fresh && shortcut.ison === false
     passThrough(this.createTrackedWidget(widget.FILL_RECT, {
       x: ix + 1, y: iy + 1, w: ICON_IMAGE_SIZE - 2, h: ICON_IMAGE_SIZE - 2,
       color: isOn && shortcut.color !== undefined ? shortcut.color : COLORS.inactive
@@ -255,12 +260,12 @@ AppWidget({
       x: ix, y: iy, w: ICON_IMAGE_SIZE, h: ICON_IMAGE_SIZE,
       src: `icons/${(LIGHT_MODELS[shortcut.modelid] || LIGHT_MODELS.default).icon}.png`
     }))
-    if (isOn) {
+    if (isOn || isOff) {
       passThrough(this.createTrackedWidget(widget.STROKE_RECT, {
         ...box,
         radius: TILE_RADIUS,
         line_width: px(3),
-        color: COLORS.success
+        color: isOn ? COLORS.success : COLORS.toggleOff
       }))
     }
   },

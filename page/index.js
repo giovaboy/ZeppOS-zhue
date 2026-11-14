@@ -8,6 +8,7 @@ import { getText } from '@zos/i18n'
 import { px } from '@zos/utils'
 import { setPageBrightTime } from '@zos/display'
 import { getLogger } from '../utils/logger.js'
+import { cardLightIds, rememberLights } from '../utils/shortcuts.js'
 
 const STATES = {
   LOADING: 'LOADING',
@@ -154,10 +155,13 @@ Page(
       logger.log('Checking initial connection...')
       // One round trip: the phone checks the bridge and brings its groups
       // (it was a check, then a second request for the groups)
-      this.request({ method: 'START' })
+      // The card's lights go with it: the phone sends their states back
+      this.request({ method: 'START', params: { cardLightIds: cardLightIds() } })
         .then(result => {
           if (result.connected && result.data) {
             app.setGroupsData(result.data)
+            // The shortcut card's lights as they are now (each app start)
+            if (result.cardLights) rememberLights(result.cardLights.map((l) => [l.id, l]))
             this.setState(STATES.SUCCESS)
           } else {
             this.setState(STATES.SEARCHING_BRIDGE)

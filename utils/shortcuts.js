@@ -37,36 +37,56 @@ export function writeShortcuts(list) {
 // What the card shows of a light: on / off, and its color, kept while off too
 // (the card turns it grey): switched on from the card, whose answer says
 // only on or off, it shows in its color again
+// `at`: when the state was last confirmed. The card shows on / off only while
+// it is younger than CARD_STATE_FRESH_MS, an unknown state after that
 export function cardState(light) {
-  return { ison: !!light.ison && light.reachable !== false, color: lightDisplayColor(light) }
+  return { ison: !!light.ison && light.reachable !== false, color: lightDisplayColor(light), at: Date.now() }
 }
 
-// Switched from the card: only on / off is known
+// An unchanged state is confirmed again (its `at` written) at most this often:
+// every save rewrites all of localStorage
+const CONFIRM_EVERY_MS = 5 * 60 * 1000
+
+// Switched from the card with no states in the answer: only on / off is known
 export function rememberOnOff(lightId, ison) {
   const list = readShortcuts()
   const slot = list.find((s) => s && s.lightId !== null && String(s.lightId) === String(lightId))
-  if (!slot || slot.ison === !!ison) return
+  if (!slot) return
   slot.ison = !!ison
+  slot.at = Date.now()
   writeShortcuts(list)
 }
 
 // The state of lights the app just saw ([[lightId, light], ...]), kept for
-// those on the card; written only if one changed
+// those on the card; written if one changed, or to confirm an unchanged one
+// whose confirmation is older than CONFIRM_EVERY_MS
 export function rememberLights(pairs) {
   const list = readShortcuts()
+  const now = Date.now()
   let changed = 0
+  let confirmed = 0
   for (const [lightId, light] of pairs) {
     if (lightId === undefined || lightId === null || !light) continue
     const slot = list.find((s) => s && s.lightId !== null && String(s.lightId) === String(lightId))
     if (!slot) continue
     const { ison, color } = cardState(light)
-    if (slot.ison === ison && slot.color === color && (!light.modelid || slot.modelid === light.modelid)) continue
+    const same = slot.ison === ison && slot.color === color && (!light.modelid || slot.modelid === light.modelid)
+    if (same && slot.at && now - slot.at < CONFIRM_EVERY_MS) continue
+    if (same) confirmed++
+    else changed++
     slot.ison = ison
     slot.color = color
+    slot.at = now
     if (light.modelid) slot.modelid = light.modelid
-    changed++
   }
-  if (changed && writeShortcuts(list) && LOG_TRACE) devLog(`[card] state of ${changed} card lights saved`)
+  if ((changed || confirmed) && writeShortcuts(list) && LOG_TRACE) {
+    devLog(`[card] ${changed} card lights changed, ${confirmed} confirmed`)
+  }
+}
+
+// The ids of the card's lights, for the phone to send their states
+export function cardLightIds() {
+  return readShortcuts().filter((s) => s && s.lightId !== null && s.lightId !== undefined).map((s) => s.lightId)
 }
 
 export function rememberLight(lightId, light) {
