@@ -208,7 +208,7 @@ Page(
       const anyOn = this.state.lights.some(light => !!light.ison)
       const newState = !anyOn
 
-      return this.request({
+      return app.trackLight(this.state.lights.map((l) => l.id), this.request({
           method: 'TOGGLE_GROUP',
           params: {
             groupId: this.state.groupId,
@@ -248,7 +248,7 @@ Page(
             light.ison = !newState
           })
           this.renderPage()
-        })
+        }))
     },
 
     toggleLight(light) {
@@ -259,7 +259,7 @@ Page(
       const currentOnState = light.ison
       const newState = !currentOnState
 
-      return this.request({
+      return app.trackLight([light.id], this.request({
           method: 'TOGGLE_LIGHT',
           params: {
             lightId: light.id,
@@ -302,7 +302,7 @@ Page(
           light.ison = currentOnState
           this.renderPage()
           logger.error('Toggle light error:', err)
-        })
+        }))
     },
 
 

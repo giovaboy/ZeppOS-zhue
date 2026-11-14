@@ -60,6 +60,7 @@ Page(
       this.widgets = []
       this.currentModal = null
       this._gate = createGate('light-detail')
+      this._gone = false
 
       let params = {}
       try {
@@ -167,7 +168,9 @@ Page(
       } else if (this.state.light) {
         logger.log('Have cached data, rendering page...')
         this.renderPage()
-        if (this._stale) setTimeout(() => this.refreshQuietly(), 10)
+        const inFlight = app.lightInFlight(this.state.lightId)
+        if (inFlight) this.waitForCommand(inFlight)
+        else if (this._stale) setTimeout(() => this.refreshQuietly(), 10)
       } else {
         logger.warn('Unexpected state: no loading flag and no data')
         this.state.isLoading = true
@@ -544,6 +547,30 @@ Page(
         })
     },
 
+    // A toggle sent from the group page, still in flight when this page
+    // opened: the power button breathes, a tap on it waits (the gate) and
+    // then reads the state it left; the light shown is the one its answer
+    // put in the cache. (Without it the page showed the light as before the
+    // tap, and a tap on power sent "on" to a light already turning on.)
+    waitForCommand(promise) {
+      const t0 = Date.now()
+      const version = this._version
+      this._gate.run('toggle', () => busyOn(this, 'power', () => promise.then(() => {
+        const cached = app.getCachedLight(this.state.lightId)
+        if (this._gone || !cached) return
+        if (this._version !== version) {
+          infoLog(`[light-detail] the group page's command answered in ${Date.now() - t0}ms, after one sent here: dropped`)
+          return
+        }
+        // A drag of the slider owns the brightness until its release
+        const dragging = this.state.isDraggingBrightness
+        this.updateLight(dragging ? { ison: cached.light.ison } : cached.light, false)
+        if (!dragging) this.state.tempBrightness = this.state.light.bri || 0
+        infoLog(`[light-detail] waited ${Date.now() - t0}ms for the group page's command: light ${this.state.light.ison ? 'on' : 'off'}`)
+        this.renderPage()
+      })))
+    },
+
     loadLightDetail() {
       logger.log('Loading light detail...')
       logger.debug('Light ID:', this.state.lightId)
@@ -849,6 +876,7 @@ Page(
     },
 
     onDestroy() {
+      this._gone = true
       this.state.isLoading = false
       if (this._keys) this._keys.stop()
       stopPulses(this)
