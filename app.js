@@ -226,6 +226,17 @@ App(
       return data
     },
 
+    // A light from the cache whatever its age, and whether it is still fresh:
+    // the light page shows it at once and, when it is old, reads the light
+    // again behind it (it used to show "Loading" ~1.5 s each time, e.g. back
+    // from the color picker after more than TTL)
+    getCachedLight(lightId) {
+      const data = this.globalData.lightData[lightId]
+      if (!data) return null
+      const fresh = this.isDemoMode() || Date.now() - (data._timestamp || 0) <= TTL
+      return { light: data, fresh }
+    },
+
     setLightData(lightId, lightData) {
       logger.debug('Global Store: Setting current light data', lightData?.id)
       this.globalData.lightData[lightId] = {

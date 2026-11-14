@@ -1,5 +1,5 @@
 import { BasePage } from '@zeppos/zml/base-page'
-import { loggedPage, warnLog } from '../utils/remote-log.js'
+import { loggedPage, infoLog, warnLog } from '../utils/remote-log.js'
 import { createGate } from '../utils/request-gate.js'
 import { createDragGuard } from '../utils/drag-guard.js'
 import { bindKeyNav } from '../utils/key-nav.js'
@@ -89,13 +89,17 @@ Page(
       app.setCurrentLightId(targetId) // Rinforziamo il dato
       this.state.lightName = params?.lightName || getText('LIGHT')
 
-      // Prova a usare i dati dal global store
-      const cachedLightData = app.getLightData(this.state.lightId)
+      // The light as last known, shown at once; when older than the cache's
+      // TTL it is read again behind it (build: refreshQuietly)
+      const cached = app.getCachedLight(this.state.lightId)
+      this._stale = false
+      this._version = 0
 
-      if (cachedLightData) {
+      if (cached) {
         logger.log('Using cached light data from global store')
-        this.state.light = cachedLightData
+        this.state.light = cached.light
         this.state.isLoading = false
+        this._stale = !cached.fresh
       } else {
         logger.log('No cached light data available, will load from API')
         this.state.isLoading = true
@@ -163,6 +167,7 @@ Page(
       } else if (this.state.light) {
         logger.log('Have cached data, rendering page...')
         this.renderPage()
+        if (this._stale) setTimeout(() => this.refreshQuietly(), 10)
       } else {
         logger.warn('Unexpected state: no loading flag and no data')
         this.state.isLoading = true
@@ -509,6 +514,36 @@ Page(
       return (r === g && g === b) ? COLORS.lightBg : bg
     },
 
+    // The light read again behind the page already shown (from an old cache):
+    // no "Loading", no error page (what is shown stays); dropped if a command
+    // answered meanwhile (its state is newer than this read's)
+    refreshQuietly() {
+      const version = this._version
+      const t0 = Date.now()
+      this.request({
+        method: 'GET_LIGHT_DETAIL',
+        params: { lightId: this.state.lightId }
+      })
+        .then(result => {
+          if (!result.success || !result.data || !result.data.light) throw result
+          // A drag of the slider owns the brightness until its release (which
+          // sends it): the read would reset the value being dragged
+          const why = this._version !== version ? 'a command answered'
+            : this.state.isDraggingBrightness ? 'the slider was dragged' : null
+          if (why) {
+            infoLog(`[light-detail] refresh dropped: ${why} in its ${Date.now() - t0}ms`)
+            return
+          }
+          this.updateLight(result.data.light)
+          this.state.tempBrightness = this.state.light.bri || 0
+          this.renderPage()
+        })
+        .catch(err => {
+          warnLog(`[light-detail] refresh failed after ${Date.now() - t0}ms: the cached light stays`)
+          logger.error('Quiet refresh error:', err)
+        })
+    },
+
     loadLightDetail() {
       logger.log('Loading light detail...')
       logger.debug('Light ID:', this.state.lightId)
@@ -766,6 +801,8 @@ Page(
     },
 
     updateLight(updates, syncWithGlobal = true) {
+      // Every answer that brings the light counts (refreshQuietly)
+      this._version = (this._version || 0) + 1
       this.state.light = {
         ...this.state.light,
         ...updates
