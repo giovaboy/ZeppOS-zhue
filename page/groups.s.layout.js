@@ -4,7 +4,8 @@ import { widget, align, text_style, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { getLogger } from '../utils/logger.js'
 import { COLORS, btnPressColor, getGroupIconPath, ICON_IMAGE_SIZE } from '../utils/constants.js'
-import { createScrollView, RING_ON_ACCENT } from '../utils/key-nav.js'
+import { createScrollView } from '../utils/key-nav.js'
+import { renderTabs, TAB_Y, TAB_H } from '../utils/tabs.js'
 import { renderLoading } from '../utils/loading.js'
 import { setStatusBarVisible } from '@zos/ui'
 
@@ -15,11 +16,9 @@ const logger = getLogger('zhue-groups-layout')
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
 export const LAYOUT_CONFIG = {
-    tabY: px(20),
-    tabH: px(60),
-    gapY: px(10),
-    tabW: px(180),
-    tabXGap: px(5)
+    tabY: TAB_Y,
+    tabH: TAB_H,
+    gapY: px(10)
 }
 
 export function renderGroupsPage(pageContext, state, listData, callbacks) {
@@ -64,68 +63,14 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
         return
     }
 
-    // 3. Tabs
-    const totalW = (LAYOUT_CONFIG.tabW * 2) + LAYOUT_CONFIG.tabXGap;
-    const startX = (DEVICE_WIDTH - totalW) / 2;
-    const isRooms = currentTab === 'ROOMS'
-
-    // A larger touch area for each tab: the band above the list, split in
-    // two halves (the tabs sit in the narrow top of a round screen).
-    // Transparent buttons made before the tabs, so under them: a tap on a tab
-    // still shows its pressed color, a tap elsewhere in its half switches too
-    const bandH = LAYOUT_CONFIG.tabY + LAYOUT_CONFIG.tabH + LAYOUT_CONFIG.gapY - px(4);
-    [['ROOMS', 0], ['ZONES', DEVICE_WIDTH / 2]].forEach(([tab, x]) => {
-        const area = pageContext.createTrackedWidget(widget.BUTTON, {
-            x, y: 0, w: DEVICE_WIDTH / 2, h: bandH,
-            text: '',
-            normal_color: 0x000000,
-            press_color: 0x000000,
-            click_func: () => switchTab(tab)
-        });
-        area.setAlpha(0);
-    });
-
-    // Tab Rooms
-    pageContext.createTrackedWidget(widget.BUTTON, {
-        x: startX,
-        y: LAYOUT_CONFIG.tabY,
-        w: LAYOUT_CONFIG.tabW,
-        h: LAYOUT_CONFIG.tabH,
-        text: getText('ROOMS'),
-        text_size: px(24),
-        color: isRooms ? COLORS.activeTabText : COLORS.inactiveTabText,
-        normal_color: isRooms ? COLORS.activeTab : COLORS.inactiveTab,
-        press_color: btnPressColor(COLORS.activeTab),
-        radius: px(8),//LAYOUT_CONFIG.tabH / 2,
-        click_func: () => switchTab('ROOMS')
+    // 3. Tabs (utils/tabs.js, twins of the color picker's), first for the keys
+    renderTabs(pageContext, {
+        tabs: [['ROOMS', getText('ROOMS')], ['ZONES', getText('ZONES')]],
+        current: currentTab,
+        onSwitch: switchTab,
+        bandH: LAYOUT_CONFIG.tabY + LAYOUT_CONFIG.tabH + LAYOUT_CONFIG.gapY - px(4),
+        nav
     })
-
-    // Tab Zones
-    const isZones = currentTab === 'ZONES'
-    pageContext.createTrackedWidget(widget.BUTTON, {
-        x: startX + LAYOUT_CONFIG.tabW + LAYOUT_CONFIG.tabXGap,
-        y: LAYOUT_CONFIG.tabY,
-        w: LAYOUT_CONFIG.tabW,
-        h: LAYOUT_CONFIG.tabH,
-        text: getText('ZONES'),
-        text_size: px(24),
-        color: isZones ? COLORS.activeTabText : COLORS.inactiveTabText,
-        normal_color: isZones ? COLORS.activeTab : COLORS.inactiveTab,
-        press_color: btnPressColor(COLORS.activeTab),
-        radius: px(8),//LAYOUT_CONFIG.tabH / 2,
-        click_func: () => switchTab('ZONES')
-    })
-
-    // Keys (utils/key-nav.js): the two tabs come first
-    if (nav) {
-        const tabX = [startX, startX + LAYOUT_CONFIG.tabW + LAYOUT_CONFIG.tabXGap]
-        ;['ROOMS', 'ZONES'].forEach((tab, i) => nav.items.push({
-            key: `tab:${tab}`,
-            x: tabX[i], y: LAYOUT_CONFIG.tabY, w: LAYOUT_CONFIG.tabW, h: LAYOUT_CONFIG.tabH, radius: px(8),
-            ringColor: currentTab === tab ? RING_ON_ACCENT : undefined,
-            select: () => switchTab(tab)
-        }))
-    }
 
     // 4. Lista con VIEW_CONTAINER
     const listStartY = LAYOUT_CONFIG.tabY + LAYOUT_CONFIG.tabH + LAYOUT_CONFIG.gapY

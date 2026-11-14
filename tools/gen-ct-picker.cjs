@@ -13,9 +13,9 @@ const zlib = require('zlib')
 const ROOT = path.join(__dirname, '..')
 const FILES = ['assets/default.r/ct-picker.png', 'assets/default.s/ct-picker.png']
 // The size it is drawn at on a 480 px screen (color-picker.*.layout.js:
-// w = 2 × px(36), h = pickerSize = px(300)): auto_scale keeps the ends round
+// w = 2 × px(36), h = pickerSize = px(280)): auto_scale keeps the ends round
 const W = 72
-const H = 300
+const H = 280
 const RADIUS = W / 2
 const SS = 4 // supersampling of the edges
 

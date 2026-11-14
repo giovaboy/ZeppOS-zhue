@@ -3,14 +3,16 @@ import { px } from '@zos/utils'
 import { widget, align, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { HUE_RANGE, SAT_RANGE, BRI_RANGE, CT_MIN, CT_MAX, COLORS, hsb2hex, btnPressColor } from '../utils/constants.js'
+import { renderTabs as renderTabs2Up, TAB_Y, TAB_H } from '../utils/tabs.js'
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
 // Configurazione Layout
 export const LAYOUT_CONFIG = {
-    pickerSize: px(300), // Area grande centrale
-    pickerX: (DEVICE_WIDTH - px(300)) / 2,
-    pickerY: px(70),     // Spazio per i tab sopra
+    // Under the tabs (utils/tabs.js: y 20, 60 high), 10 below them
+    pickerSize: px(280), // Area grande centrale
+    pickerX: (DEVICE_WIDTH - px(280)) / 2,
+    pickerY: TAB_Y + TAB_H + px(10),
     sliderW: px(300),
     sliderH: px(50),
     sliderX: (DEVICE_WIDTH - px(300)) / 2,
@@ -43,48 +45,13 @@ export function renderColorPickerPage(pageContext, state, callbacks) {
 }
 
 function renderTabs(pageContext, currentMode, onTabSwitch) {
-    const btnW = px(100);
-    const btnH = px(40);
-    const y = px(20);
-    const gap = px(10);
-    const totalW = (btnW * 2) + gap;
-    const startX = (DEVICE_WIDTH - totalW) / 2;
-
-    // A larger touch area for each tab: the band above the picker, split in
-    // two halves (the tabs are small, in the narrow top of a round screen).
-    // Transparent buttons made before the tabs, so under them: a tap on a tab
-    // still shows its pressed color, a tap elsewhere in its half switches too
-    const bandH = LAYOUT_CONFIG.pickerY - px(4);
-    [['color', 0], ['ct', DEVICE_WIDTH / 2]].forEach(([tab, x]) => {
-        const area = pageContext.createTrackedWidget(widget.BUTTON, {
-            x, y: 0, w: DEVICE_WIDTH / 2, h: bandH,
-            text: '',
-            normal_color: 0x000000,
-            press_color: 0x000000,
-            click_func: () => { if (tab !== currentMode) onTabSwitch(tab) }
-        });
-        area.setAlpha(0);
-    });
-
-    // Tab Color
-    pageContext.createTrackedWidget(widget.BUTTON, {
-        x: startX, y: y, w: btnW, h: btnH,
-        text: getText('COLOR'),
-        radius: px(8),
-        normal_color: currentMode === 'color' ? COLORS.activeTab : COLORS.inactiveTab,
-        press_color: btnPressColor(COLORS.activeTab),
-        click_func: () => onTabSwitch('color')
-    });
-
-    // Tab White
-    pageContext.createTrackedWidget(widget.BUTTON, {
-        x: startX + btnW + gap, y: y, w: btnW, h: btnH,
-        text: getText('WHITE'),
-        radius: px(8),
-        normal_color: currentMode === 'ct' ? COLORS.activeTab : COLORS.inactiveTab,
-        press_color: btnPressColor(COLORS.activeTab),
-        click_func: () => onTabSwitch('ct')
-    });
+    // utils/tabs.js: twins of Rooms / Zones
+    renderTabs2Up(pageContext, {
+        tabs: [['color', getText('COLOR')], ['ct', getText('WHITE')]],
+        current: currentMode,
+        onSwitch: onTabSwitch,
+        bandH: LAYOUT_CONFIG.pickerY - px(4)
+    })
 }
 
 function renderHueSatPicker(pageContext, state, callbacks) {
