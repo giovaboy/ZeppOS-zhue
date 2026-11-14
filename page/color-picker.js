@@ -7,11 +7,12 @@ import { createWidget, deleteWidget, prop } from '@zos/ui'
 import { back } from '@zos/router'
 import { createDragGuard } from '../utils/drag-guard.js'
 import { getLogger } from '../utils/logger.js'
-import { HUE_RANGE, SAT_RANGE, BRI_RANGE, CT_MIN, CT_MAX, hsb2hex, ct2hexString } from '../utils/constants.js'
+import { HUE_RANGE, SAT_RANGE, BRI_RANGE, hsb2hex, ct2hexString } from '../utils/constants.js'
 
 // Import Layout
 import { renderColorPickerPage, LAYOUT_CONFIG } from 'zosLoader:./color-picker.[pf].layout.js'
 import { xToCt, ctToKnobX, kelvinText } from './layouts/ct-bar.js'
+import { xyToHs, moveWheelCursor } from './layouts/hs-wheel.js'
 
 const logger = getLogger('zhue-color-picker-page')
 const app = getApp()
@@ -28,7 +29,7 @@ Page(
             supportsCT: false,
             mode: 'color',
             isDragging: false,
-            cursorWidget: null,
+            cursorWidgets: null,
             ctCursorWidget: null,
             ctLabelWidget: null,
             briFillWidget: null,
@@ -43,7 +44,7 @@ Page(
             // previous picker left (a drag, widget handles) is reset here
             Object.assign(this.state, {
                 isDragging: false,
-                cursorWidget: null,
+                cursorWidgets: null,
                 ctCursorWidget: null,
                 ctLabelWidget: null,
                 briFillWidget: null,
@@ -109,7 +110,7 @@ Page(
                 }
             });
             this.widgets = [];
-            this.state.cursorWidget = null;
+            this.state.cursorWidgets = null;
             this.state.ctCursorWidget = null;
             this.state.ctLabelWidget = null;
             this.state.briFillWidget = null;
@@ -131,20 +132,8 @@ Page(
 
         // --- LOGICA DRAG COLOR (Hue/Sat) ---
         handleColorDrag(evt, info) {
-            const { pickerX, pickerY, pickerSize } = LAYOUT_CONFIG;
-
-            // Calcolo valori da coordinate
-            const calcValues = (x, y) => {
-                let nX = (x - pickerX) / pickerSize;
-                let nY = (y - pickerY) / pickerSize;
-                nX = Math.max(0, Math.min(1, nX));
-                nY = Math.max(0, Math.min(1, nY));
-
-                return {
-                    hue: Math.round(nX * HUE_RANGE),
-                    sat: Math.round((1 - nY) * SAT_RANGE) // Y invertita (in alto sat max)
-                };
-            };
+            // A point on the color wheel → hue, sat (layouts/hs-wheel.js)
+            const calcValues = (x, y) => xyToHs(LAYOUT_CONFIG.wheel, x, y);
 
             if (evt === 'DOWN') {
                 if (this._drag) this._drag.start();
@@ -168,19 +157,7 @@ Page(
         updateColorUI(h, s) {
             this.state.hue = h;
             this.state.sat = s;
-            if (this.state.cursorWidget) {
-                const { pickerX, pickerY, pickerSize } = LAYOUT_CONFIG;
-                const x = pickerX + (h / HUE_RANGE) * pickerSize;
-                const y = pickerY + ((SAT_RANGE - s) / SAT_RANGE) * pickerSize;
-                this.state.cursorWidget.setProperty(prop.CENTER_X, x);
-                this.state.cursorWidget.setProperty(prop.CENTER_Y, y);
-                const cursorHex = hsb2hex(
-                    (h / HUE_RANGE) * 360,
-                    (s / SAT_RANGE) * 100,
-                    90 //(this.state.bri / BRI_RANGE) * 100
-                );
-                this.state.cursorWidget.setProperty(prop.COLOR, cursorHex);
-            }
+            moveWheelCursor(this, LAYOUT_CONFIG.wheel, h, s);
         },
 
         // While dragging (final false) the light follows the finger: each move

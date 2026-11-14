@@ -2,24 +2,23 @@ import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
 import { widget, align, event } from '@zos/ui'
 import { getText } from '@zos/i18n'
-import { HUE_RANGE, SAT_RANGE, BRI_RANGE, CT_MIN, CT_MAX, COLORS, hsb2hex, btnPressColor } from '../utils/constants.js'
+import { BRI_RANGE, COLORS } from '../utils/constants.js'
 import { renderTabs as renderTabs2Up, TAB_Y, TAB_H } from '../utils/tabs.js'
 import { renderCTBar, ctBarBox } from './layouts/ct-bar.js'
+import { renderWheel, wheelBox } from './layouts/hs-wheel.js'
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
 // Configurazione Layout
 export const LAYOUT_CONFIG = {
-    // Under the tabs (utils/tabs.js: y 20, 60 high), 10 below them
-    pickerSize: px(280), // Area grande centrale
-    pickerX: (DEVICE_WIDTH - px(280)) / 2,
-    pickerY: TAB_Y + TAB_H + px(10),
     sliderW: px(300),
     sliderH: px(50),
     sliderX: (DEVICE_WIDTH - px(300)) / 2,
     sliderY: DEVICE_HEIGHT - px(90), // In basso
     // The color temperature bar, between the tabs and the slider
-    ctBar: ctBarBox(TAB_Y + TAB_H, DEVICE_HEIGHT - px(90))
+    ctBar: ctBarBox(TAB_Y + TAB_H, DEVICE_HEIGHT - px(90)),
+    // The color wheel, between the tabs and the slider's touch area (20 above it)
+    wheel: wheelBox(TAB_Y + TAB_H + px(6), DEVICE_HEIGHT - px(90) - px(20))
 }
 
 export function renderColorPickerPage(pageContext, state, callbacks) {
@@ -53,58 +52,13 @@ function renderTabs(pageContext, currentMode, onTabSwitch) {
         tabs: [['color', getText('COLOR')], ['ct', getText('WHITE')]],
         current: currentMode,
         onSwitch: onTabSwitch,
-        bandH: LAYOUT_CONFIG.pickerY - px(4)
+        bandH: TAB_Y + TAB_H + px(6)
     })
 }
 
 function renderHueSatPicker(pageContext, state, callbacks) {
-    const { pickerX, pickerY, pickerSize } = LAYOUT_CONFIG;
-    const { hue, sat, bri } = state;
-    const { onDragColor } = callbacks;
-
-    pageContext.createTrackedWidget(widget.IMG, {
-        x: pickerX,
-        y: pickerY,
-        w: pickerSize,
-        h: pickerSize,
-        auto_scale: true,
-        src: 'color-picker-grid.png'
-    })
-
-    // B. Cursore
-    const cursorSize = px(28);
-    // Mappa Hue API (0-65535) su X (0-pickerSize)
-    const posX = pickerX + Math.max(0, Math.min(pickerSize, (hue / HUE_RANGE) * pickerSize));
-
-    // Mappa Sat API (0-254) su Y (0-pickerSize)
-    // 0 SAT (bianco) -> Basso (pickerY + pickerSize)
-    // 254 SAT (vivido) -> Alto (pickerY)
-    const posY = pickerY + Math.max(0, Math.min(pickerSize, (SAT_RANGE - sat) / SAT_RANGE * pickerSize));
-
-    // Il cursore mostra il colore ATTUALE della luce (H, S, B)
-    const currentHex = hsb2hex(
-        (hue / HUE_RANGE) * 360,
-        (sat / SAT_RANGE) * 100,
-        90//(bri / BRI_RANGE) * 100
-    );
-
-    const cursor = pageContext.createTrackedWidget(widget.CIRCLE, {
-        center_x: posX,
-        center_y: posY,
-        color: currentHex,//0xffffff,
-        radius: cursorSize / 2
-    });
-    pageContext.state.cursorWidget = cursor;
-
-    // C. Hitbox
-    const hitbox = pageContext.createTrackedWidget(widget.FILL_RECT, {
-        x: pickerX, y: pickerY, w: pickerSize, h: pickerSize,
-        color: 0, alpha: 0
-    });
-
-    hitbox.addEventListener(event.CLICK_DOWN, (info) => onDragColor('DOWN', info));
-    hitbox.addEventListener(event.MOVE, (info) => onDragColor('MOVE', info));
-    hitbox.addEventListener(event.CLICK_UP, (info) => onDragColor('UP', info));
+    // A color wheel, the cursor in a white ring (page/layouts/hs-wheel.js)
+    renderWheel(pageContext, LAYOUT_CONFIG.wheel, state.hue, state.sat, callbacks.onDragColor)
 }
 
 function renderCTPicker(pageContext, state, callbacks) {
