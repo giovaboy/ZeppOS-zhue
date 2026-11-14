@@ -137,7 +137,7 @@ msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "預設已存在"
 
 msgid "WIDGET_NOT_CONFIGURED"
-msgstr "在燈光頁面長按選擇按鈕將燈光新增到此捷徑"
+msgstr "在 zhue 的燈光頁面新增：開啟「顯示在捷徑卡片」"
 
 msgid "TOGGLING"
 msgstr "正在切換..."

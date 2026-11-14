@@ -3,6 +3,7 @@ import { loggedPage } from '../utils/remote-log.js'
 import { createGate } from '../utils/request-gate.js'
 import { bindKeyNav } from '../utils/key-nav.js'
 import { busyOn, stopPulses } from '../utils/pulse.js'
+import { rememberLight, rememberLights } from '../utils/shortcuts.js'
 import { setPageBrightTime } from '@zos/display'
 import { getLogger } from '../utils/logger.js'
 import { getText } from '@zos/i18n'
@@ -120,6 +121,8 @@ Page(
         l && l.id && typeof l.ison !== 'undefined'
       )
       this.state.scenes = data.scenes || []
+      // The shortcut card shows these lights as last seen
+      rememberLights(this.state.lights.map((l) => [l.id, l]))
 
       logger.log(`Processed ${this.state.lights.length} lights, ${this.state.scenes.length} scenes`)
 
@@ -216,6 +219,8 @@ Page(
               app.setLightData(light.id, { ...light, ison: newState })
               app.updateLightStatusInGroupsCache(light.id, { ison: newState })
             })
+            // The shortcut card shows them as last seen
+            rememberLights(this.state.lights.map((l) => [l.id, l]))
 
             const cachedGroup = app.getGroupDetailCache(this.state.groupId)
             if (cachedGroup) {
@@ -275,6 +280,7 @@ Page(
               app.setLightData(light.id, { ...light, ison: newState })
               app.updateLightStatusInGroupsCache(light.id, { ison: newState })
             }
+            rememberLight(light.id, result.updatedState ? light : { ...light, ison: newState })
 
             // ✅ Refresh timestamp cache gruppo
             const cachedGroup = app.getGroupDetailCache(this.state.groupId)

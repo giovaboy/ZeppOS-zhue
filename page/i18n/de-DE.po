@@ -137,7 +137,7 @@ msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "Voreinstellung existiert bereits"
 
 msgid "WIDGET_NOT_CONFIGURED"
-msgstr "Füge eine Lampe zu diesem Shortcut hinzu, indem du die Auswahltaste auf der Lampenseite gedrückt hältst"
+msgstr "Lampen auf ihrer Seite in zhue hinzufügen: «In der Schnellzugriffskarte» einschalten"
 
 msgid "TOGGLING"
 msgstr "Schalte um..."

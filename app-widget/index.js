@@ -5,7 +5,7 @@ import { localStorage } from '@zos/storage'
 import { push } from '@zos/router'
 import { px } from '@zos/utils'
 import { getText } from '@zos/i18n'
-import { COLORS, MAX_WIDGET_SHORTCUTS, WIDGET_SHORTCUTS_KEY, DEFAULT_WIDGET_SHORTCUTS, btnPressColor } from '../utils/constants'
+import { COLORS, MAX_WIDGET_SHORTCUTS, WIDGET_SHORTCUTS_KEY, DEFAULT_WIDGET_SHORTCUTS, LIGHT_MODELS, ICON_IMAGE_SIZE, btnPressColor } from '../utils/constants'
 import { getLogger } from '../utils/logger.js'
 
 const logger = getLogger('zhue-app-widget')
@@ -17,11 +17,13 @@ const COLUMNS = 3
 const HEADER_H = px(40)
 const PADDING_Y = px(6)
 
-// Button layout: icona 70x70 + testo sotto
-const ICON_SIZE = px(70)
+// A shortcut: a tile with the light's icon (a 70 px mask, ICON_IMAGE_SIZE),
+// its name under it
+const ICON_SIZE = px(80) // the tile
+const TILE_RADIUS = px(20)
 const TEXT_SIZE = px(18)
 const TEXT_H = (TEXT_SIZE + px(8)) * 2  // Enough for 2 lines of text
-const BUTTON_H = ICON_SIZE + TEXT_H  // 70 + 56 = 126
+const BUTTON_H = ICON_SIZE + TEXT_H  // 80 + 52
 const BUTTON_GAP_X = px(8)
 const BUTTON_GAP_Y = 0//px(1)
 const PADDING_X = px(10)// Internal padding
@@ -181,7 +183,7 @@ AppWidget({
         align_h: align.CENTER_H,
         align_v: align.CENTER_V,
         text_style: text_style.WRAP,
-        text: getText('WIDGET_NOT_CONFIGURED') || 'Long-press SELECT on a light to add shortcuts'
+        text: getText('WIDGET_NOT_CONFIGURED') || 'Add lights from their page in zhue'
       })
       return
     }
@@ -207,16 +209,7 @@ AppWidget({
 
       logger.debug(`Button ${i}: row=${row}, col=${col}, cellX=${cellX}, iconX=${iconX}`)
 
-      // ICONA (bottone cliccabile con immagine)
-      this.createTrackedWidget(widget.BUTTON, {
-        x: iconX,
-        y: iconY,
-        w: ICON_SIZE,
-        h: ICON_SIZE,
-        normal_src: 'light-switch_normal.png',    // 70x70 icona normale
-        press_src: 'light-switch_press.png',      // 70x70 icona premuta
-        click_func: () => this.onShortcutClick(shortcut)
-      })
+      this.renderShortcutTile(iconX, iconY, shortcut)
 
       // TESTO sotto l'icona
       this.createTrackedWidget(widget.TEXT, {
@@ -231,6 +224,44 @@ AppWidget({
         text_style: text_style.WRAP,
         text: buttonText
       })
+    }
+  },
+
+  // The light as zhue last saw it (utils/shortcuts.js; the card can't ask
+  // the phone): its model's icon over its color, grey while off or unknown,
+  // and a green ring while on, as on the light's page. The icon is a
+  // #333333 mask: it sits on a tile of that grey, whatever the card's own
+  // background (#303030 in the simulator). The tile doesn't darken when
+  // pressed (the mask's square would show); the tap opens quick-toggle at once
+  renderShortcutTile(x, y, shortcut) {
+    const box = { x, y, w: ICON_SIZE, h: ICON_SIZE }
+    const passThrough = (w) => { try { w.setEnable(false) } catch (e) {} return w }
+    this.createTrackedWidget(widget.BUTTON, {
+      ...box,
+      text: '',
+      radius: TILE_RADIUS,
+      normal_color: COLORS.lightBg,
+      press_color: COLORS.lightBg,
+      click_func: () => this.onShortcutClick(shortcut)
+    })
+    const ix = x + (ICON_SIZE - ICON_IMAGE_SIZE) / 2
+    const iy = y + (ICON_SIZE - ICON_IMAGE_SIZE) / 2
+    const isOn = shortcut.ison === true
+    passThrough(this.createTrackedWidget(widget.FILL_RECT, {
+      x: ix + 1, y: iy + 1, w: ICON_IMAGE_SIZE - 2, h: ICON_IMAGE_SIZE - 2,
+      color: isOn && shortcut.color !== undefined ? shortcut.color : COLORS.inactive
+    }))
+    passThrough(this.createTrackedWidget(widget.IMG, {
+      x: ix, y: iy, w: ICON_IMAGE_SIZE, h: ICON_IMAGE_SIZE,
+      src: `icons/${(LIGHT_MODELS[shortcut.modelid] || LIGHT_MODELS.default).icon}.png`
+    }))
+    if (isOn) {
+      passThrough(this.createTrackedWidget(widget.STROKE_RECT, {
+        ...box,
+        radius: TILE_RADIUS,
+        line_width: px(3),
+        color: COLORS.success
+      }))
     }
   },
 

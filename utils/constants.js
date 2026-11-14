@@ -767,3 +767,14 @@ export function comparePresets(a, b) {
   if (a.type === PRESET_TYPES.COLOR) return a.hue - b.hue
   return 0
 }
+
+// The color a light shows, as an int (the light page's tint and swatches, the
+// shortcut card): its hue / saturation, white temperature or xy, else white
+export function lightDisplayColor(light) {
+  if (!light) return COLORS.white
+  if (light.colormode === 'hs' && light.hex) return hexStringToInt(light.hex)
+  if (light.colormode === 'ct' && light.ct) return ct2hex(light.ct)
+  if (light.colormode === 'xy' && light.xy) return xy2hex(light.xy, light.bri || BRI_RANGE)
+  if (light.hex) return hexStringToInt(light.hex)
+  return COLORS.white
+}

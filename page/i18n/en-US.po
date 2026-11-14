@@ -137,7 +137,7 @@ msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "Preset already exists"
 
 msgid "WIDGET_NOT_CONFIGURED"
-msgstr "Add a light to this shortcut by longpressing select button in app light page"
+msgstr "Add lights from their page in zhue: switch on «In the shortcut card»"
 
 msgid "TOGGLING"
 msgstr "Toggling..."

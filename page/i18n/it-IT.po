@@ -137,7 +137,7 @@ msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "Colore preferito già presente"
 
 msgid "WIDGET_NOT_CONFIGURED"
-msgstr "Aggiungi una luce a questo collegamento tenendo premuto il pulsante di selezione nella pagina della luce dell'app"
+msgstr "Aggiungi le luci dalla loro pagina in zhue: attiva «Nella card scorciatoie»"
 
 msgid "TOGGLING"
 msgstr "Cambio stato..."

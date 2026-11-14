@@ -137,7 +137,7 @@ msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "Пресет уже существует"
 
 msgid "WIDGET_NOT_CONFIGURED"
-msgstr "Добавьте лампу в этот ярлык, удерживая кнопку выбора на странице лампы"
+msgstr "Добавляйте лампы на их странице в zhue: включите «В карточке ярлыков»"
 
 msgid "TOGGLING"
 msgstr "Переключение..."

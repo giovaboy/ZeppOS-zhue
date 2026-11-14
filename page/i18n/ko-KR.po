@@ -137,7 +137,7 @@ msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "이미 존재하는 프리셋입니다"
 
 msgid "WIDGET_NOT_CONFIGURED"
-msgstr "조명 페이지에서 선택 버튼을 길게 눌러 이 바로가기에 조명을 추가하세요"
+msgstr "zhue의 조명 페이지에서 추가: «바로가기 카드에 표시» 켜기"
 
 msgid "TOGGLING"
 msgstr "전환 중..."

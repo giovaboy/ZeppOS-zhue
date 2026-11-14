@@ -137,7 +137,7 @@ msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "Ce préréglage existe déjà"
 
 msgid "WIDGET_NOT_CONFIGURED"
-msgstr "Ajoutez une lumière à ce raccourci en maintenant le bouton de sélection sur la page de la lumière"
+msgstr "Ajoutez des lampes depuis leur page dans zhue : activez « Dans la carte raccourcis »"
 
 msgid "TOGGLING"
 msgstr "Changement d'état..."

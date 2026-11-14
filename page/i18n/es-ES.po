@@ -137,7 +137,7 @@ msgid "DUPLICATE_FAVORITE_COLOR"
 msgstr "El ajuste ya existe"
 
 msgid "WIDGET_NOT_CONFIGURED"
-msgstr "Añade una luz a este acceso directo manteniendo pulsado el botón de selección en la página de la luz"
+msgstr "Añade luces desde su página en zhue: activa «En la tarjeta de accesos»"
 
 msgid "TOGGLING"
 msgstr "Cambiando estado..."

@@ -4,6 +4,7 @@ import { createGate } from '../utils/request-gate.js'
 import { createDragGuard } from '../utils/drag-guard.js'
 import { bindKeyNav } from '../utils/key-nav.js'
 import { busyOn, stopPulses, contrastColor } from '../utils/pulse.js'
+import { rememberLight, cardState } from '../utils/shortcuts.js'
 import { localStorage } from '@zos/storage'
 import { setPageBrightTime } from '@zos/display'
 import { setScrollLock, getScrollTop, scrollTo } from '@zos/page'
@@ -767,6 +768,8 @@ Page(
         // Sincronizza con globalData
         app.setLightData(this.state.lightId, this.state.light)
         app.updateLightStatusInGroupsCache(this.state.lightId, this.state.light)
+        // The shortcut card shows it as last seen (written only if it changed)
+        rememberLight(this.state.lightId, this.state.light)
       }
     },
 
@@ -848,7 +851,8 @@ Page(
         }
 
         // Aggiungi
-        shortcuts[emptyIndex] = { lightId, lightName, modelid }
+        // With its state, so the card shows it in its color at once
+        shortcuts[emptyIndex] = { lightId, lightName, modelid, ...(this.state.light ? cardState(this.state.light) : {}) }
         this.saveWidgetShortcuts(shortcuts)
         this.state.isInWidgetShortcuts = true
         showToast({ text: getText('ADDED_TO_WIDGET') || 'Added to widget!' })

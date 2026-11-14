@@ -4,6 +4,7 @@
 
 import { BasePage } from '@zeppos/zml/base-page'
 import { loggedPage, infoLog, warnLog } from '../utils/remote-log.js'
+import { rememberOnOff } from '../utils/shortcuts.js'
 import { back } from '@zos/router'
 import { createWidget, widget, deleteWidget, align } from '@zos/ui'
 import { getDeviceInfo } from '@zos/device'
@@ -146,6 +147,8 @@ Page(
         .then(result => {
           logger.log('Toggle result:', result)
           if (result.success) infoLog(`[quick-toggle] light ${this.state.lightId} now ${result.newState ? 'on' : 'off'}, ${Date.now() - t0}ms from the tap`)
+          // The card shows it so when it comes back (only on / off is known)
+          if (result.success) rememberOnOff(this.state.lightId, result.newState)
           this.state.status = result.success ? 'success' : 'error'
           // Torna indietro
           this.goBackAfterDelay(200)
