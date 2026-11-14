@@ -5,7 +5,7 @@ import { getText } from '@zos/i18n'
 import { getLogger } from '../utils/logger.js'
 import { COLORS, btnPressColor, getGroupIconPath, ICON_IMAGE_SIZE } from '../utils/constants.js'
 import { createScrollView, RING_ON_ACCENT } from '../utils/key-nav.js'
-import { startDot } from '../utils/pulse.js'
+import { renderLoading } from '../utils/loading.js'
 import { setStatusBarVisible } from '@zos/ui'
 
 setStatusBarVisible(false)
@@ -131,20 +131,23 @@ export function renderGroupsPage(pageContext, state, listData, callbacks) {
     const listStartY = LAYOUT_CONFIG.tabY + LAYOUT_CONFIG.tabH + LAYOUT_CONFIG.gapY
     const noun = currentTab === 'ROOMS' ? 'ROOM' : 'ZONE';
 
-    if (isLoading || listData.length === 0) {
+    if (isLoading) {
+        // The pulsing dot and its line, centered on the screen
+        renderLoading(pageContext)
+        return
+    }
+    if (listData.length === 0) {
         pageContext.createTrackedWidget(widget.TEXT, {
             x: 0,
-            y: DEVICE_HEIGHT / 2 - px(50),
+            y: DEVICE_HEIGHT / 2 - px(20),
             w: DEVICE_WIDTH,
-            h: px(50),
-            text: isLoading ? getText('LOADING') : getText(`NO_${noun}_FOUND`),
-            text_size: px(28),
+            h: px(40),
+            text: getText(`NO_${noun}_FOUND`),
+            text_size: px(24),
             color: COLORS.loading,
             align_h: align.CENTER_H,
             align_v: align.CENTER_V
         })
-        // Loading: a pulsing dot above the text (Zepp: always animated)
-        if (isLoading) startDot(pageContext, { cx: DEVICE_WIDTH / 2, cy: DEVICE_HEIGHT / 2 - px(80) })
         return
     }
 

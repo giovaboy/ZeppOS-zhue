@@ -21,7 +21,7 @@ import { widget, align, event, text_style, prop, getTextLayout } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { BRI_RANGE, COLORS, PRESET_TYPES, LIGHT_MODELS, ICON_IMAGE_SIZE, btnPressColor, hexStringToInt, lightDisplayColor } from '../../utils/constants.js'
 import { createPageView } from '../../utils/key-nav.js'
-import { startDot } from '../../utils/pulse.js'
+import { renderLoading } from '../../utils/loading.js'
 import { renderCardRow, CARD_ROW_H } from './card-row.js'
 
 export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
@@ -65,6 +65,8 @@ function renderMessage(pageContext, lightName, text, retryFunc, callbacks, isErr
     x: 0, y: 0, w: DEVICE_WIDTH, h: DEVICE_HEIGHT, color: COLORS.background
   })
   renderTitle(pageContext, lightName || getText('LIGHT_DETAIL'))
+  // Loading: the pulsing dot and its line, centered on the screen
+  if (loading) return renderLoading(pageContext, text)
   pageContext.createTrackedWidget(widget.TEXT, {
     x: px(40), y: DEVICE_HEIGHT / 2 - px(60), w: DEVICE_WIDTH - px(80), h: px(100),
     text: text || getText('ERROR'),
@@ -73,8 +75,6 @@ function renderMessage(pageContext, lightName, text, retryFunc, callbacks, isErr
     align_h: align.CENTER_H, align_v: align.CENTER_V,
     text_style: text_style.WRAP
   })
-  // Loading: a pulsing dot above the text (Zepp: a loading state is animated)
-  if (loading) startDot(pageContext, { cx: DEVICE_WIDTH / 2, cy: DEVICE_HEIGHT / 2 - px(90) })
   if (retryFunc) {
     const btn = { x: DEVICE_WIDTH / 2 - px(90), y: DEVICE_HEIGHT / 2 + px(60), w: px(180), h: px(56) }
     pageContext.createTrackedWidget(widget.BUTTON, {
