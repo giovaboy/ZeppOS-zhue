@@ -10,7 +10,7 @@ import { getText } from '@zos/i18n'
 import { createWidget, deleteWidget, showToast } from '@zos/ui'
 import { push } from '@zos/router'
 import { renderGroupDetailPage } from 'zosLoader:./group-detail.[pf].layout.js'
-import { DEFAULT_USER_SETTINGS, COLORS, LIGHT_MODELS, ct2hex, xy2hex, hexStringToInt } from '../utils/constants.js'
+import { DEFAULT_USER_SETTINGS, COLORS, LIGHT_MODELS, lightDisplayColor } from '../utils/constants.js'
 
 const logger = getLogger('zhue-group-detail-page')
 const app = getApp()
@@ -370,19 +370,8 @@ Page(
         return COLORS.inactive
       }
 
-      let btnColor
-      if (light.colormode === 'hs' && light.hex) {
-        btnColor = hexStringToInt(light.hex)
-      } else if (light.colormode === 'ct' && light.ct) {
-        btnColor = ct2hex(light.ct)
-      } else if (light.colormode === 'xy' && light.xy) {
-        btnColor = xy2hex(light.xy, light.bri || 254)
-      } else if (light.hex) {
-        btnColor = hexStringToInt(light.hex)
-      } else {
-        btnColor = COLORS.white
-      }
-      return btnColor
+      // Its hue at full brightness (a white light at 20% came near black)
+      return lightDisplayColor(light)
     },
 
     renderPage() {

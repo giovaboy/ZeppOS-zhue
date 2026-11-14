@@ -19,7 +19,7 @@ import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
 import { widget, align, event, text_style, prop, getTextLayout } from '@zos/ui'
 import { getText } from '@zos/i18n'
-import { BRI_RANGE, COLORS, PRESET_TYPES, LIGHT_MODELS, ICON_IMAGE_SIZE, btnPressColor, ct2hex, xy2hex, hexStringToInt } from '../../utils/constants.js'
+import { BRI_RANGE, COLORS, PRESET_TYPES, LIGHT_MODELS, ICON_IMAGE_SIZE, btnPressColor, hexStringToInt, lightDisplayColor } from '../../utils/constants.js'
 import { createPageView } from '../../utils/key-nav.js'
 import { startDot } from '../../utils/pulse.js'
 import { renderCardRow, CARD_ROW_H } from './card-row.js'
@@ -116,15 +116,6 @@ function renderTitle(pageContext, text) {
   })
 }
 
-// The color the light shows, for the page's tint and the color button's swatch
-function lightColor(light) {
-  if (light.colormode === 'hs' && light.hex) return hexStringToInt(light.hex)
-  if (light.colormode === 'ct' && light.ct) return ct2hex(light.ct)
-  if (light.colormode === 'xy' && light.xy) return xy2hex(light.xy, light.bri || BRI_RANGE)
-  if (light.hex) return hexStringToInt(light.hex)
-  return COLORS.white
-}
-
 // The favorites this light can show: colors on color lights, white
 // temperatures on color and white lights, brightness levels on the others
 function compatiblePresets(favoriteColors, caps) {
@@ -181,7 +172,7 @@ function renderNormalState(pageContext, state, callbacks) {
   if (nav) nav.view = view
 
   // ── Background: tinted with the light's color while on
-  const bgColor = lightOn ? getLightBgColor(lightColor(light).toString(16).padStart(6, '0')) : COLORS.background
+  const bgColor = lightOn ? getLightBgColor(lightDisplayColor(light).toString(16).padStart(6, '0')) : COLORS.background
   pageContext.createTrackedWidget(widget.FILL_RECT, {
     x: 0, y: 0, w: DEVICE_WIDTH, h: contentHeight, color: bgColor
   })
@@ -311,7 +302,7 @@ function renderLampButton(pageContext, y, light, lightOn, onTap, nav, view) {
   const box = { x: cx - POWER / 2, y, w: POWER, h: POWER }
   const ringColor = lightOn ? COLORS.success : COLORS.toggleOff
   const reachable = light.reachable !== false
-  const swatch = lightOn && reachable ? lightColor(light) : COLORS.inactive
+  const swatch = lightOn && reachable ? lightDisplayColor(light) : COLORS.inactive
   const icon = `icons/${(LIGHT_MODELS[light.modelid] || LIGHT_MODELS.default).icon}.png`
 
   const button = pageContext.createTrackedWidget(widget.BUTTON, {
@@ -412,7 +403,7 @@ function renderPaletteButton(pageContext, lampY, light, onTap, nav, view, contro
   passThrough(pageContext.createTrackedWidget(widget.FILL_RECT, {
     x: ix + px(10), y: iy + px(12), w: ICON_IMAGE_SIZE - px(26), h: ICON_IMAGE_SIZE - px(22),
     radius: px(8),
-    color: lightColor(light)
+    color: lightDisplayColor(light)
   }))
   passThrough(pageContext.createTrackedWidget(widget.IMG, {
     x: ix, y: iy, w: ICON_IMAGE_SIZE, h: ICON_IMAGE_SIZE,

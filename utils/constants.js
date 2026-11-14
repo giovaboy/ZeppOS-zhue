@@ -775,11 +775,29 @@ export function comparePresets(a, b) {
 
 // The color a light shows, as an int (the light page's tint and swatches, the
 // shortcut card): its hue / saturation, white temperature or xy, else white
+//
+// Always at full brightness: the color says the hue, the brightness has its
+// own slider. The phone's hex is scaled by the brightness (stateToHex): a
+// white light at 20% came as #333333, the very grey of the icons' masks, and
+// the lamp vanished; a color at low brightness came near black.
 export function lightDisplayColor(light) {
   if (!light) return COLORS.white
-  if (light.colormode === 'hs' && light.hex) return hexStringToInt(light.hex)
-  if (light.colormode === 'ct' && light.ct) return ct2hex(light.ct)
-  if (light.colormode === 'xy' && light.xy) return xy2hex(light.xy, light.bri || BRI_RANGE)
-  if (light.hex) return hexStringToInt(light.hex)
-  return COLORS.white
+  let c
+  if (light.colormode === 'hs' && light.hex) c = hexStringToInt(light.hex)
+  else if (light.colormode === 'ct' && light.ct) c = ct2hex(light.ct)
+  else if (light.colormode === 'xy' && light.xy) c = xy2hex(light.xy, BRI_RANGE)
+  else if (light.hex) c = hexStringToInt(light.hex)
+  else return COLORS.white
+  return fullBrightness(c)
+}
+
+// The color scaled so its brightest channel is 255 (black: white, a light
+// with no color)
+export function fullBrightness(c) {
+  const n = Number(c) || 0
+  const r = (n >> 16) & 0xff, g = (n >> 8) & 0xff, b = n & 0xff
+  const m = Math.max(r, g, b)
+  if (!m) return COLORS.white
+  const k = 255 / m
+  return (Math.round(r * k) << 16) | (Math.round(g * k) << 8) | Math.round(b * k)
 }
