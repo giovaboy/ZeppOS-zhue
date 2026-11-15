@@ -4,7 +4,7 @@ import { localStorage } from '@zos/storage'
 import { push } from '@zos/router'
 import { px } from '@zos/utils'
 import { getText } from '@zos/i18n'
-import { COLORS, MAX_WIDGET_SHORTCUTS, WIDGET_SHORTCUTS_KEY, DEFAULT_WIDGET_SHORTCUTS, lightIconName, ICON_IMAGE_SIZE, CARD_STATE_FRESH_MS, getGroupIconPath } from '../utils/constants'
+import { COLORS, MAX_WIDGET_SHORTCUTS, WIDGET_SHORTCUTS_KEY, DEFAULT_WIDGET_SHORTCUTS, lightIconName, ICON_IMAGE_SIZE, CARD_STATE_FRESH_MS, getGroupIconPath, btnPressColor } from '../utils/constants'
 import { getLogger } from '../utils/logger.js'
 
 const logger = getLogger('zhue-app-widget')
@@ -157,42 +157,22 @@ AppWidget({
     const numConfigured = this.state.configuredShortcuts.length
 
     // ==========================================
-    // HEADER - a row as wide as the card that opens the app: "zhue", "›"
+    // HEADER - the app's button: a purple pill on the left, 16 px from the
+    // card's side (it was centered; a grey row as wide as the card, tried
+    // next, didn't look right)
     // ==========================================
-    // It was a 100 px purple pill: a small target close to the switches. A
-    // control on a card is grey (as zeppamp's); the text white (purple on
-    // that grey is under 2:1)
-    const side = px(16)
-    const rowX = WIDGET_MARGIN + side
-    const rowW = WIDGET_W - side * 2
-    const passThrough = (w) => { try { w.setEnable(false) } catch (e) {} return w }
     this.createTrackedWidget(widget.BUTTON, {
-      x: rowX,
+      x: WIDGET_MARGIN + px(16),
       y: currentY,
-      w: rowW,
+      w: px(100),
       h: HEADER_H,
-      text: '',
-      radius: HEADER_H / 2,
-      normal_color: COLORS.cardControl,
-      press_color: COLORS.cardControlPressed,
-      click_func: () => this.openApp()
-    })
-    passThrough(this.createTrackedWidget(widget.TEXT, {
-      x: rowX + px(18), y: currentY, w: rowW - px(60), h: HEADER_H,
       text: 'zhue',
       text_size: px(24),
-      color: COLORS.text,
-      align_h: align.LEFT,
-      align_v: align.CENTER_V
-    }))
-    passThrough(this.createTrackedWidget(widget.TEXT, {
-      x: rowX + rowW - px(42), y: currentY, w: px(30), h: HEADER_H,
-      text: '›',
-      text_size: px(32),
-      color: COLORS.textSubtitle,
-      align_h: align.CENTER_H,
-      align_v: align.CENTER_V
-    }))
+      radius: HEADER_H / 2,
+      normal_color: COLORS.activeTab,
+      press_color: btnPressColor(COLORS.activeTab),
+      click_func: () => this.openApp()
+    })
 
     currentY += HEADER_H + HEADER_GAP
 
