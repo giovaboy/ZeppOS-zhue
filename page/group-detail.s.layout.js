@@ -47,6 +47,8 @@ export function renderGroupDetailPage(pageContext, state, viewData, callbacks, C
         text: groupName || getText('GROUP_DETAIL'),
         text_size: px(34),
         radius: px(8),
+        // Black on the grey of "off" (white on it read poorly)
+        color: anyOn ? COLORS.text : COLORS.onInactive,
         normal_color: badgeColor,
         press_color: isLoading ? badgeColor : btnPressColor(badgeColor),
         // Durante loading, il click non fa nulla

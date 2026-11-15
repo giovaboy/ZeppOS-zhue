@@ -21,6 +21,10 @@ export const COLORS = {
   success: 0x39935a, //0x2ecd6e,//0x00aa00,
   error: 0xff0000,
   inactive: 0xb3b3b3, //0x666666,
+  // Text on an "off" control filled with `inactive`: white on #B3B3B3 is
+  // 2.1:1, under the 3:1 large text needs (design-guidelines.md, "Color");
+  // black is 10:1. The group's header read poorly
+  onInactive: 0x000000,
   // A "Loading…" text: #666666 on black is 3.7:1, under the 4.5:1 text needs
   loading: 0xb3b3b3,
   roomIndicator: 0x0000cc,

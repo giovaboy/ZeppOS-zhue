@@ -249,6 +249,8 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick,
         text: group.on_off,
         text_size: px(24),
         radius: px(8),
+        // Black on the grey of OFF (white on it read poorly)
+        color: isOn ? COLORS.text : COLORS.onInactive,
         normal_color: badgeColor,
         press_color: btnPressColor(badgeColor),
         click_func: () => onItemClick(index, 'on_off')
