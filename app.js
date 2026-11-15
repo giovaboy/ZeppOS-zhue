@@ -373,6 +373,27 @@ App(
       return cached
     },
 
+    // A group detail from the cache whatever its age, and whether it is still
+    // fresh: the group page shows it at once and, when old, reads it again
+    // behind it (it used to show "Loading" ~1 s at every return)
+    getCachedGroupDetail(groupId) {
+      const data = this.globalData.groupDetailCache[groupId]
+      if (!data) return null
+      const fresh = this.isDemoMode() || Date.now() - (data._timestamp || 0) <= TTL
+      return { data, fresh }
+    },
+
+    // A group switched from its own page: the groups list shows it so at
+    // once, before its quiet refresh
+    setGroupOnInList(groupId, isOn) {
+      const gData = this.globalData.groupsData
+      const group = [...(gData.rooms || []), ...(gData.zones || [])].find((g) => g.id === groupId)
+      if (group) {
+        group.anyOn = isOn
+        group.on_off = isOn
+      }
+    },
+
     setGroupDetailCache(groupId, data) {
       if (data) {
         data._timestamp = Date.now()

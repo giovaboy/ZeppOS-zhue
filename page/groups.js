@@ -1,5 +1,5 @@
 import { BasePage } from '@zeppos/zml/base-page'
-import { loggedPage } from '../utils/remote-log.js'
+import { loggedPage, infoLog, warnLog } from '../utils/remote-log.js'
 import { createGate } from '../utils/request-gate.js'
 import { bindKeyNav } from '../utils/key-nav.js'
 import { busyOn, stopPulses } from '../utils/pulse.js'
@@ -37,28 +37,22 @@ Page(
       this._keys = null
       this._nav = null
 
+      this._stale = false
+      this._refreshing = null
+      this._gone = false
+
       this.state.currentTab = app.getCurrentTab()
       this.state.scrollPos_y = app.getGroupsScrollY()
-      // 1. Controlla se dobbiamo ricaricare
-      const shouldRefresh = app.shouldRefreshGroups()
 
-      if (shouldRefresh) {
-        logger.debug('Refresh flag set, will reload from API')
-        // Non carichiamo qui, lo farà build()
-        return
-      }
-
-      // 2. Prova a usare dati dal global store
-      const globalData = app.getGroupsData()
-
-      if (globalData.hasLoadedOnce && !globalData._isExpired) {
-        logger.log('Using valid cached data')
+      // The list as last known, shown at once; when old or flagged (a group
+      // switched elsewhere) it is read again behind it (build:
+      // refreshQuietly). It used to show "Loading" 2-3 s at every return
+      // from a group (log 15:44:07: 2.9 s)
+      const globalData = app.globalData.groupsData
+      if (globalData.hasLoadedOnce) {
         this.state.rooms = globalData.rooms
         this.state.zones = globalData.zones
-        this.state.isLoading = false
-      } else {
-        logger.log('No global data available')
-        // build() caricherà i dati
+        this._stale = app.shouldRefreshGroups()
       }
     },
 
@@ -84,17 +78,62 @@ Page(
         label: 'groups'
       })
 
-      // Carica SOLO se non abbiamo dati
-      const shouldRefresh = app.shouldRefreshGroups()
       const hasData = this.state.rooms.length > 0 || this.state.zones.length > 0
-
-      if (shouldRefresh || !hasData) {
+      if (!hasData) {
         logger.log('No data in state, loading from API...')
         this.loadGroupsData()
       } else {
-        logger.log('Rendering with existing data')
         this.renderPage()
+        if (this._stale) this.refreshQuietly()
       }
+    },
+
+    // What the list shows of each group: a read that changes none of it
+    // doesn't draw the page again
+    listSignature(rooms, zones) {
+      return [...(rooms || []), ...(zones || [])]
+        .map((g) => `${g.id}:${g.name}:${!!(g.anyOn || g.on_off)}:${(g.lights || []).length}`)
+        .join('|')
+    },
+
+    // The list read again behind the one already shown: no "Loading", no
+    // error page (what is shown stays). A tap meanwhile waits for it
+    // (afterRefresh) and acts on the state it brings
+    refreshQuietly() {
+      const t0 = Date.now()
+      this._refreshing = this.request({ method: 'GET_GROUPS' })
+        .then(result => {
+          if (!result.success || !result.data) throw result
+          // The store takes it even when this page is closed (opening a
+          // group closes it)
+          app.setGroupsData(result.data)
+          rememberGroups([...(result.data.rooms || []), ...(result.data.zones || [])].map((g) => [g.id, g]))
+          if (this._gone) {
+            infoLog(`[groups] refresh in ${Date.now() - t0}ms, after the page closed: store updated`)
+            return
+          }
+          const before = this.listSignature(this.state.rooms, this.state.zones)
+          this.state.rooms = result.data.rooms || []
+          this.state.zones = result.data.zones || []
+          const changed = this.listSignature(this.state.rooms, this.state.zones) !== before
+          infoLog(`[groups] refresh in ${Date.now() - t0}ms: ${changed ? 'changed, drawn again' : 'unchanged'}`)
+          if (changed) this.renderPage()
+        })
+        .catch(err => {
+          warnLog(`[groups] refresh failed after ${Date.now() - t0}ms: the cached list stays`)
+          logger.error('Quiet refresh error:', err)
+        })
+        .then(() => { this._refreshing = null })
+    },
+
+    afterRefresh(fn) {
+      return this._refreshing ? this._refreshing.then(fn) : fn()
+    },
+
+    // The group as the list has it now (a refresh replaces the objects)
+    currentGroup(groupRaw) {
+      return [...this.state.rooms, ...this.state.zones]
+        .find((g) => g.id === groupRaw.id && g.type === groupRaw.type) || groupRaw
     },
 
     // --- HELPER WIDGET ---
@@ -153,7 +192,8 @@ Page(
     // One request at a time per group; a tap during one waits for it and
     // reads the state it left
     toggleGroup(groupRaw) {
-      this._gate.run(`group ${groupRaw.id}`, () => busyOn(this, `group:${groupRaw.id}`, () => this._toggleGroup(groupRaw)))
+      this._gate.run(`group ${groupRaw.id}`, () => busyOn(this, `group:${groupRaw.id}`,
+        () => this.afterRefresh(() => this._toggleGroup(this.currentGroup(groupRaw)))))
     },
 
     _toggleGroup(groupRaw) {
@@ -192,7 +232,7 @@ Page(
             rememberGroups([[groupRaw.id, { anyOn: newState }]])
             globalData._timestamp = Date.now()
 
-            this.renderPage()
+            if (!this._gone) this.renderPage()
           }
         })
         .catch(err => {
@@ -203,7 +243,7 @@ Page(
           if (groupRaw.hasOwnProperty('anyOn')) {
             groupRaw.anyOn = currentOnState
           }
-          this.renderPage()
+          if (!this._gone) this.renderPage()
         })
     },
 
@@ -281,6 +321,7 @@ Page(
     },
 
     onDestroy() {
+      this._gone = true
       if (this._keys) this._keys.stop()
       stopPulses(this)
       if (this._gate) this._gate.close()

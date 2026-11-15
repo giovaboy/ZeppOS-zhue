@@ -1,5 +1,5 @@
 import { BasePage } from '@zeppos/zml/base-page'
-import { loggedPage } from '../utils/remote-log.js'
+import { loggedPage, infoLog, warnLog } from '../utils/remote-log.js'
 import { createGate } from '../utils/request-gate.js'
 import { bindKeyNav } from '../utils/key-nav.js'
 import { busyOn, stopPulses } from '../utils/pulse.js'
@@ -79,17 +79,16 @@ Page(
         this.state.scrollPos_y = app.getGroupDetailScrollY(this.state.groupId)
       }
 
-      // 1. Controlla se dobbiamo ricaricare
-
-      // ✅ Prova a usare la cache
-      const cachedData = app.getGroupDetailCache(this.state.groupId)
-
-      if (cachedData) {
-        logger.log('Using cached detail data')
-        this.processDataAndRender(cachedData)
-      } else {
-        logger.log('No cache, will load from API')
-        // build() caricherà i dati
+      // The group as last known, shown at once; when older than the cache's
+      // TTL it is read again behind it (build: refreshQuietly). It used to
+      // show "Loading" ~1 s at every return to a group seen before
+      this._stale = false
+      this._refreshing = null
+      this._gone = false
+      const cached = app.getCachedGroupDetail(this.state.groupId)
+      if (cached) {
+        this.processData(cached.data)
+        this._stale = !cached.fresh
       }
     },
 
@@ -108,10 +107,67 @@ Page(
         this.loadGroupDetail()
       } else if (this.state.lights.length > 0) {
         this.renderPage()
+        if (this._stale) this.refreshQuietly()
       }
     },
 
+    // What the page shows of the group: a read that changes none of it
+    // doesn't draw the page again
+    detailSignature() {
+      const l = this.state.lights.map((x) =>
+        [x.id, x.name, !!x.ison, x.reachable, x.bri, x.hue, x.sat, x.ct, x.colormode, (x.xy || []).join(',')].join(':'))
+      const s = this.state.scenes.map((x) => `${x.id}:${x.name}`)
+      return `${l.join('|')}#${s.join('|')}`
+    },
+
+    // The group read again behind the page already shown: no "Loading", no
+    // error page (what is shown stays). A tap meanwhile waits for it
+    // (afterRefresh) and acts on the state it brings; a light opened
+    // meanwhile waits for it too (app.trackLight)
+    refreshQuietly() {
+      const t0 = Date.now()
+      const groupId = this.state.groupId
+      this._refreshing = this.request({
+        method: 'GET_GROUP_DETAIL',
+        params: { groupId }
+      })
+        .then(result => {
+          if (!result.success || !result.data) throw result
+          // The caches take it even when this page is closed (opening a
+          // light closes it): the light page may be waiting for it
+          const lights = (result.data.lights || []).filter((l) => l && l.id && typeof l.ison !== 'undefined')
+          app.setGroupDetailCache(groupId, result.data)
+          // Merged: what the light page's own read brought stays
+          const lightData = app.globalData.lightData
+          lights.forEach((l) => { lightData[l.id] = { ...(lightData[l.id] || {}), ...l, _timestamp: Date.now() } })
+          app.setGroupOnInList(groupId, lights.some((l) => !!l.ison))
+          if (this._gone) {
+            infoLog(`[group-detail] refresh in ${Date.now() - t0}ms, after the page closed: cache updated`)
+            return
+          }
+          const before = this.detailSignature()
+          this.processData(result.data)
+          const changed = this.detailSignature() !== before
+          infoLog(`[group-detail] refresh in ${Date.now() - t0}ms: ${changed ? 'changed, drawn again' : 'unchanged'}`)
+          if (changed) this.renderPage()
+        })
+        .catch(err => {
+          warnLog(`[group-detail] refresh failed after ${Date.now() - t0}ms: the cached group stays`)
+          logger.error('Quiet refresh error:', err)
+        })
+        .then(() => { this._refreshing = null })
+    },
+
+    afterRefresh(fn) {
+      return this._refreshing ? this._refreshing.then(fn) : fn()
+    },
+
     processDataAndRender(data) {
+      this.processData(data)
+      this.renderPage()
+    },
+
+    processData(data) {
       const rawLights = data.lights || []
 
       // ✅ Gestione Settings (CORRETTO)
@@ -132,7 +188,6 @@ Page(
       logger.log(`Processed ${this.state.lights.length} lights, ${this.state.scenes.length} scenes`)
 
       this.state.isLoading = false
-      this.renderPage()
     },
 
     loadGroupDetail(isSilent = false) {
@@ -201,7 +256,7 @@ Page(
     // One request at a time per control; a tap during one waits for it and
     // reads the state it left
     toggleGroup() {
-      this._gate.run('group', () => busyOn(this, 'group', () => this._toggleGroup()))
+      this._gate.run('group', () => busyOn(this, 'group', () => this.afterRefresh(() => this._toggleGroup())))
     },
 
     _toggleGroup() {
@@ -234,25 +289,30 @@ Page(
               cachedGroup._timestamp = Date.now()
             }
 
-            // ✅ Flag refresh lista gruppi
+            // The list shows it at once; flagged, it is read again behind
+            app.setGroupOnInList(this.state.groupId, newState)
             app.invalidateGroupsCache()
 
-            this.renderPage()
+            // An answer after the page closed (a light opened meanwhile)
+            // draws nothing: the page is gone
+            if (!this._gone) this.renderPage()
           }
         })
         .catch(err => {
           logger.error('Toggle group error:', err)
-          
+
           // ✅ Ripristina stato in caso di errore
           this.state.lights.forEach(light => {
             light.ison = !newState
           })
-          this.renderPage()
+          if (!this._gone) this.renderPage()
         }))
     },
 
     toggleLight(light) {
-      this._gate.run(`light ${light.id}`, () => busyOn(this, `light:${light.id}`, () => this._toggleLight(light)))
+      // After a refresh the light is the one it brought (new objects)
+      this._gate.run(`light ${light.id}`, () => busyOn(this, `light:${light.id}`, () => this.afterRefresh(() =>
+        this._toggleLight(this.state.lights.find((l) => l.id === light.id) || light))))
     },
 
     _toggleLight(light) {
@@ -294,13 +354,13 @@ Page(
               cachedGroup._timestamp = Date.now()
             }
 
-            this.renderPage()
+            if (!this._gone) this.renderPage()
           }
         })
         .catch(err => {
           // Ripristina stato in caso di errore
           light.ison = currentOnState
-          this.renderPage()
+          if (!this._gone) this.renderPage()
           logger.error('Toggle light error:', err)
         }))
     },
@@ -308,7 +368,7 @@ Page(
 
     // A value: only the latest scene tapped waits
     applyScene(scene) {
-      this._gate.run('scene', () => busyOn(this, `scene:${scene.id}`, () => this._applyScene(scene)), true)
+      this._gate.run('scene', () => busyOn(this, `scene:${scene.id}`, () => this.afterRefresh(() => this._applyScene(scene))), true)
     },
 
     _applyScene(scene) {
@@ -324,7 +384,9 @@ Page(
             // ✅ Invalida cache e ricarica
             app.invalidateGroupDetailCache(this.state.groupId)
             app.invalidateGroupsCache()
-            setTimeout(() => this.loadGroupDetail(), 300)
+            // Read again behind the page: "Loading" after every scene was
+            // the same wait as at the return to the group
+            setTimeout(() => { if (!this._gone) this.refreshQuietly() }, 300)
           }
         })
         .catch(err => logger.error('Apply scene error:', err))
@@ -353,6 +415,9 @@ Page(
     navigateToLightDetail(light) {
       app.setGroupDetailScrollY(this.state.groupId, this.state.scrollPos_y)
       app.setLightData(light.id, light)
+      // Opened during the refresh: the light page waits for it (its light
+      // may be older than the page shows)
+      if (this._refreshing) app.trackLight([light.id], this._refreshing)
 
       const paramsString = JSON.stringify({
         lightId: light.id,
@@ -458,6 +523,7 @@ Page(
     },
 
     onDestroy() {
+      this._gone = true
       if (this._keys) this._keys.stop()
       stopPulses(this)
       if (this._gate) this._gate.close()

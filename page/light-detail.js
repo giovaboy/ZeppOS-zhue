@@ -559,14 +559,14 @@ Page(
         const cached = app.getCachedLight(this.state.lightId)
         if (this._gone || !cached) return
         if (this._version !== version) {
-          infoLog(`[light-detail] the group page's command answered in ${Date.now() - t0}ms, after one sent here: dropped`)
+          infoLog(`[light-detail] the group page's request answered in ${Date.now() - t0}ms, after one sent here: dropped`)
           return
         }
         // A drag of the slider owns the brightness until its release
         const dragging = this.state.isDraggingBrightness
         this.updateLight(dragging ? { ison: cached.light.ison } : cached.light, false)
         if (!dragging) this.state.tempBrightness = this.state.light.bri || 0
-        infoLog(`[light-detail] waited ${Date.now() - t0}ms for the group page's command: light ${this.state.light.ison ? 'on' : 'off'}`)
+        infoLog(`[light-detail] waited ${Date.now() - t0}ms for the group page's request: light ${this.state.light.ison ? 'on' : 'off'}`)
         this.renderPage()
       })))
     },
