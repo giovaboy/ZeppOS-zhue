@@ -2,6 +2,7 @@ import { BaseApp } from '@zeppos/zml/base-app'
 import { writeFileSync, readFileSync, statSync, rmSync } from '@zos/fs'
 import { log } from '@zos/utils'
 import { Screen } from '@zos/sensor'
+import { resetDropWristScreenOff, resetPalmScreenOff } from '@zos/display'
 import { DEFAULT_USER_SETTINGS } from './utils/constants.js'
 import { getLogger } from './utils/logger.js'
 import { logs, LOG_LEVEL } from './config.js'
@@ -572,6 +573,9 @@ App(
       if (this._screen && this._screenCb) {
         try { this._screen.offChange(this._screenCb) } catch (e) {}
       }
+      // The pauses of utils/screen.js keepScreenOn
+      try { resetDropWristScreenOff() } catch (e) {}
+      try { resetPalmScreenOff() } catch (e) {}
       if (this._remoteLogResent) this.devLog(`[log] ${this._remoteLogResent} log batches sent again after a page change (their answers are lost there)`)
       this.remoteLog('app closed')
       this._savePendingLog()

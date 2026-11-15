@@ -1,6 +1,7 @@
 import { BasePage } from '@zeppos/zml/base-page'
 import { countCommands, commandCount } from '../utils/commands.js'
 import { loggedPage, infoLog, warnLog } from '../utils/remote-log.js'
+import { errorText } from '../utils/log-text.js'
 import { createGate } from '../utils/request-gate.js'
 import { bindKeyNav } from '../utils/key-nav.js'
 import { busyOn, stopPulses } from '../utils/pulse.js'
@@ -128,7 +129,7 @@ Page(
           if (changed) this.renderPage()
         })
         .catch(err => {
-          warnLog(`[groups] refresh failed after ${Date.now() - t0}ms: the cached list stays`)
+          warnLog(`[groups] refresh failed after ${Date.now() - t0}ms: ${errorText(err)}; the cached list stays`)
           logger.error('Quiet refresh error:', err)
         })
     },

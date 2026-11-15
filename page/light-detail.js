@@ -1,6 +1,7 @@
 import { BasePage } from '@zeppos/zml/base-page'
 import { countCommands, commandCount } from '../utils/commands.js'
 import { loggedPage, infoLog, warnLog } from '../utils/remote-log.js'
+import { errorText } from '../utils/log-text.js'
 import { createGate } from '../utils/request-gate.js'
 import { createDragGuard } from '../utils/drag-guard.js'
 import { bindKeyNav } from '../utils/key-nav.js'
@@ -604,7 +605,7 @@ Page(
           if (this.shownSignature() !== before) this.redrawSettled('the refresh')
         })
         .catch(err => {
-          warnLog(`[light-detail] refresh failed after ${Date.now() - t0}ms: the cached light stays`)
+          warnLog(`[light-detail] refresh failed after ${Date.now() - t0}ms: ${errorText(err)}; the cached light stays`)
           logger.error('Quiet refresh error:', err)
         })
     },
