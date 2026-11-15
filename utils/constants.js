@@ -30,6 +30,10 @@ export const COLORS = {
   sliderFill: 0xffffff,
   briText: 0xcccccc,
   defaultSwatchColor: 0xFFCC66,
+  // A control on the system's card background (as zeppamp's card): a
+  // button there, and its pressed state (−28.6%)
+  cardControl: 0x4a4a4a,
+  cardControlPressed: 0x353535,
   white: 0xFFFFFF,
   black: 0x000000,
   color_sys_item_bg: 0x333333,
