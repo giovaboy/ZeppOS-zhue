@@ -134,6 +134,8 @@ Page(
     },
 
     build() {
+      this._builtAt = Date.now()
+      this._redrawTimer = null
       logger.log('Building Light Detail page')
       logger.debug('Initial state - light:', !!this.state.light, 'isLoading:', this.state.isLoading)
 
@@ -566,9 +568,10 @@ Page(
             infoLog(`[light-detail] refresh dropped: ${why} in its ${Date.now() - t0}ms`)
             return
           }
+          const before = this.shownSignature()
           this.updateLight(result.data.light)
           this.state.tempBrightness = this.state.light.bri || 0
-          this.renderPage()
+          if (this.shownSignature() !== before) this.redrawSettled('the refresh')
         })
         .catch(err => {
           warnLog(`[light-detail] refresh failed after ${Date.now() - t0}ms: the cached light stays`)
@@ -583,6 +586,31 @@ Page(
     // answer put in the cache. (Without it the page showed the light as
     // before the tap, and a tap on power sent "on" to a light already
     // turning on.)
+    // What the page shows of the light: an answer that changes none of it
+    // doesn't draw the page again
+    shownSignature() {
+      const l = this.state.light || {}
+      return [!!l.ison, l.reachable, l.bri, l.colormode, l.hue, l.sat, l.ct, (l.xy || []).join(','), l.hex, l.name].join('|')
+    },
+
+    // A redraw within SETTLE_MS of the page's opening waits until then. The
+    // light page opened from a group while its light was switching was
+    // redrawn ~400 ms after its build (the answer came), during the opening
+    // animation: the black screen seen in just that case (log 06:55:33; the
+    // quiet refreshes, more than 1 s after the build, never left it so).
+    // A guess from the log, to be confirmed on the watch
+    redrawSettled(why) {
+      const SETTLE_MS = 1000
+      const wait = SETTLE_MS - (Date.now() - (this._builtAt || 0))
+      if (wait <= 0) { this.renderPage(); return }
+      if (this._redrawTimer) return
+      infoLog(`[light-detail] redraw for ${why} held ${wait}ms: the page opened ${SETTLE_MS - wait}ms ago`)
+      this._redrawTimer = setTimeout(() => {
+        this._redrawTimer = null
+        if (!this._gone) this.renderPage()
+      }, wait)
+    },
+
     // Its answer can be lost with the group page: after inFlight.left (5 s
     // from the tap at most) the light is read again instead, and a tap
     // queued behind it goes
@@ -609,10 +637,12 @@ Page(
         }
         // A drag of the slider owns the brightness until its release
         const dragging = this.state.isDraggingBrightness
+        const before = this.shownSignature()
         this.updateLight(dragging ? { ison: cached.light.ison } : cached.light, false)
         if (!dragging) this.state.tempBrightness = this.state.light.bri || 0
-        infoLog(`[light-detail] waited ${Date.now() - t0}ms for the group page's request: light ${this.state.light.ison ? 'on' : 'off'}`)
-        this.renderPage()
+        const changed = this.shownSignature() !== before
+        infoLog(`[light-detail] waited ${Date.now() - t0}ms for the group page's request: light ${this.state.light.ison ? 'on' : 'off'}${changed ? '' : ', as shown: no redraw'}`)
+        if (changed) this.redrawSettled('the group page\'s answer')
       })))
     },
 
@@ -930,6 +960,7 @@ Page(
 
     onDestroy() {
       this._gone = true
+      if (this._redrawTimer) { clearTimeout(this._redrawTimer); this._redrawTimer = null }
       this.state.isLoading = false
       if (this._keys) this._keys.stop()
       stopPulses(this)
