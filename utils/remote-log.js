@@ -84,6 +84,8 @@ export function loggedPage(name, options) {
     // pageChanged): they go again with this page's first line
     const a = app()
     if (a && a.pageChanged) a.pageChanged()
+    // For the screen's lines (app.js _watchScreen)
+    if (a && a.globalData) { a.globalData.pageName = name; a.globalData.pageShownAt = Date.now() }
     const t0 = Date.now()
     const out = build && build.apply(this, args)
     if (LOG_TRACE) {

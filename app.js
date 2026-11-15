@@ -1,6 +1,7 @@
 import { BaseApp } from '@zeppos/zml/base-app'
 import { writeFileSync, readFileSync, statSync, rmSync } from '@zos/fs'
 import { log } from '@zos/utils'
+import { Screen } from '@zos/sensor'
 import { DEFAULT_USER_SETTINGS } from './utils/constants.js'
 import { getLogger } from './utils/logger.js'
 import { logs, LOG_LEVEL } from './config.js'
@@ -71,6 +72,28 @@ App(
       if (this.messaging) this.messaging.shakeTimeout = SHAKE_TIMEOUT_MS
       this._loadPendingLog()
       this.remoteLog(`app started (log level ${LOG_LEVEL})${this.messaging ? '' : ', no messaging object: shake timeout left at 5 s'}`)
+      this._watchScreen()
+    },
+
+    // The screen going off and on, with the page shown and how long it had
+    // been open: the screen was seen going off while the app was in use, and
+    // the log said nothing. ~60 s after the page opened (setPageBrightTime)
+    // is its timeout; anything else, a lowered wrist or a covering palm
+    _watchScreen() {
+      if (!LOG_INFO) return
+      try {
+        const screen = new Screen()
+        this._screenCb = () => {
+          const g = this.globalData
+          const page = g.pageName || 'no page'
+          const age = g.pageShownAt ? `, ${((Date.now() - g.pageShownAt) / 1000).toFixed(1)}s after it opened` : ''
+          this.remoteLog(screen.getStatus() === 2 ? `[screen] off on ${page}${age}` : `[screen] on, on ${page}`)
+        }
+        screen.onChange(this._screenCb)
+        this._screen = screen
+      } catch (e) {
+        this.warnLog(`[screen] no screen sensor: ${e && e.message ? e.message : e}`)
+      }
     },
 
     // ── Remote log ───────────────────────────────────────────
@@ -532,6 +555,9 @@ App(
 
     onDestroy(options) {
       logger.debug('Hue On-Off App Destroyed - Cleaning up...')
+      if (this._screen && this._screenCb) {
+        try { this._screen.offChange(this._screenCb) } catch (e) {}
+      }
       if (this._remoteLogResent) this.devLog(`[log] ${this._remoteLogResent} log batches sent again after a page change (their answers are lost there)`)
       this.remoteLog('app closed')
       this._savePendingLog()
