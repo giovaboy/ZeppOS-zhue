@@ -1,4 +1,5 @@
 import { BasePage } from '@zeppos/zml/base-page'
+import { countCommands, commandCount } from '../utils/commands.js'
 import { loggedPage, infoLog, warnLog } from '../utils/remote-log.js'
 import { createGate } from '../utils/request-gate.js'
 import { bindKeyNav } from '../utils/key-nav.js'
@@ -16,7 +17,7 @@ const logger = getLogger('zhue-group-detail-page')
 const app = getApp()
 
 Page(
-  loggedPage('group-detail', BasePage({
+  loggedPage('group-detail', countCommands(BasePage({
     state: {
       groupId: null,
       groupType: null,
@@ -83,7 +84,7 @@ Page(
       // TTL it is read again behind it (build: refreshQuietly). It used to
       // show "Loading" ~1 s at every return to a group seen before
       this._stale = false
-      this._refreshing = null
+      this._refreshing = false
       this._gone = false
       const cached = app.getCachedGroupDetail(this.state.groupId)
       if (cached) {
@@ -121,20 +122,28 @@ Page(
     },
 
     // The group read again behind the page already shown: no "Loading", no
-    // error page (what is shown stays). A tap meanwhile waits for it
-    // (afterRefresh) and acts on the state it brings; a light opened
-    // meanwhile waits for it too (app.trackLight)
+    // error page (what is shown stays). A tap doesn't wait for it: it acts on
+    // what was on screen when tapped (waiting, it acted on what the read
+    // brought: a light turned off elsewhere, tapped to turn it off, came on).
+    // A command sent meanwhile, from any page, drops the read: it may
+    // predate the command and would show the lights as before it
     refreshQuietly() {
       const t0 = Date.now()
+      const sent = commandCount()
       const groupId = this.state.groupId
-      this._refreshing = this.request({
+      this._refreshing = true
+      this.request({
         method: 'GET_GROUP_DETAIL',
         params: { groupId }
       })
         .then(result => {
           if (!result.success || !result.data) throw result
+          if (commandCount() !== sent) {
+            infoLog(`[group-detail] refresh dropped: a command left in its ${Date.now() - t0}ms`)
+            return
+          }
           // The caches take it even when this page is closed (opening a
-          // light closes it): the light page may be waiting for it
+          // light closes it)
           const lights = (result.data.lights || []).filter((l) => l && l.id && typeof l.ison !== 'undefined')
           app.setGroupDetailCache(groupId, result.data)
           // Merged: what the light page's own read brought stays
@@ -155,11 +164,7 @@ Page(
           warnLog(`[group-detail] refresh failed after ${Date.now() - t0}ms: the cached group stays`)
           logger.error('Quiet refresh error:', err)
         })
-        .then(() => { this._refreshing = null })
-    },
-
-    afterRefresh(fn) {
-      return this._refreshing ? this._refreshing.then(fn) : fn()
+        .then(() => { this._refreshing = false })
     },
 
     processDataAndRender(data) {
@@ -256,14 +261,14 @@ Page(
     // One request at a time per control; a tap during one waits for it and
     // reads the state it left
     toggleGroup() {
-      this._gate.run('group', () => busyOn(this, 'group', () => this.afterRefresh(() => this._toggleGroup())))
+      this._gate.run('group', () => busyOn(this, 'group', () => this._toggleGroup()))
     },
 
     _toggleGroup() {
       const anyOn = this.state.lights.some(light => !!light.ison)
       const newState = !anyOn
 
-      return app.trackLight(this.state.lights.map((l) => l.id), this.request({
+      return app.trackLight(this.state.lights.map((l) => l.id), newState, this.request({
           method: 'TOGGLE_GROUP',
           params: {
             groupId: this.state.groupId,
@@ -310,16 +315,17 @@ Page(
     },
 
     toggleLight(light) {
-      // After a refresh the light is the one it brought (new objects)
-      this._gate.run(`light ${light.id}`, () => busyOn(this, `light:${light.id}`, () => this.afterRefresh(() =>
-        this._toggleLight(this.state.lights.find((l) => l.id === light.id) || light))))
+      // The light as the page has it now (a refresh replaces the objects;
+      // the row tapped may hold the one drawn before it)
+      this._gate.run(`light ${light.id}`, () => busyOn(this, `light:${light.id}`, () =>
+        this._toggleLight(this.state.lights.find((l) => l.id === light.id) || light)))
     },
 
     _toggleLight(light) {
       const currentOnState = light.ison
       const newState = !currentOnState
 
-      return app.trackLight([light.id], this.request({
+      return app.trackLight([light.id], newState, this.request({
           method: 'TOGGLE_LIGHT',
           params: {
             lightId: light.id,
@@ -368,7 +374,7 @@ Page(
 
     // A value: only the latest scene tapped waits
     applyScene(scene) {
-      this._gate.run('scene', () => busyOn(this, `scene:${scene.id}`, () => this.afterRefresh(() => this._applyScene(scene))), true)
+      this._gate.run('scene', () => busyOn(this, `scene:${scene.id}`, () => this._applyScene(scene)), true)
     },
 
     _applyScene(scene) {
@@ -415,9 +421,9 @@ Page(
     navigateToLightDetail(light) {
       app.setGroupDetailScrollY(this.state.groupId, this.state.scrollPos_y)
       app.setLightData(light.id, light)
-      // Opened during the refresh: the light page waits for it (its light
-      // may be older than the page shows)
-      if (this._refreshing) app.trackLight([light.id], this._refreshing)
+      // Opened during the refresh: its light may be as old as the cache,
+      // the light page reads it again behind (its own quiet refresh)
+      if (this._refreshing) app.globalData.lightData[light.id]._timestamp = 0
 
       const paramsString = JSON.stringify({
         lightId: light.id,
@@ -530,5 +536,5 @@ Page(
       this.clearAllWidgets()
       app.setGroupDetailScrollY(this.state.groupId, this.state.scrollPos_y)
     }
-  }))
+  })))
 )

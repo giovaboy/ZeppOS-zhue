@@ -1,4 +1,5 @@
 import { BasePage } from '@zeppos/zml/base-page'
+import { countCommands, commandCount } from '../utils/commands.js'
 import { loggedPage, infoLog, warnLog } from '../utils/remote-log.js'
 import { createGate } from '../utils/request-gate.js'
 import { bindKeyNav } from '../utils/key-nav.js'
@@ -16,7 +17,7 @@ const logger = getLogger('zhue-groups-page')
 const app = getApp()
 
 Page(
-  loggedPage('groups', BasePage({
+  loggedPage('groups', countCommands(BasePage({
     state: {
       rooms: [],
       zones: [],
@@ -38,7 +39,6 @@ Page(
       this._nav = null
 
       this._stale = false
-      this._refreshing = null
       this._gone = false
 
       this.state.currentTab = app.getCurrentTab()
@@ -97,13 +97,21 @@ Page(
     },
 
     // The list read again behind the one already shown: no "Loading", no
-    // error page (what is shown stays). A tap meanwhile waits for it
-    // (afterRefresh) and acts on the state it brings
+    // error page (what is shown stays). A tap doesn't wait for it: it acts on
+    // what was on screen when tapped (waiting, it acted on what the read
+    // brought: a room turned off elsewhere, tapped to turn it off, came on).
+    // A command sent meanwhile, from any page, drops the read: it may
+    // predate the command and would show the group as before it
     refreshQuietly() {
       const t0 = Date.now()
-      this._refreshing = this.request({ method: 'GET_GROUPS' })
+      const sent = commandCount()
+      this.request({ method: 'GET_GROUPS' })
         .then(result => {
           if (!result.success || !result.data) throw result
+          if (commandCount() !== sent) {
+            infoLog(`[groups] refresh dropped: a command left in its ${Date.now() - t0}ms`)
+            return
+          }
           // The store takes it even when this page is closed (opening a
           // group closes it)
           app.setGroupsData(result.data)
@@ -123,14 +131,10 @@ Page(
           warnLog(`[groups] refresh failed after ${Date.now() - t0}ms: the cached list stays`)
           logger.error('Quiet refresh error:', err)
         })
-        .then(() => { this._refreshing = null })
     },
 
-    afterRefresh(fn) {
-      return this._refreshing ? this._refreshing.then(fn) : fn()
-    },
-
-    // The group as the list has it now (a refresh replaces the objects)
+    // The group as the list has it now (a refresh replaces the objects; the
+    // row tapped may hold the one drawn before it)
     currentGroup(groupRaw) {
       return [...this.state.rooms, ...this.state.zones]
         .find((g) => g.id === groupRaw.id && g.type === groupRaw.type) || groupRaw
@@ -193,7 +197,7 @@ Page(
     // reads the state it left
     toggleGroup(groupRaw) {
       this._gate.run(`group ${groupRaw.id}`, () => busyOn(this, `group:${groupRaw.id}`,
-        () => this.afterRefresh(() => this._toggleGroup(this.currentGroup(groupRaw)))))
+        () => this._toggleGroup(this.currentGroup(groupRaw))))
     },
 
     _toggleGroup(groupRaw) {
@@ -329,5 +333,5 @@ Page(
       app.setGroupsScrollY(this.state.scrollPos_y)
       this.clearAllWidgets()
     }
-  }))
+  })))
 )

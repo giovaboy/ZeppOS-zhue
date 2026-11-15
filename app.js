@@ -239,17 +239,20 @@ App(
     },
 
     // A command on lights still in flight from the page left behind (group
-    // detail): the light page opened meanwhile waits for it. It used to show
-    // the light as before the tap (off while it was turning on), and a tap on
-    // its power sent the state the light already had
-    trackLight(lightIds, promise) {
+    // detail), with the state it asks (ison): the light page opened meanwhile
+    // shows that state and waits for the answer. It used to show the light
+    // as before the tap (off while it was turning on), and a tap on its
+    // power sent the state the light already had
+    trackLight(lightIds, ison, promise) {
       const inFlight = this.globalData.lightsInFlight
-      const clear = () => lightIds.forEach((id) => { if (inFlight[id] === promise) delete inFlight[id] })
-      lightIds.forEach((id) => { inFlight[id] = promise })
+      const entry = { promise, ison }
+      const clear = () => lightIds.forEach((id) => { if (inFlight[id] === entry) delete inFlight[id] })
+      lightIds.forEach((id) => { inFlight[id] = entry })
       promise.then(clear, clear)
       return promise
     },
 
+    // { promise, ison } or null
     lightInFlight(lightId) {
       return this.globalData.lightsInFlight[lightId] || null
     },

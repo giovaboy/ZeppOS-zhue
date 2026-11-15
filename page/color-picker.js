@@ -1,4 +1,5 @@
 import { BasePage } from '@zeppos/zml/base-page'
+import { countCommands } from '../utils/commands.js'
 import { loggedPage } from '../utils/remote-log.js'
 import { createGate } from '../utils/request-gate.js'
 import { px } from '@zos/utils'
@@ -17,7 +18,7 @@ const logger = getLogger('zhue-color-picker-page')
 const app = getApp()
 
 Page(
-    loggedPage('color-picker', BasePage({
+    loggedPage('color-picker', countCommands(BasePage({
         state: {
             lightId: null,
             hue: 0,
@@ -348,5 +349,5 @@ Page(
             if (this._gate) this._gate.close();
             this.clearWidgets();
         }
-    }))
+    })))
 )

@@ -1,4 +1,5 @@
 import { BasePage } from '@zeppos/zml/base-page'
+import { countCommands, commandCount } from '../utils/commands.js'
 import { loggedPage, infoLog, warnLog } from '../utils/remote-log.js'
 import { createGate } from '../utils/request-gate.js'
 import { createDragGuard } from '../utils/drag-guard.js'
@@ -21,7 +22,7 @@ const logger = getLogger('zhue-light-detail-page')
 const app = getApp()
 
 Page(
-  loggedPage('light-detail', BasePage({
+  loggedPage('light-detail', countCommands(BasePage({
     state: {
       lightId: null,
       lightName: '',
@@ -167,9 +168,11 @@ Page(
 
       } else if (this.state.light) {
         logger.log('Have cached data, rendering page...')
-        this.renderPage()
+        // A toggle from the group page in flight: shown as it asks
         const inFlight = app.lightInFlight(this.state.lightId)
-        if (inFlight) this.waitForCommand(inFlight)
+        if (inFlight) this.state.light = { ...this.state.light, ison: inFlight.ison }
+        this.renderPage()
+        if (inFlight) this.waitForCommand(inFlight.promise)
         else if (this._stale) setTimeout(() => this.refreshQuietly(), 10)
       } else {
         logger.warn('Unexpected state: no loading flag and no data')
@@ -522,6 +525,7 @@ Page(
     // answered meanwhile (its state is newer than this read's)
     refreshQuietly() {
       const version = this._version
+      const sent = commandCount()
       const t0 = Date.now()
       this.request({
         method: 'GET_LIGHT_DETAIL',
@@ -531,7 +535,12 @@ Page(
           if (!result.success || !result.data || !result.data.light) throw result
           // A drag of the slider owns the brightness until its release (which
           // sends it): the read would reset the value being dragged
-          const why = this._version !== version ? 'a command answered'
+          // A command sent meanwhile, from any page, drops it too: the read
+          // may predate it. Closed (e.g. the color picker opened), the page
+          // draws nothing
+          const why = this._gone ? 'the page closed'
+            : this._version !== version ? 'a command answered'
+            : commandCount() !== sent ? 'a command left'
             : this.state.isDraggingBrightness ? 'the slider was dragged' : null
           if (why) {
             infoLog(`[light-detail] refresh dropped: ${why} in its ${Date.now() - t0}ms`)
@@ -548,10 +557,12 @@ Page(
     },
 
     // A toggle sent from the group page, still in flight when this page
-    // opened: the power button breathes, a tap on it waits (the gate) and
-    // then reads the state it left; the light shown is the one its answer
-    // put in the cache. (Without it the page showed the light as before the
-    // tap, and a tap on power sent "on" to a light already turning on.)
+    // opened: the light is shown as it asks, the power button breathes, a
+    // tap on it waits (the gate) and then reads the state the answer left
+    // (normally the one shown at the tap); the light shown is the one the
+    // answer put in the cache. (Without it the page showed the light as
+    // before the tap, and a tap on power sent "on" to a light already
+    // turning on.)
     waitForCommand(promise) {
       const t0 = Date.now()
       const version = this._version
@@ -892,5 +903,5 @@ Page(
         this.currentModal = null
       }
     }
-  }))
+  })))
 )
