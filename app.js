@@ -90,7 +90,8 @@ App(
         this._screenCb = () => {
           const g = this.globalData
           const page = g.pageName || 'no page'
-          const age = g.pageShownAt ? `, ${((Date.now() - g.pageShownAt) / 1000).toFixed(1)}s after it opened` : ''
+          // No page (closed): no age, it was the closed one's (log 07:07:20)
+          const age = g.pageName && g.pageShownAt ? `, ${((Date.now() - g.pageShownAt) / 1000).toFixed(1)}s after it opened` : ''
           this.remoteLog(screen.getStatus() === 2 ? `[screen] off on ${page}${age}` : `[screen] on, on ${page}`)
         }
         screen.onChange(this._screenCb)
