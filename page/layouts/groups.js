@@ -7,6 +7,7 @@ import { COLORS, btnPressColor, getGroupIconPath, ICON_IMAGE_SIZE } from '../../
 import { createScrollView } from '../../utils/key-nav.js'
 import { renderTabs, TAB_Y, TAB_H } from '../../utils/tabs.js'
 import { renderLoading } from '../../utils/loading.js'
+import { listEndRoom } from './list-end.js'
 
 const logger = getLogger('zhue-groups-layout')
 
@@ -130,17 +131,18 @@ function renderGroupsList(pageContext, state, listData, startY, callbacks) {
         currentY = renderGroupItem(viewContainer, item, index, currentY, itemHeight, handleListItemClick, view ? { nav, view } : null)
         currentY += itemSpacing
     })
+    const endRoom = listEndRoom(itemHeight)
     if (view) {
         view.widget = viewContainer
-        view.contentHeight = currentY + px(20)
+        view.contentHeight = currentY + endRoom
         nav.view = view
     }
-    // Room below the last row
+    // Room below the last row: up to the screen's middle (list-end.js)
     viewContainer.createWidget(widget.FILL_RECT, {
         x: 0,
         y: currentY,
         w: DEVICE_WIDTH,
-        h: px(20),
+        h: endRoom,
         color: COLORS.background,
         alpha: 0
     })
