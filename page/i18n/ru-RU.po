@@ -21,14 +21,8 @@ msgstr "Нажмите кнопку на шлюзе Hue для сопряжен�
 msgid "WAIT_PRESS"
 msgstr "Ожидание нажатия кнопки..."
 
-msgid "PAIRED_SUCCESS"
-msgstr "Сопряжение успешно выполнено!"
-
 msgid "CONNECTION_ERROR"
 msgstr "Ошибка подключения"
-
-msgid "CONNECTION_ERROR_DESC"
-msgstr "Не удалось подключиться к шлюзу Hue"
 
 msgid "DISCOVERY_FAILED"
 msgstr "Ошибка поиска"
@@ -42,9 +36,6 @@ msgstr "Ошибка сопряжения"
 msgid "BUTTON_NOT_PRESSED"
 msgstr "Нажмите кнопку сопряжения на шлюзе и попробуйте снова"
 
-msgid "INITIAL_CONNECTION_FAILED"
-msgstr "Ошибка первоначальной проверки подключения"
-
 msgid "FAILED_TO_FETCH_DATA"
 msgstr "Не удалось получить данные"
 
@@ -54,21 +45,11 @@ msgstr "Загрузка ваших настроек Hue..."
 msgid "RETRY"
 msgstr "Повторить"
 
-# GROUPS.JS
-msgid "GROUPS"
-msgstr "Группы"
-
 msgid "ROOMS"
 msgstr "Комнаты"
 
-msgid "PROGRESS_ROOMS"
-msgstr "Комнат: %d"
-
 msgid "ZONES"
 msgstr "Зоны"
-
-msgid "PROGRESS_ZONES"
-msgstr "Зон: %d"
 
 msgid "NO_ROOM_FOUND"
 msgstr "Комнаты не найдены"
@@ -76,32 +57,14 @@ msgstr "Комнаты не найдены"
 msgid "NO_ZONE_FOUND"
 msgstr "Зоны не найдены"
 
-msgid "PROGRESS_LIGHTS"
-msgstr "Ламп: %d"
-
-msgid "PROGRESS_SCENES"
-msgstr "Сцен: %d"
-
-msgid "NAVIGATING_TO_GROUPS"
-msgstr "Переход к странице групп"
-
 msgid "GROUP_DETAIL"
 msgstr "Детали группы"
-
-msgid "GROUP_ON"
-msgstr "Включить"
-
-msgid "GROUP_OFF"
-msgstr "Выключить"
 
 msgid "BRIGHTNESS"
 msgstr "Яркость: "
 
 msgid "PRESETS_TITLE"
 msgstr "Избранное"
-
-msgid "ERROR_MSG"
-msgstr "Ошибка: "
 
 msgid "LIGHT"
 msgstr "Свет"
@@ -112,12 +75,6 @@ msgstr "Освещение"
 msgid "LIGHT_DETAIL"
 msgstr "Детали лампы"
 
-msgid "LIGHT_ON"
-msgstr "Выключить"
-
-msgid "LIGHT_OFF"
-msgstr "Включить"
-
 msgid "UNREACHABLE"
 msgstr "Недоступно"
 
@@ -126,9 +83,6 @@ msgstr "Сцены"
 
 msgid "ADD_FAVORITE_COLOR"
 msgstr "Добавить любимый цвет"
-
-msgid "NO_FAVORITE_COLOR"
-msgstr "Любимые цвета не добавлены"
 
 msgid "FAVORITE_COLORS"
 msgstr "Любимые цвета"
@@ -142,20 +96,11 @@ msgstr "Добавляйте лампы и комнаты на их страни
 msgid "TOGGLING"
 msgstr "Переключение..."
 
-msgid "ADD_TO_WIDGET"
-msgstr "☆ Добавить в виджет"
-
-msgid "REMOVE_FROM_WIDGET"
-msgstr "★ В виджете"
-
 msgid "ADDED_TO_WIDGET"
 msgstr "Добавлено в виджет!"
 
 msgid "REMOVED_FROM_WIDGET"
 msgstr "Удалено из виджета"
-
-msgid "ALREADY_IN_WIDGET"
-msgstr "Уже в виджете"
 
 msgid "WIDGET_SLOTS_FULL"
 msgstr "Виджет заполнен! Сначала удалите лампу"
@@ -180,9 +125,6 @@ msgstr "Ошибка"
 
 msgid "NO_DATA"
 msgstr "Нет данных"
-
-msgid "RELOAD"
-msgstr "Перезагрузить"
 
 msgid "COLOR"
 msgstr "Цвет"

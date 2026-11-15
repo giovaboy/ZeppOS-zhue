@@ -21,14 +21,8 @@ msgstr "Press the button on your Hue Bridge to pair"
 msgid "WAIT_PRESS"
 msgstr "Waiting for button press..."
 
-msgid "PAIRED_SUCCESS"
-msgstr "Paired Successfully!"
-
 msgid "CONNECTION_ERROR"
 msgstr "Connection Error"
-
-msgid "CONNECTION_ERROR_DESC"
-msgstr "Could not connect to Hue Bridge"
 
 msgid "DISCOVERY_FAILED"
 msgstr "Discovery failed"
@@ -42,9 +36,6 @@ msgstr "Pairing failed"
 msgid "BUTTON_NOT_PRESSED"
 msgstr "Press the link button on the bridge and try again"
 
-msgid "INITIAL_CONNECTION_FAILED"
-msgstr "Initial connection check failed"
-
 msgid "FAILED_TO_FETCH_DATA"
 msgstr "Failed to fetch data"
 
@@ -54,21 +45,11 @@ msgstr "Loading Hue setup..."
 msgid "RETRY"
 msgstr "Retry"
 
-# GROUPS.JS
-msgid "GROUPS"
-msgstr "Groups"
-
 msgid "ROOMS"
 msgstr "Rooms"
 
-msgid "PROGRESS_ROOMS"
-msgstr "Rooms: %d"
-
 msgid "ZONES"
 msgstr "Zones"
-
-msgid "PROGRESS_ZONES"
-msgstr "Zones: %d"
 
 msgid "NO_ROOM_FOUND"
 msgstr "No rooms found"
@@ -76,32 +57,14 @@ msgstr "No rooms found"
 msgid "NO_ZONE_FOUND"
 msgstr "No zones found"
 
-msgid "PROGRESS_LIGHTS"
-msgstr "Lights: %d"
-
-msgid "PROGRESS_SCENES"
-msgstr "Scenes: %d"
-
-msgid "NAVIGATING_TO_GROUPS"
-msgstr "Navigating to groups page"
-
 msgid "GROUP_DETAIL"
 msgstr "Group detail"
-
-msgid "GROUP_ON"
-msgstr "Turn On"
-
-msgid "GROUP_OFF"
-msgstr "Turn Off"
 
 msgid "BRIGHTNESS"
 msgstr "Brightness: "
 
 msgid "PRESETS_TITLE"
 msgstr "Favorites"
-
-msgid "ERROR_MSG"
-msgstr "Error: "
 
 msgid "LIGHT"
 msgstr "Light"
@@ -112,12 +75,6 @@ msgstr "Lights"
 msgid "LIGHT_DETAIL"
 msgstr "Light detail"
 
-msgid "LIGHT_ON"
-msgstr "Turn off"
-
-msgid "LIGHT_OFF"
-msgstr "Turn on"
-
 msgid "UNREACHABLE"
 msgstr "Unreachable"
 
@@ -126,9 +83,6 @@ msgstr "Scenes"
 
 msgid "ADD_FAVORITE_COLOR"
 msgstr "Add favorite color"
-
-msgid "NO_FAVORITE_COLOR"
-msgstr "No favorite colors added"
 
 msgid "FAVORITE_COLORS"
 msgstr "Favorite Colors"
@@ -142,20 +96,11 @@ msgstr "Add lights and rooms from their page in zhue: switch on «Shortcut»"
 msgid "TOGGLING"
 msgstr "Toggling..."
 
-msgid "ADD_TO_WIDGET"
-msgstr "☆ Add to Widget"
-
-msgid "REMOVE_FROM_WIDGET"
-msgstr "★ In Widget"
-
 msgid "ADDED_TO_WIDGET"
 msgstr "Added to widget!"
 
 msgid "REMOVED_FROM_WIDGET"
 msgstr "Removed from widget"
-
-msgid "ALREADY_IN_WIDGET"
-msgstr "Already in widget"
 
 msgid "WIDGET_SLOTS_FULL"
 msgstr "Widget full! Remove a light first"
@@ -180,9 +125,6 @@ msgstr "Error"
 
 msgid "NO_DATA"
 msgstr "No light data available"
-
-msgid "RELOAD"
-msgstr "Reload"
 
 msgid "COLOR"
 msgstr "Color"

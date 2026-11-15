@@ -21,14 +21,8 @@ msgstr "페어링을 위해 Hue 브릿지의 버튼을 누르세요"
 msgid "WAIT_PRESS"
 msgstr "버튼 입력을 기다리는 중..."
 
-msgid "PAIRED_SUCCESS"
-msgstr "페어링 성공!"
-
 msgid "CONNECTION_ERROR"
 msgstr "연결 오류"
-
-msgid "CONNECTION_ERROR_DESC"
-msgstr "Hue 브릿지에 연결할 수 없습니다"
 
 msgid "DISCOVERY_FAILED"
 msgstr "검색 실패"
@@ -42,9 +36,6 @@ msgstr "페어링 실패"
 msgid "BUTTON_NOT_PRESSED"
 msgstr "브릿지의 링크 버튼을 누른 후 다시 시도하십시오"
 
-msgid "INITIAL_CONNECTION_FAILED"
-msgstr "초기 연결 확인 실패"
-
 msgid "FAILED_TO_FETCH_DATA"
 msgstr "데이터를 가져오지 못했습니다"
 
@@ -54,21 +45,11 @@ msgstr "Hue 설정을 로드하는 중..."
 msgid "RETRY"
 msgstr "재시도"
 
-# GROUPS.JS
-msgid "GROUPS"
-msgstr "그룹"
-
 msgid "ROOMS"
 msgstr "방"
 
-msgid "PROGRESS_ROOMS"
-msgstr "방: %d"
-
 msgid "ZONES"
 msgstr "구역"
-
-msgid "PROGRESS_ZONES"
-msgstr "구역: %d"
 
 msgid "NO_ROOM_FOUND"
 msgstr "방을 찾을 수 없습니다"
@@ -76,32 +57,14 @@ msgstr "방을 찾을 수 없습니다"
 msgid "NO_ZONE_FOUND"
 msgstr "구역을 찾을 수 없습니다"
 
-msgid "PROGRESS_LIGHTS"
-msgstr "조명: %d"
-
-msgid "PROGRESS_SCENES"
-msgstr "장면: %d"
-
-msgid "NAVIGATING_TO_GROUPS"
-msgstr "그룹 페이지로 이동 중"
-
 msgid "GROUP_DETAIL"
 msgstr "그룹 상세 정보"
-
-msgid "GROUP_ON"
-msgstr "켜기"
-
-msgid "GROUP_OFF"
-msgstr "끄기"
 
 msgid "BRIGHTNESS"
 msgstr "밝기: "
 
 msgid "PRESETS_TITLE"
 msgstr "즐겨찾기"
-
-msgid "ERROR_MSG"
-msgstr "오류: "
 
 msgid "LIGHT"
 msgstr "조명"
@@ -112,12 +75,6 @@ msgstr "조명"
 msgid "LIGHT_DETAIL"
 msgstr "조명 상세 정보"
 
-msgid "LIGHT_ON"
-msgstr "끄기"
-
-msgid "LIGHT_OFF"
-msgstr "켜기"
-
 msgid "UNREACHABLE"
 msgstr "연결할 수 없음"
 
@@ -126,9 +83,6 @@ msgstr "장면"
 
 msgid "ADD_FAVORITE_COLOR"
 msgstr "즐겨찾는 색상 추가"
-
-msgid "NO_FAVORITE_COLOR"
-msgstr "추가된 즐겨찾는 색상이 없습니다"
 
 msgid "FAVORITE_COLORS"
 msgstr "즐겨찾는 색상"
@@ -142,20 +96,11 @@ msgstr "zhue의 조명·방 페이지에서 추가: «바로가기» 켜기"
 msgid "TOGGLING"
 msgstr "전환 중..."
 
-msgid "ADD_TO_WIDGET"
-msgstr "☆ 위젯에 추가"
-
-msgid "REMOVE_FROM_WIDGET"
-msgstr "★ 위젯에 있음"
-
 msgid "ADDED_TO_WIDGET"
 msgstr "위젯에 추가됨!"
 
 msgid "REMOVED_FROM_WIDGET"
 msgstr "위젯에서 제거됨"
-
-msgid "ALREADY_IN_WIDGET"
-msgstr "이미 위젯에 있음"
 
 msgid "WIDGET_SLOTS_FULL"
 msgstr "위젯이 가득 찼습니다! 먼저 조명을 제거하세요"
@@ -180,9 +125,6 @@ msgstr "오류"
 
 msgid "NO_DATA"
 msgstr "데이터 없음"
-
-msgid "RELOAD"
-msgstr "새로고침"
 
 msgid "COLOR"
 msgstr "색상"

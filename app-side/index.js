@@ -1,5 +1,6 @@
 import { BaseSideService, settingsLib } from '@zeppos/zml/base-side'
-import { DEFAULT_USER_SETTINGS, HUE_RANGE, SAT_RANGE, BRI_RANGE, PRESET_TYPES, DEMO_DATA } from '../utils/constants.js'
+import { DEFAULT_USER_SETTINGS, HUE_RANGE, SAT_RANGE, BRI_RANGE, PRESET_TYPES, xyBriToRgb } from '../utils/constants.js'
+import { DEMO_DATA } from './demo-data.js'
 import { logs, logsPrivate, logsEnabled, LOG_LEVEL } from '../config.js'
 import { LOG_KEY, LOG_MAX, scrubLog, requestForLog } from './log.js'
 import { errorText, sizeText } from '../utils/log-text.js'
@@ -328,48 +329,7 @@ function hsbToRgb(h, s, v) {
   }
 }
 
-// --- Conversione XY (CIE 1931) ↔ RGB ---
-
-/**
- * Converti coordinate XY (gamut CIE 1931) a RGB
- * @param {number} x - Coordinata X (0-1)
- * @param {number} y - Coordinata Y (0-1)
- * @param {number} bri - Brightness (0-254)
- * @returns {{r: number, g: number, b: number}} RGB (0-255)
- */
-function xyBriToRgb(x, y, bri) {
-  // Normalizza brightness da 0-254 a 0-1
-  const brightness = bri / BRI_RANGE
-
-  // Calcola z dalla x e y
-  const z = 1.0 - x - y
-
-  // Converti da XYZ a RGB usando la matrice di trasformazione Wide RGB D65
-  const Y = brightness
-  const X = (Y / y) * x
-  const Z = (Y / y) * z
-
-  // Matrice di conversione XYZ → RGB (sRGB D65)
-  let r = X * 1.656492 - Y * 0.354851 - Z * 0.255038
-  let g = -X * 0.707196 + Y * 1.655397 + Z * 0.036152
-  let b = X * 0.051713 - Y * 0.121364 + Z * 1.011530
-
-  // Applica gamma correction (sRGB)
-  r = r <= 0.0031308 ? 12.92 * r : (1.0 + 0.055) * Math.pow(r, (1.0 / 2.4)) - 0.055
-  g = g <= 0.0031308 ? 12.92 * g : (1.0 + 0.055) * Math.pow(g, (1.0 / 2.4)) - 0.055
-  b = b <= 0.0031308 ? 12.92 * b : (1.0 + 0.055) * Math.pow(b, (1.0 / 2.4)) - 0.055
-
-  // Clamp e scala a 0-255
-  r = Math.max(0, Math.min(1, r)) * 255
-  g = Math.max(0, Math.min(1, g)) * 255
-  b = Math.max(0, Math.min(1, b)) * 255
-
-  return {
-    r: Math.round(r),
-    g: Math.round(g),
-    b: Math.round(b)
-  }
-}
+// --- Conversione XY (CIE 1931) ↔ RGB (XY → RGB: xyBriToRgb, utils/constants.js) ---
 
 /**
  * Converti RGB a coordinate XY (CIE 1931)

@@ -21,14 +21,8 @@ msgstr "Premi il pulsante sul tuo Hue Bridge per l'associazione"
 msgid "WAIT_PRESS"
 msgstr "In attesa della pressione del pulsante..."
 
-msgid "PAIRED_SUCCESS"
-msgstr "Associazione Riuscita!"
-
 msgid "CONNECTION_ERROR"
 msgstr "Errore di Connessione"
-
-msgid "CONNECTION_ERROR_DESC"
-msgstr "Impossibile connettersi a Hue Bridge"
 
 msgid "DISCOVERY_FAILED"
 msgstr "Ricerca fallita"
@@ -42,9 +36,6 @@ msgstr "Associazione fallita"
 msgid "BUTTON_NOT_PRESSED"
 msgstr "Premi il pulsante link sul bridge e riprova"
 
-msgid "INITIAL_CONNECTION_FAILED"
-msgstr "Verifica connessione iniziale fallita"
-
 msgid "FAILED_TO_FETCH_DATA"
 msgstr "Impossibile recuperare i dati"
 
@@ -54,21 +45,11 @@ msgstr "Caricamento della configurazione Hue..."
 msgid "RETRY"
 msgstr "Riprova"
 
-# GROUPS.JS
-msgid "GROUPS"
-msgstr "Gruppi"
-
 msgid "ROOMS"
 msgstr "Stanze"
 
-msgid "PROGRESS_ROOMS"
-msgstr "Stanze: %d"
-
 msgid "ZONES"
 msgstr "Zone"
-
-msgid "PROGRESS_ZONES"
-msgstr "Zone: %d"
 
 msgid "NO_ROOM_FOUND"
 msgstr "Nessuna stanza trovata"
@@ -76,32 +57,14 @@ msgstr "Nessuna stanza trovata"
 msgid "NO_ZONE_FOUND"
 msgstr "Nessuna zona trovata"
 
-msgid "PROGRESS_LIGHTS"
-msgstr "Luci: %d"
-
-msgid "PROGRESS_SCENES"
-msgstr "Scene: %d"
-
-msgid "NAVIGATING_TO_GROUPS"
-msgstr "Passaggio alla pagina gruppi"
-
 msgid "GROUP_DETAIL"
 msgstr "Dettaglio gruppo"
-
-msgid "GROUP_ON"
-msgstr "Accendi"
-
-msgid "GROUP_OFF"
-msgstr "Spegni"
 
 msgid "BRIGHTNESS"
 msgstr "Luminosità: "
 
 msgid "PRESETS_TITLE"
 msgstr "Preferiti"
-
-msgid "ERROR_MSG"
-msgstr "Errore: "
 
 msgid "LIGHT"
 msgstr "Luce"
@@ -112,12 +75,6 @@ msgstr "Luci"
 msgid "LIGHT_DETAIL"
 msgstr "Dettaglio luce"
 
-msgid "LIGHT_ON"
-msgstr "Spegni"
-
-msgid "LIGHT_OFF"
-msgstr "Accendi"
-
 msgid "UNREACHABLE"
 msgstr "Non raggiungibile"
 
@@ -126,9 +83,6 @@ msgstr "Scene"
 
 msgid "ADD_FAVORITE_COLOR"
 msgstr "Aggiungi colore preferito"
-
-msgid "NO_FAVORITE_COLOR"
-msgstr "Nessun colore preferito aggiunto"
 
 msgid "FAVORITE_COLORS"
 msgstr "Colori Preferiti"
@@ -142,20 +96,11 @@ msgstr "Aggiungi luci e stanze dalla loro pagina in zhue: attiva «Scorciatoia»
 msgid "TOGGLING"
 msgstr "Cambio stato..."
 
-msgid "ADD_TO_WIDGET"
-msgstr "☆ Aggiungi a Widget"
-
-msgid "REMOVE_FROM_WIDGET"
-msgstr "★ Nel Widget"
-
 msgid "ADDED_TO_WIDGET"
 msgstr "Aggiunto al widget!"
 
 msgid "REMOVED_FROM_WIDGET"
 msgstr "Rimosso dal widget"
-
-msgid "ALREADY_IN_WIDGET"
-msgstr "Già nel widget"
 
 msgid "WIDGET_SLOTS_FULL"
 msgstr "Widget pieno! Rimuovi prima una luce"
@@ -180,9 +125,6 @@ msgstr "Errore"
 
 msgid "NO_DATA"
 msgstr "Nessun dato disponibile"
-
-msgid "RELOAD"
-msgstr "Ricarica"
 
 msgid "COLOR"
 msgstr "Colore"

@@ -7,15 +7,10 @@ export const COLORS = {
   // The app's one accent (activeTab): what is touched or chosen. Buttons
   // like Retry and the pairing screens used three blues
   highlight: 0x984ce5,
-  // Greys with RGB 1–46 are to be avoided on Zepp OS (design-guidelines.md,
-  // "Color"): pure black or color_sys_item (#333333) instead
-  cardBg: 0x333333,
   activeTab: 0x984ce5, //0x0055ff,
   activeTabText: 0xffffff,
   inactiveTab: 0x333333,
   inactiveTabText: 0xb3b3b3,
-  warningBg: 0x333300,
-  highlightText: 0xffffff,
   warning: 0xff6600,
   warningText: 0xffffff,
   success: 0x39935a, //0x2ecd6e,//0x00aa00,
@@ -27,11 +22,8 @@ export const COLORS = {
   onInactive: 0x000000,
   // A "Loading…" text: #666666 on black is 3.7:1, under the 4.5:1 text needs
   loading: 0xb3b3b3,
-  roomIndicator: 0x0000cc,
-  zoneIndicator: 0x009900,
   lightBg: 0x333333, //light background, same color as the light icons mask (#FFFFFF opacity 20%) color_sys_item_bg per zeppos doc
   sceneBg: 0x333333, // as every row (it was a dark blue): the scene's dot tells it
-  toggleOn: 0x00aa00,
   toggleOff: 0x444444,
   sectionHeader: 0x984ce5, // section titles ("Lights", "Scenes", "Favorites"): the accent
   sliderBg: 0x333333, // slider track: color_sys_item
@@ -40,18 +32,9 @@ export const COLORS = {
   defaultSwatchColor: 0xFFCC66,
   white: 0xFFFFFF,
   black: 0x000000,
-
-  color_sys_key: 0x0986d4,
-  color_sys_warning: 0xad3c23,
   color_sys_item_bg: 0x333333,
-  color_sys_empty_status_graphic: 0x666666,
-
-  color_text_warning: 0xd14221,
-  color_text_link: 0x059af7,
   color_text_title: 0xffffff,
-  color_text_subtitle: 0xb3b3b3,
-  color_text_secondary_info: 0x808080,
-  color_text_button: 0xffffff
+  color_text_subtitle: 0xb3b3b3
 }
 
 // Range API Hue/Sat/Bri
@@ -99,245 +82,6 @@ export const DEFAULT_WIDGET_SHORTCUTS = Array.from(
   () => ({ lightId: null, lightName: null, modelid: null })
 )
 
-export const DEMO_DATA = {
-  lights: {
-    // --- LIVING ROOM (Colors & Ambiance) ---
-    '1': {
-      id: '1',
-      name: 'Sofa Floor Lamp',
-      ison: true,
-      bri: 200,
-      hue: 46920, // Blue-ish
-      sat: 254,
-      ct: 0,
-      colormode: 'hs',
-      reachable: true,
-      modelid: 'LCT015' // A19 Color Gen 3
-    },
-    '2': {
-      id: '2',
-      name: 'TV Backlight',
-      ison: true,
-      bri: 254,
-      hue: 65000, // Red
-      sat: 254,
-      ct: 0,
-      colormode: 'hs',
-      reachable: true,
-      modelid: 'LJL001' // Play Bar
-    },
-    '3': {
-      id: '3',
-      name: 'Ceiling Spots',
-      ison: false,
-      bri: 100,
-      ct: 366,
-      colormode: 'ct',
-      reachable: true,
-      modelid: 'LTW001'
-    },
-
-    // --- KITCHEN (Functional - White Ambiance) ---
-    '4': {
-      id: '4',
-      name: 'Cabinet Strip',
-      ison: true,
-      bri: 254,
-      ct: 250, // Neutral white
-      colormode: 'ct',
-      reachable: true,
-      modelid: 'LST002' // Lightstrip Plus
-    },
-    '5': {
-      id: '5',
-      name: 'Dining Table',
-      ison: true,
-      bri: 180,
-      ct: 450, // Warm white
-      colormode: 'ct',
-      reachable: true,
-      modelid: 'LTW001'
-    },
-
-    // --- BEDROOM (Relax) ---
-    '6': {
-      id: '6',
-      name: 'Left Bedside',
-      ison: false,
-      bri: 50,
-      hue: 10000,
-      sat: 200,
-      colormode: 'hs',
-      reachable: true,
-      modelid: 'LCT015'
-    },
-    '7': {
-      id: '7',
-      name: 'Right Bedside',
-      ison: false,
-      bri: 50,
-      ct: 400,
-      colormode: 'ct',
-      reachable: true,
-      modelid: 'LCT015'
-    },
-
-    // --- GARAGE (Only ON/OFF - White) ---
-    '8': {
-      id: '8',
-      name: 'Ceiling Light 1',
-      ison: true,
-      bri: 254,
-      colormode: 'bri',
-      reachable: true,
-      modelid: 'LWB014' // Hue White
-    },
-    '9': {
-      id: '9',
-      name: 'Ceiling Light 2',
-      ison: true,
-      bri: 254,
-      colormode: 'bri',
-      reachable: true,
-      modelid: 'LWB014'
-    },
-
-    // --- GARDEN (Connection issues) ---
-    '10': {
-      id: '10',
-      name: 'Path Bollard',
-      ison: true,
-      bri: 150,
-      hue: 40000,
-      sat: 254,
-      colormode: 'hs',
-      reachable: true,
-      modelid: 'LCA007' // Calla Outdoor
-    },
-    '11': {
-      id: '11',
-      name: 'Tree Spot (Lost)',
-      ison: true, // Appears ON but no signal
-      bri: 254,
-      colormode: 'bri',
-      reachable: false,
-      modelid: 'LPA001'
-    },
-
-    // --- ATTIC (All off/unreachable) ---
-    '12': {
-      id: '12',
-      name: 'Old Lamp',
-      ison: true,
-      bri: 254,
-      colormode: 'bri',
-      reachable: false,
-      modelid: 'LWB006'
-    },
-
-    // --- GAMING ROOM (Entertainment) ---
-    '13': {
-      id: '13',
-      name: 'PC Gradient Strip',
-      ison: true,
-      bri: 200,
-      hue: 55000, // Magenta
-      sat: 254,
-      colormode: 'hs',
-      reachable: true,
-      modelid: 'LCG002' // Gradient Strip
-    }
-  },
-
-  groups: {
-    // --- ROOMS ---
-    '1': {
-      id: '1',
-      name: 'Living Room',
-      type: 'Room',
-      class: 'Living room', // Icon: Sofa
-      lights: ['1', '2', '3'],
-      state: { all_on: false, any_on: true }
-    },
-    '2': {
-      id: '2',
-      name: 'Kitchen',
-      type: 'Room',
-      class: 'Kitchen', // Icon: Kitchen
-      lights: ['4', '5'],
-      state: { all_on: true, any_on: true }
-    },
-    '3': {
-      id: '3',
-      name: 'Bedroom',
-      type: 'Room',
-      class: 'Bedroom', // Icon: Bed
-      lights: ['6', '7'],
-      state: { all_on: false, any_on: false }
-    },
-    '4': {
-      id: '4',
-      name: 'Garage',
-      type: 'Room',
-      class: 'Garage', // Icon: Car
-      lights: ['8', '9'],
-      state: { all_on: true, any_on: true }
-    },
-    '5': {
-      id: '5',
-      name: 'Garden',
-      type: 'Room',
-      class: 'Garden', // Icon: Flower/Tree
-      lights: ['10', '11'],
-      state: { all_on: true, any_on: true } // Note: 11 is unreachable but 10 is on
-    },
-    '6': {
-      id: '6',
-      name: 'Gaming Room',
-      type: 'Room',
-      class: 'Man cave', // Icon: Controller/PC
-      lights: ['13'],
-      state: { all_on: true, any_on: true }
-    },
-    '7': {
-      id: '7',
-      name: 'Attic',
-      type: 'Room',
-      class: 'Attic', // Icon: Roof/Box
-      lights: ['12'],
-      state: { all_on: false, any_on: true }, // Fake ON (ghost light)
-      allUnreachable: true // ⚠️ TEST FLAG
-    },
-
-    // --- ZONES ---
-    '100': {
-      id: '100',
-      name: 'Downstairs',
-      type: 'Zone',
-      class: 'Downstairs', // Icon: Stairs Down
-      lights: ['1', '2', '3', '4', '5', '8', '9'],
-      state: { all_on: false, any_on: true }
-    },
-    '101': {
-      id: '101',
-      name: 'Game Mode',
-      type: 'Zone',
-      class: 'TV',
-      lights: ['1', '2', '13'],
-      state: { all_on: true, any_on: true }
-    }
-  },
-
-  scenes: {
-    's1': { id: 's1', name: 'Cinema', group: '1', color: '#FF0000' },
-    's2': { id: 's2', name: 'Concentrate', group: '1', color: '#F5F5F5' },
-    's3': { id: 's3', name: 'Cooking', group: '2', color: '#FFFFFF' },
-    's4': { id: 's4', name: 'Nightlight', group: '3', color: '#111111' },
-    's5': { id: 's5', name: 'Cyberpunk', group: '6', color: '#00FFFF' },
-    's6': { id: 's6', name: 'Sunset', group: '5', color: '#FF8800' }
-  }
-}
-
 // Mappatura completa dei Model ID di Philips Hue
 //https://zigbee.blakadder.com/vendors.html
 export const LIGHT_MODELS = {
@@ -363,7 +107,6 @@ export const LIGHT_MODELS = {
   /*'LCT026': { name: 'Hue Bulb A19 C&W (Filament Color BT)', icon: 'a19' },
   'LCT027': { name: 'Hue Bulb E27 C&W', icon: 'a19' },
   'LCT029': { name: 'Hue Bulb A19 C&W (Matter)', icon: 'a19' },*/
-
 
   // White Ambiance
   'LTW001': { name: 'White Ambiance A19', icon: 'a19' },
@@ -529,7 +272,7 @@ export const GROUP_ICONS = {
   'Front door': 'front-door',
   'Garage': 'garage',
   'Garden': 'outdoors',
-  'Guest room': 'bedroom',
+  'Guest room': 'guestroom',
   'Gym': 'gym',
   'Hallway': 'hallway',
   'Home': 'home',
@@ -651,10 +394,9 @@ export function xy2hex(xy, bri = BRI_RANGE) {
   return (r << 16) | (g << 8) | b
 }
 
-/**
- * Converti coordinate XY + brightness a RGB
- */
-function xyBriToRgb(x, y, bri) {
+// XY (CIE 1931) + brightness to RGB 0-255; the phone uses it too
+// (app-side stateToHex), it had its own copy
+export function xyBriToRgb(x, y, bri) {
   const brightness = bri / BRI_RANGE
   const z = 1.0 - x - y
 
@@ -710,7 +452,6 @@ export function hexStringToInt(hexString) {
   if (!hexString) return 0xFFFFFF
   return parseInt(hexString.replace('#', '0x'), 16)
 }
-
 
 // Funzione per normalizzare HEX: aggiunge # se manca
 export const normalizeHex = (hex) => {

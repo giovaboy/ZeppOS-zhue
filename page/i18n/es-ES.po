@@ -21,14 +21,8 @@ msgstr "Pulsa el botón de tu Puente Hue para vincular"
 msgid "WAIT_PRESS"
 msgstr "Esperando a que pulses el botón..."
 
-msgid "PAIRED_SUCCESS"
-msgstr "¡Vinculado con éxito!"
-
 msgid "CONNECTION_ERROR"
 msgstr "Error de conexión"
-
-msgid "CONNECTION_ERROR_DESC"
-msgstr "No se pudo conectar con el Puente Hue"
 
 msgid "DISCOVERY_FAILED"
 msgstr "Error en la búsqueda"
@@ -42,9 +36,6 @@ msgstr "Error de vinculación"
 msgid "BUTTON_NOT_PRESSED"
 msgstr "Pulsa el botón de enlace en el puente e inténtalo de nuevo"
 
-msgid "INITIAL_CONNECTION_FAILED"
-msgstr "Error en la comprobación de conexión inicial"
-
 msgid "FAILED_TO_FETCH_DATA"
 msgstr "Error al obtener los datos"
 
@@ -54,21 +45,11 @@ msgstr "Cargando tu configuración de Hue..."
 msgid "RETRY"
 msgstr "Reintentar"
 
-# GROUPS.JS
-msgid "GROUPS"
-msgstr "Grupos"
-
 msgid "ROOMS"
 msgstr "Habitaciones"
 
-msgid "PROGRESS_ROOMS"
-msgstr "Habitaciones: %d"
-
 msgid "ZONES"
 msgstr "Zonas"
-
-msgid "PROGRESS_ZONES"
-msgstr "Zonas: %d"
 
 msgid "NO_ROOM_FOUND"
 msgstr "No se encontraron habitaciones"
@@ -76,32 +57,14 @@ msgstr "No se encontraron habitaciones"
 msgid "NO_ZONE_FOUND"
 msgstr "No se encontraron zonas"
 
-msgid "PROGRESS_LIGHTS"
-msgstr "Luces: %d"
-
-msgid "PROGRESS_SCENES"
-msgstr "Escenas: %d"
-
-msgid "NAVIGATING_TO_GROUPS"
-msgstr "Navegando a la página de grupos"
-
 msgid "GROUP_DETAIL"
 msgstr "Detalle del grupo"
-
-msgid "GROUP_ON"
-msgstr "Encender"
-
-msgid "GROUP_OFF"
-msgstr "Apagar"
 
 msgid "BRIGHTNESS"
 msgstr "Brillo: "
 
 msgid "PRESETS_TITLE"
 msgstr "Favoritos"
-
-msgid "ERROR_MSG"
-msgstr "Error: "
 
 msgid "LIGHT"
 msgstr "Luz"
@@ -112,12 +75,6 @@ msgstr "Luces"
 msgid "LIGHT_DETAIL"
 msgstr "Detalle de la luz"
 
-msgid "LIGHT_ON"
-msgstr "Apagar"
-
-msgid "LIGHT_OFF"
-msgstr "Encender"
-
 msgid "UNREACHABLE"
 msgstr "No disponible"
 
@@ -126,9 +83,6 @@ msgstr "Escenas"
 
 msgid "ADD_FAVORITE_COLOR"
 msgstr "Añadir color favorito"
-
-msgid "NO_FAVORITE_COLOR"
-msgstr "No hay colores favoritos guardados"
 
 msgid "FAVORITE_COLORS"
 msgstr "Colores favoritos"
@@ -142,20 +96,11 @@ msgstr "Añade luces y habitaciones desde su página en zhue: activa «Acceso di
 msgid "TOGGLING"
 msgstr "Cambiando estado..."
 
-msgid "ADD_TO_WIDGET"
-msgstr "☆ Añadir a Widget"
-
-msgid "REMOVE_FROM_WIDGET"
-msgstr "★ En Widget"
-
 msgid "ADDED_TO_WIDGET"
 msgstr "¡Añadido al widget!"
 
 msgid "REMOVED_FROM_WIDGET"
 msgstr "Eliminado del widget"
-
-msgid "ALREADY_IN_WIDGET"
-msgstr "Ya está en el widget"
 
 msgid "WIDGET_SLOTS_FULL"
 msgstr "¡Widget lleno! Elimina una luz primero"
@@ -180,9 +125,6 @@ msgstr "Error"
 
 msgid "NO_DATA"
 msgstr "No hay datos disponibles"
-
-msgid "RELOAD"
-msgstr "Recargar"
 
 msgid "COLOR"
 msgstr "Color"
