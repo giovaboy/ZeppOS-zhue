@@ -261,12 +261,16 @@ Page(
     // --- UI RENDERING ---
 
     renderPage() {
-      this.clearAllWidgets()
-
+      // Loaded: on to the groups, the loading screen left as it is until the
+      // groups page draws (onDestroy clears it). Cleared first, the screen
+      // stayed black while the groups page was built (~0.3 s, after every
+      // start); the other pages don't clear before leaving
       if (this.state.currentState === STATES.SUCCESS) {
         this.navigateToGroups()
         return
       }
+
+      this.clearAllWidgets()
 
       renderMainWidgets(this, this.state, {
         retryFunc: () => this.retry(),

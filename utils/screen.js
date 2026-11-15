@@ -13,7 +13,6 @@ import { devLog, warnLog, LOG_TRACE } from './remote-log.js'
 
 const ON_MS = 60000
 const AGAIN_AFTER_MS = 800
-let logged = false
 
 function set(label, when) {
   const r = {}
@@ -26,10 +25,18 @@ function set(label, when) {
   }
   const bad = Object.entries(r).filter(([, v]) => v !== undefined && v !== 0)
   if (bad.length) warnLog(`[screen] ${label} ${when}: ${bad.map(([k, v]) => `${k} ${v}`).join(', ')}`)
-  else if (LOG_TRACE && !logged) {
-    logged = true
+  else if (LOG_TRACE && !loggedThisRun()) {
     devLog(`[screen] kept on ${ON_MS / 1000} s (bright, wrist, palm: ${r.bright}, ${r.wrist}, ${r.palm})`)
   }
+}
+
+// Each page is its own bundle (a module variable is one per page): the flag
+// lives in the app
+function loggedThisRun() {
+  const g = getApp() && getApp().globalData
+  if (!g || g.screenKeptLogged) return true
+  g.screenKeptLogged = true
+  return false
 }
 
 // In build. The second call runs even if the page closed meanwhile: it then
