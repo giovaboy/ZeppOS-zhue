@@ -8,6 +8,8 @@
 //                         two quick taps still give on → off
 //   run(key, fn, true)    a value (slider, color): only the latest waits,
 //                         earlier ones are replaced
+//   drop(key)             the value waiting is dropped (a command that
+//                         overrides it, e.g. power off over a brightness)
 //
 // `fn` starts the request and returns its promise; it runs when its turn comes,
 // so it reads the state of that moment. One gate per page, made in onInit
@@ -56,8 +58,18 @@ export function createGate(label) {
     Promise.resolve(sent).then(done, done)
   }
 
+  // The value waiting behind the request in flight is dropped (the one in
+  // flight can't be): true if there was one
+  function drop(key) {
+    const slot = slots[key]
+    if (!slot || !slot.next) return false
+    slot.next = null
+    return true
+  }
+
   return {
     run,
+    drop,
     close() { open = false },
   }
 }

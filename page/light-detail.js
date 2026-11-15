@@ -63,6 +63,7 @@ Page(
       this._gate = createGate('light-detail')
       this._gone = false
       this._lastBriSent = null
+      this._briSending = null
 
       let params = {}
       try {
@@ -428,14 +429,20 @@ Page(
       this._lastBriSent = brightness
 
       // A value: while one is in flight only the latest waits
-      this._gate.run('brightness', () => this.request({
-        method: 'SET_BRIGHTNESS',
-        params: { lightId: this.state.lightId, bri: brightness }
-      }).then(res => {
-        if (res.success) {
-          this.updateLight({ bri: brightness })
-        }
-      }).catch(e => logger.error(e)), true)
+      this._gate.run('brightness', () => {
+        const sending = this.request({
+          method: 'SET_BRIGHTNESS',
+          params: { lightId: this.state.lightId, bri: brightness }
+        }).then(res => {
+          if (res.success) {
+            this.updateLight({ bri: brightness })
+          }
+        }).catch(e => logger.error(e))
+        // The power toggle goes after it (toggleLight)
+        this._briSending = sending
+        sending.then(() => { if (this._briSending === sending) this._briSending = null })
+        return sending
+      }, true)
     },
 
     getLightCapabilities(light) {
@@ -637,8 +644,16 @@ Page(
 
     // One toggle at a time: a tap during one waits for it, and reads the state
     // it left
+    // A brightness on its way turns the light on: sent after the power off,
+    // it lit the light again (log 02:12:20, "state=false ... now on"). The
+    // toggle drops the brightness waiting and goes after the one in flight
     toggleLight() {
-      this._gate.run('toggle', () => busyOn(this, 'power', () => this._toggleLight()))
+      this._gate.run('toggle', () => busyOn(this, 'power', () => {
+        const dropped = this._gate.drop('brightness')
+        const inFlight = this._briSending
+        if (dropped || inFlight) infoLog(`[light-detail] power after the brightness:${inFlight ? ' waits for the one in flight' : ''}${dropped ? `${inFlight ? ',' : ''} the one waiting dropped` : ''}`)
+        return Promise.resolve(inFlight).catch(() => {}).then(() => this._toggleLight())
+      }))
     },
 
     _toggleLight() {
