@@ -171,6 +171,11 @@ function renderGroupContentWithViewContainer(pageContext, state, viewData, callb
             nav.items.push({
                 key: `${item.type}:${item.raw?.id ?? item.id ?? index}`,
                 x: px(30), y: rowTop, w: DEVICE_WIDTH - px(60), h: currentY - rowTop - px(10), radius: px(10),
+                // A light switches from its icon: the breath goes round it
+                // (renderLightItem's geometry), not the row
+                busy: item.type === 'light' && item.icon
+                    ? { x: DEVICE_WIDTH - px(30) - px(70) - px(15), y: rowTop + px(15), w: px(70), h: px(70), radius: px(8) }
+                    : undefined,
                 parent: viewContainer, view,
                 enabled: reachable,
                 select: item.type === 'scene' ? () => applyScene(item) : () => navigateToLightDetail(item.raw),

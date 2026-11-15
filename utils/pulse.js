@@ -113,11 +113,14 @@ export function stopPulses(owner) {
 }
 
 // While fn's promise runs, the page's control `key` breathes (its geometry
-// from the items the layout registered for the keys, page._nav). Returns
-// fn's promise, for the request queue
+// from the items the layout registered for the keys, page._nav). An item's
+// `busy` geometry, when it has one, is the control that sends the command
+// inside a wider row (a group's ON/OFF badge, a light's icon): the keys
+// highlight the row, the breath that control. Returns fn's promise, for the
+// request queue
 export function busyOn(page, key, fn, color) {
   const item = page && page._nav && page._nav.items.find((it) => it.key === key)
-  const a = item ? startBreath(page, { ...item, label: key }, color) : null
+  const a = item ? startBreath(page, { ...item, ...(item.busy || {}), label: key }, color) : null
   let p
   try { p = fn() } catch (e) { stopPulse(a); throw e }
   return Promise.resolve(p).then(

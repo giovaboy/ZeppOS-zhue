@@ -254,6 +254,8 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick,
     if (keyNav) keyNav.nav.items.push({
         key: `group:${group.raw?.id}`,
         x: startX, y: yPos, w: DEVICE_WIDTH - startX * 2, h: itemHeight, radius: px(10),
+        // The breath of a switch goes round the badge, not the row
+        busy: { x: px(340), y: yPos + px(25), w: px(80), h: px(50), radius: px(8) },
         parent: container, view: keyNav.view,
         select: () => onItemClick(index, 'navigate'),
         longSelect: () => onItemClick(index, 'on_off')
