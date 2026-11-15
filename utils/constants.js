@@ -277,13 +277,21 @@ const ARCHETYPE_ICONS = {
   christmastree: 'festavia', stringlight: 'festavia'
 }
 
-// The icon file's name (icons/<name>.png) for a light: its model's, else
-// its type's, else the default
+// The icons of bulbs: a bulb sits in a fixture, which the type set in the
+// Hue app tells (the log: two bulbs, LWB006 and LCA001, typed "pendantround"
+// and "tableshade", showed as bulbs)
+const BULB_ICONS = new Set(['a19', 'classic', 'filament_a19', 'filament_globe', 'filament_candle', 'candle', 'gu10', 'br30', 'bulb-flood', 'bulb-golfball-e14'])
+
+// The icon file's name (icons/<name>.png) for a light: its model's, except
+// a bulb typed as a fixture (pendant, table lamp...), which takes the
+// fixture's; a model never mapped takes its type's; else the default
 export function lightIconName(light) {
   const model = light && LIGHT_MODELS[light.modelid]
-  if (model) return model.icon
   const type = light && typeof light.archetype === 'string' ? light.archetype.replace(/_/g, '') : ''
-  return ARCHETYPE_ICONS[type] || LIGHT_MODELS.default.icon
+  const byType = ARCHETYPE_ICONS[type]
+  if (!model) return byType || LIGHT_MODELS.default.icon
+  if (byType && BULB_ICONS.has(model.icon) && !BULB_ICONS.has(byType)) return byType
+  return model.icon
 }
 
 // Size of the icon PNGs (assets/default.*/icons and icons/groups): 70×70
