@@ -203,28 +203,12 @@ App(
       return this.globalData.settings
     },
 
-    // ============================================
-    // A light from the cache, while younger than TTL (never expires in demo mode)
-    // ============================================
+    // A light from the cache whatever its age (the color picker patches it
+    // with what it sends). An old one used to be deleted here: the light
+    // page, back from the picker after more than TTL, found none and showed
+    // "Loading" (log 01:42:18, 01:42:28, 01:42:53)
     getLightData(lightId) {
-      const data = this.globalData.lightData[lightId]
-      if (!data) return null
-
-      // In demo mode, cache never expires
-      if (this.isDemoMode()) {
-        logger.debug('Demo mode: returning cached light data (no expiry)')
-        return data
-      }
-
-      // Normal mode: verify cache is still valid
-      const age = Date.now() - (data._timestamp || 0)
-      if (age > TTL) {
-        logger.debug('Light data cache expired')
-        this.clearLightData(lightId)
-        return null
-      }
-
-      return data
+      return this.globalData.lightData[lightId] || null
     },
 
     // A light from the cache whatever its age, and whether it is still fresh:
@@ -266,10 +250,6 @@ App(
       this.globalData.currentLightId = lightId
     },
 
-    clearLightData(lightId) {
-      logger.debug('Global Store: Clearing current light data')
-      this.globalData.lightData[lightId] = null
-    },
 
     // ============================================
     // The groups list from the cache, flagged expired after TTL (never in demo mode)
@@ -349,31 +329,11 @@ App(
       return needsRefresh || isExpired || !data.hasLoadedOnce
     },
 
-    // ============================================
-    // A group detail from the cache, while younger than TTL (never expires in demo mode)
-    // ============================================
+    // A group detail from the cache whatever its age (the group page patches
+    // it after a command). An old one used to be deleted here, and the next
+    // return to the group showed "Loading"
     getGroupDetailCache(groupId) {
-      const cached = this.globalData.groupDetailCache[groupId]
-
-      if (!cached) return null
-
-      // In demo mode, cache never expires
-      if (this.isDemoMode()) {
-        logger.debug(`Demo mode: using cached group detail for ${groupId} (no expiry)`)
-        return cached
-      }
-
-      // Normal mode: check expiration
-      const age = Date.now() - (cached._timestamp || 0)
-
-      if (age > TTL) {
-        logger.debug(`Group detail cache expired for ${groupId} (age: ${Math.round(age / 1000)}s)`)
-        this.globalData.groupDetailCache[groupId] = null
-        return null
-      }
-
-      logger.debug(`Using cached group detail for ${groupId} (age: ${Math.round(age / 1000)}s)`)
-      return cached
+      return this.globalData.groupDetailCache[groupId] || null
     },
 
     // A group detail from the cache whatever its age, and whether it is still
@@ -405,9 +365,12 @@ App(
       logger.debug(`Group detail cache set for ${groupId}`)
     },
 
+    // Old, not gone: the group page still shows it at once, and reads it
+    // again behind it (a scene used to leave no cache, so "Loading")
     invalidateGroupDetailCache(groupId) {
       logger.debug(`Invalidating group detail cache for ${groupId}`)
-      this.globalData.groupDetailCache[groupId] = null
+      const cached = this.globalData.groupDetailCache[groupId]
+      if (cached) cached._timestamp = 0
     },
 
 
