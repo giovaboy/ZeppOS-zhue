@@ -236,29 +236,24 @@ function renderSceneItem(container, scene, yPos, COLORS, onTap) {
         radius: px(10)
     })
 
-    // Scene icon (optional colored circle)
-    const circleRadius = px(15)
-    if (scene.color) {
-        try {
-            const colorHex = scene.color.replace('#', '')
-            const colorInt = parseInt(colorHex, 16)
-
-            container.createWidget(widget.CIRCLE, {
-                center_x: startX + circleRadius + px(15),
-                center_y: yPos + itemHeight / 2,
-                radius: circleRadius,
-                color: colorInt
-            })
-        } catch (e) {
-            // Fallback to default icon
-        }
+    // The scene's color (group-detail.js sceneDotColor): a dot on the right,
+    // centered where a light row has its icon (renderLightItem: 70 px, 15 px
+    // in from the row's right edge), the name aligned with the lights' names
+    const dotRadius = px(20)
+    if (scene.dotColor !== null && scene.dotColor !== undefined) {
+        container.createWidget(widget.CIRCLE, {
+            center_x: DEVICE_WIDTH - startX - px(15) - px(35),
+            center_y: yPos + itemHeight / 2,
+            radius: dotRadius,
+            color: scene.dotColor
+        })
     }
 
     // Scene name
     container.createWidget(widget.TEXT, {
-        x: startX + px(15) + circleRadius * 2 + px(15),
+        x: startX + px(15),
         y: yPos,
-        w: px(360),
+        w: px(305),
         h: itemHeight,
         text: scene.name,
         text_size: px(28),

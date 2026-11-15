@@ -11,7 +11,7 @@ import { getText } from '@zos/i18n'
 import { createWidget, deleteWidget, showToast } from '@zos/ui'
 import { push } from '@zos/router'
 import { renderGroupDetailPage } from 'zosLoader:./group-detail.[pf].layout.js'
-import { DEFAULT_USER_SETTINGS, COLORS, LIGHT_MODELS, lightDisplayColor } from '../utils/constants.js'
+import { DEFAULT_USER_SETTINGS, COLORS, LIGHT_MODELS, lightDisplayColor, hexStringToInt } from '../utils/constants.js'
 
 const logger = getLogger('zhue-group-detail-page')
 const app = getApp()
@@ -117,7 +117,7 @@ Page(
     detailSignature() {
       const l = this.state.lights.map((x) =>
         [x.id, x.name, !!x.ison, x.reachable, x.bri, x.hue, x.sat, x.ct, x.colormode, (x.xy || []).join(',')].join(':'))
-      const s = this.state.scenes.map((x) => `${x.id}:${x.name}`)
+      const s = this.state.scenes.map((x) => `${x.id}:${x.name}:${this.sceneDotColor(x)}`)
       return `${l.join('|')}#${s.join('|')}`
     },
 
@@ -436,6 +436,16 @@ Page(
       })
     },
 
+    // A scene's dot: the color of its brightest light, as the lights' own
+    // (full brightness); grey for a scene that turns them off; none when the
+    // phone couldn't read it. (The demo's scenes bring a hex.)
+    sceneDotColor(scene) {
+      if (scene.off) return COLORS.inactive
+      if (scene.light) return lightDisplayColor(scene.light)
+      if (scene.color) return hexStringToInt(scene.color)
+      return null
+    },
+
     getLightSwatchColor(light) {
       if (!light.ison || light.reachable === false) {
         return COLORS.inactive
@@ -465,7 +475,8 @@ Page(
           this.state.scenes.forEach(scene => {
             data.push({
               ...scene,
-              type: 'scene'
+              type: 'scene',
+              dotColor: this.sceneDotColor(scene)
             })
           })
         }

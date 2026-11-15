@@ -749,6 +749,7 @@ class HueBridgeManager {
   // turned off: the demo's dummy values were in memory)
   reloadConfig() {
     this._scenes = null
+    this._sceneLooks = {}
     this.bridgeIp = settingsLib.getItem(BRIDGE_IP_KEY) || null
     this.username = settingsLib.getItem(USERNAME_KEY) || null
     this.apiVersion = settingsLib.getItem(API_VERSION_KEY) || 'v1'
@@ -761,6 +762,7 @@ class HueBridgeManager {
   applyStoredValue(key, value) {
     if (this.demo) return
     this._scenes = null
+    this._sceneLooks = {}
     const v = typeof value === 'string' && value !== '' ? value : null
     if (key === BRIDGE_IP_KEY) this.bridgeIp = v
     else if (key === USERNAME_KEY) this.username = v
@@ -1143,13 +1145,50 @@ class HueBridgeManager {
       vlog(`[hue] scenes from the cache (${Math.round((Date.now() - cached.at) / 1000)}s old)`)
     }
 
-    return Object.entries(scenes)
-      .filter(([id, s]) => s.group === groupId)
-      .map(([id, s]) => ({
-        id,
-        name: s.name,
-        color: '#0088ff' // Placeholder
+    const mine = Object.entries(scenes).filter(([id, s]) => s.group === groupId)
+    const looks = await this.sceneLooks(mine)
+    return mine.map(([id, s]) => ({ id, name: s.name, ...(looks[id] || {}) }))
+  }
+
+  // What a scene's dot shows (the watch colors it): { light } the color of
+  // its brightest light ({ colormode, xy | ct | hex }), or { off: true } when
+  // it turns its lights off. The list of scenes has no light states: each
+  // scene is read once (GET /scenes/<id>, in parallel) and kept until its
+  // lastupdated changes. A scene that can't be read gets no dot
+  async sceneLooks(entries) {
+    if (!this._sceneLooks) this._sceneLooks = {}
+    const kept = this._sceneLooks
+    const toRead = entries.filter(([id, s]) => !kept[id] || kept[id].lastupdated !== s.lastupdated)
+    if (toRead.length) {
+      const t0 = Date.now()
+      let failed = 0
+      await Promise.all(toRead.map(async ([id, s]) => {
+        try {
+          const url = `http://${this.bridgeIp}/api/${this.username}/scenes/${id}`
+          const scene = await safeJson(await hueFetch({ url, method: 'GET' }))
+          if (!scene || !scene.lightstates) throw new Error('no light states')
+          kept[id] = { lastupdated: s.lastupdated, look: this.sceneLook(scene.lightstates) }
+        } catch (e) {
+          failed++
+        }
       }))
+      vlog(`[hue] scene colors: ${toRead.length - failed} read${failed ? `, ${failed} failed` : ''}, ${entries.length - toRead.length} kept, in ${Date.now() - t0}ms`)
+    }
+    const out = {}
+    for (const [id] of entries) if (kept[id]) out[id] = kept[id].look
+    return out
+  }
+
+  sceneLook(lightstates) {
+    const on = Object.values(lightstates || {}).filter((st) => st && st.on)
+    if (!on.length) return { off: true }
+    const st = on.reduce((a, b) => ((b.bri ?? 254) > (a.bri ?? 254) ? b : a))
+    if (Array.isArray(st.xy)) return { light: { colormode: 'xy', xy: st.xy } }
+    if (st.ct) return { light: { colormode: 'ct', ct: st.ct } }
+    if (st.hue !== undefined || st.sat !== undefined) {
+      return { light: { colormode: 'hs', hex: this.stateToHex({ on: true, colormode: 'hs', hue: st.hue || 0, sat: st.sat || 0, bri: 254 }) } }
+    }
+    return { light: { colormode: 'ct', ct: 366 } } // brightness only: a warm white
   }
 
   async getLights() {
