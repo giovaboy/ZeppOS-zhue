@@ -1,12 +1,13 @@
 import { BasePage } from '@zeppos/zml/base-page'
 import { countCommands } from '../utils/commands.js'
-import { loggedPage } from '../utils/remote-log.js'
+import { loggedPage, devLog, LOG_TRACE } from '../utils/remote-log.js'
 import { createGate } from '../utils/request-gate.js'
 import { px } from '@zos/utils'
 import { setScrollLock } from '@zos/page'
 import { createWidget, deleteWidget, prop } from '@zos/ui'
 import { back } from '@zos/router'
 import { createDragGuard } from '../utils/drag-guard.js'
+import { onKey, KEY_SELECT, KEY_BACK, KEY_EVENT_CLICK } from '@zos/interaction'
 import { getLogger } from '../utils/logger.js'
 import { HUE_RANGE, SAT_RANGE, BRI_RANGE, hsb2hex, ct2hexString } from '../utils/constants.js'
 
@@ -92,6 +93,19 @@ Page(
             // The page's one onGesture: right swipe goes back, not while the
             // picker or a slider is dragged (utils/drag-guard.js)
             this._drag = createDragGuard('color-picker');
+            // Physical buttons: SELECT and BACK both close the page (the
+            // color is already sent as it is picked). Nothing to move between:
+            // the wheel and the slider are dragged
+            onKey({
+                callback: (key, keyEvent) => {
+                    if ((key === KEY_SELECT || key === KEY_BACK) && keyEvent === KEY_EVENT_CLICK) {
+                        if (LOG_TRACE) devLog(`[keys] color-picker: ${key === KEY_SELECT ? 'select' : 'back'} closes`);
+                        back();
+                        return true;
+                    }
+                    return false;
+                }
+            });
             this.render();
         },
 
