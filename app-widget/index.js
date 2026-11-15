@@ -15,7 +15,11 @@ let { w: WIDGET_W, radius: WIDGET_RADIUS } = getAppWidgetSize()
 // Layout constants
 const COLUMNS = 3
 const HEADER_H = px(40)
-const PADDING_Y = px(6)
+// Margins (Zepp, cards: 16 px between a card's content and its edges; as
+// zeppamp's card): above the header and below the last row. The header and
+// the shortcuts were 6 px apart, the app's button easy to hit for a switch
+const PADDING_Y = px(16)
+const HEADER_GAP = px(16)
 
 // A shortcut: a tile with the light's icon (a 70 px mask, ICON_IMAGE_SIZE),
 // its name under it
@@ -35,7 +39,7 @@ let WIDGET_MARGIN  // Distance from screen edge to widget area
 const NO_BUTTONS_TEXT_HINT_H = px(100)
 
 // Minimum widget height (header + hint text, no shortcuts)
-const MIN_WIDGET_H = PADDING_Y + HEADER_H + NO_BUTTONS_TEXT_HINT_H + PADDING_Y
+const MIN_WIDGET_H = PADDING_Y + HEADER_H + HEADER_GAP + NO_BUTTONS_TEXT_HINT_H + PADDING_Y
 
 // Colors
 // The ring of an entry that is off
@@ -142,10 +146,12 @@ AppWidget({
     }
 
     const rows = Math.ceil(numConfigured / COLUMNS)
-    const height = PADDING_Y + HEADER_H + PADDING_Y +
+    // The names' 2 lines (TEXT_H) end with their own room: the bottom margin
+    // less that
+    const height = PADDING_Y + HEADER_H + HEADER_GAP +
       (rows * BUTTON_H) +
       ((rows - 1) * BUTTON_GAP_Y) +
-      PADDING_Y
+      Math.max(0, PADDING_Y - px(8))
 
     return height
   },
@@ -170,7 +176,7 @@ AppWidget({
       click_func: () => this.openApp()
     })
 
-    currentY += HEADER_H + PADDING_Y
+    currentY += HEADER_H + HEADER_GAP
 
     // ==========================================
     // NO SHORTCUTS MESSAGE
