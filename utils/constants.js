@@ -251,36 +251,39 @@ export const LIGHT_MODELS = {
 
 // The icon for each lamp type the Hue app lets one pick for a light (its
 // "archetype", which the bridge sends with every light: config.archetype,
-// v1 "classicbulb", v2 "classic_bulb"). A model in LIGHT_MODELS keeps its own
-// icon; the type gives one to the models never mapped there (their model
-// ids were hard to match), each to the closest icon. Types without one
-// (hue go, plug...) get LIGHT_MODELS.default
+// v1 "classicbulb", v2 "classic_bulb"), as the Hue app draws it: hue-*.png,
+// made by tools/gen-hue-icons.cjs from hass-hue-icons' set modelled on the
+// app. The types that set lacks keep the closest hand-made icon. A model in
+// LIGHT_MODELS keeps its own icon (lightIconName); types without one (plug
+// aside, all have one) get LIGHT_MODELS.default
 const ARCHETYPE_ICONS = {
-  classicbulb: 'a19', sultanbulb: 'a19', ellipsebulb: 'a19', trianglebulb: 'a19',
-  vintagebulb: 'filament_a19', edisonbulb: 'filament_a19',
+  classicbulb: 'hue-bulb-classic', sultanbulb: 'hue-bulb-sultan', ellipsebulb: 'hue-bulb-classic', trianglebulb: 'hue-bulb-classic',
+  candlebulb: 'hue-bulb-candle', floodbulb: 'hue-bulb-flood', spotbulb: 'hue-bulb-spot',
+  vintagebulb: 'hue-bulb-filament', edisonbulb: 'hue-bulb-filament',
   smallglobebulb: 'filament_globe', largeglobebulb: 'filament_globe',
-  candlebulb: 'candle', vintagecandlebulb: 'filament_candle', lusterbulb: 'bulb-golfball-e14',
-  spotbulb: 'gu10', floodbulb: 'bulb-flood',
-  ceilinground: 'ceiling-fair', ceilingsquare: 'aurelle',
+  vintagecandlebulb: 'filament_candle', lusterbulb: 'bulb-golfball-e14',
+  ceilinground: 'hue-ceiling-round', ceilingsquare: 'hue-ceiling-square',
   ceilinghorizontal: 'aurelle', ceilingtube: 'aurelle',
-  recessedceiling: 'amaze',
-  pendantround: 'ceiling-fair-semiflush', pendantlong: 'ensis', pendantspot: 'ceiling-explore',
-  singlespot: 'ceiling-buratto', doublespot: 'ceiling-buratto', wallspot: 'ceiling-buratto',
+  recessedceiling: 'hue-recessed-ceiling', recessedfloor: 'hue-recessed-floor',
+  pendantround: 'hue-pendant-round', pendantlong: 'hue-pendant-long', pendantspot: 'ceiling-explore',
+  singlespot: 'hue-single-spot', doublespot: 'hue-double-spot', wallspot: 'hue-wall-spot',
   huecentris: 'ceiling-buckram',
-  tableshade: 'beyond', flexiblelamp: 'beyond', floorshade: 'signe',
-  floorlantern: 'pillar-turaco-tall', walllantern: 'pillar-turaco-short',
-  wallshade: 'sana', wallwasher: 'amarant',
-  bollard: 'pillar-tuar', groundspot: 'pillar-tuar', recessedfloor: 'pillar-tuar',
-  huelightstrip: 'lightstrip', huelightstriptv: 'lightstrip_gradient', huelightstrippc: 'lightstrip_gradient',
-  hueplay: 'play_bar', huetube: 'play_tube',
-  hueiris: 'iris', huebloom: 'bloom', huesigne: 'signe',
+  tableshade: 'hue-table-shade', tablewash: 'hue-table-wash', flexiblelamp: 'hue-desk-lamp',
+  floorshade: 'hue-floor-shade', floorlantern: 'hue-floor-lantern',
+  walllantern: 'hue-wall-lantern', wallshade: 'hue-wall-shade', wallwasher: 'amarant',
+  bollard: 'hue-bollard', groundspot: 'hue-floor-spot',
+  huego: 'hue-go', plug: 'hue-plug',
+  huelightstrip: 'hue-lightstrip', huelightstriptv: 'lightstrip_gradient', huelightstrippc: 'lightstrip_gradient',
+  hueplay: 'hue-play-bar', huetube: 'play_tube',
+  hueiris: 'hue-iris', huebloom: 'hue-bloom', huesigne: 'signe',
   christmastree: 'festavia', stringlight: 'festavia'
 }
 
 // The icons of bulbs: a bulb sits in a fixture, which the type set in the
 // Hue app tells (the log: two bulbs, LWB006 and LCA001, typed "pendantround"
 // and "tableshade", showed as bulbs)
-const BULB_ICONS = new Set(['a19', 'classic', 'filament_a19', 'filament_globe', 'filament_candle', 'candle', 'gu10', 'br30', 'bulb-flood', 'bulb-golfball-e14'])
+const BULB_ICONS = new Set(['a19', 'classic', 'filament_a19', 'filament_globe', 'filament_candle', 'candle', 'gu10', 'br30', 'bulb-golfball-e14',
+  'hue-bulb-classic', 'hue-bulb-sultan', 'hue-bulb-candle', 'hue-bulb-flood', 'hue-bulb-spot', 'hue-bulb-filament'])
 
 // The icon file's name (icons/<name>.png) for a light: its model's, except
 // a bulb typed as a fixture (pendant, table lamp...), which takes the

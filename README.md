@@ -76,7 +76,7 @@ bridge and that the bridge is online, then tap Retry on the watch.
   schedules or automations.
 - The bridge is found through Philips' discovery service: the IP address
   field in the settings doesn't replace it for pairing yet.
-- Lights of models zhue doesn't know show a generic bulb icon.
+- Lights of models zhue doesn't know show the icon of the lamp type set for them in the Hue app (a generic bulb without one).
 
 ## Development
 
@@ -125,6 +125,12 @@ addresses are removed). Set the level in `config.js`:
   some icons the mask came out translucent (the color showed through as a
   square). This runs Zeus's own converter on every icon and fails on such a
   mask. Run it after adding or changing an icon.
+- `node tools/gen-hue-icons.cjs`: makes the lamp-type icons (`hue-*.png`), one
+  per type a light can be given in the Hue app (its archetype, which picks
+  the icon of a light whose model zhue doesn't know, or of a bulb in a
+  fixture), from hass-hue-icons' SVGs in `tools/hue-svgs/` (downloaded if
+  missing). It converts each mask as Zeus will and fixes the ones that would
+  come out translucent.
 - `node tools/gen-settings-logo.cjs`: makes `setting/logo.js`, the app icon's
   wordmark for the settings page header. Run it after changing the icon.
 
