@@ -98,6 +98,10 @@ export function loggedPage(name, options) {
   const onDestroy = options.onDestroy
   options.onDestroy = function (...args) {
     const out = onDestroy && onDestroy.apply(this, args)
+    // The screen's lines name no page once it is closed (log 02:22:05: "off on
+    // groups" 3 s after groups had closed)
+    const ap = app()
+    if (ap && ap.globalData && ap.globalData.pageName === name) ap.globalData.pageName = null
     if (LOG_TRACE) {
       const shown = this._logOpenedAt ? ` after ${((Date.now() - this._logOpenedAt) / 1000).toFixed(1)}s` : ''
       devLog(`[${name}] closed${shown}`)
