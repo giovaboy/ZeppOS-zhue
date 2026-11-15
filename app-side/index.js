@@ -225,13 +225,27 @@ function resultForLog(data) {
 }
 
 // fetch with a line for the Logs box: the path without the bridge key, the
-// status, the time, and the bridge's own errors
+// status, the time, and the bridge's own errors. options.timeoutMs: gives up
+// then (code 'TIMEOUT'; the request itself isn't stopped). Without it the
+// phone's own limit: a bridge out of reach failed after 22.5 s
 async function hueFetch(options) {
   const what = requestForLog(options && options.method, options && options.url)
   const t0 = Date.now()
+  const { timeoutMs, ...fetchOptions } = options || {}
   let res
   try {
-    res = await fetch(options)
+    if (!timeoutMs) res = await fetch(fetchOptions)
+    else {
+      let timer
+      const late = new Promise((_, reject) => {
+        timer = setTimeout(() => {
+          const e = new Error(`no answer in ${timeoutMs}ms`)
+          e.code = 'TIMEOUT'
+          reject(e)
+        }, timeoutMs)
+      })
+      try { res = await Promise.race([fetch(fetchOptions), late]) } finally { clearTimeout(timer) }
+    }
   } catch (e) {
     wlog(`[http] ${what} failed after ${Date.now() - t0}ms: ${errorText(e)}`)
     throw e
@@ -1579,6 +1593,21 @@ function rememberWidgetTap(tapId, answer) {
 // switch it on and back off. The watch names each tap (tapId): a tap seen
 // already gets the first one's answer (and null is returned: nothing to do);
 // else the reply function to use, which also keeps the answer for a repeat
+// A tap on the card when the bridge is out of reach (the phone away from
+// home, the bridge off): the first read gives up after this, and the watch
+// says "Bridge unreachable". It used to wait 22.5 s for the phone's own
+// limit, the watch's page having gone back with nothing said
+const CARD_BRIDGE_TIMEOUT_MS = 4000
+
+async function cardFirstRead(url, res) {
+  try {
+    return await hueFetch({ url, method: 'GET', timeoutMs: CARD_BRIDGE_TIMEOUT_MS })
+  } catch (e) {
+    res({ error: `bridge unreachable: ${errorText(e)}`, code: 'UNREACHABLE' })
+    return null
+  }
+}
+
 function tapReply(req, firstRes) {
   const tapId = req.params && req.params.tapId
   const seen = tapId ? recentWidgetTaps.get(tapId) : null
@@ -2097,7 +2126,9 @@ AppSideService(
         } else {
           if (!hueBridge.bridgeIp || !hueBridge.username) { res({ error: 'Bridge not configured' }); return }
           const url = `http://${hueBridge.bridgeIp}/api/${hueBridge.username}/groups/${groupId}`
-          const group = await safeJson(await hueFetch({ url, method: 'GET' }))
+          const groupRes = await cardFirstRead(url, res)
+          if (!groupRes) return
+          const group = await safeJson(groupRes)
           if (Array.isArray(group) && group[0]?.error) throw new Error(group[0].error.description)
           anyOn = !!(group.state && group.state.any_on)
         }
@@ -2145,7 +2176,8 @@ AppSideService(
 
         // Get current state to toggle
         const url = `http://${hueBridge.bridgeIp}/api/${hueBridge.username}/lights/${lightId}`
-        const stateRes = await hueFetch({ url, method: 'GET' })
+        const stateRes = await cardFirstRead(url, res)
+        if (!stateRes) return
         const lightData = typeof stateRes.body === 'string' ? JSON.parse(stateRes.body) : stateRes.body
 
         const currentState = lightData?.state?.on || false

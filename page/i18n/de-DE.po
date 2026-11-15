@@ -222,3 +222,9 @@ msgstr "Lampen an"
 
 msgid "GROUP_STATE_OFF"
 msgstr "Lampen aus"
+
+msgid "QT_BRIDGE_UNREACHABLE"
+msgstr "Bridge nicht erreichbar"
+
+msgid "QT_NO_ANSWER"
+msgstr "Keine Antwort vom Telefon"

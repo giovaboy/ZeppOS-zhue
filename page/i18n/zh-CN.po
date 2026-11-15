@@ -222,3 +222,9 @@ msgstr "灯已开启"
 
 msgid "GROUP_STATE_OFF"
 msgstr "灯已关闭"
+
+msgid "QT_BRIDGE_UNREACHABLE"
+msgstr "无法连接到桥接器"
+
+msgid "QT_NO_ANSWER"
+msgstr "手机无响应"

@@ -222,3 +222,9 @@ msgstr "Lumières allumées"
 
 msgid "GROUP_STATE_OFF"
 msgstr "Lumières éteintes"
+
+msgid "QT_BRIDGE_UNREACHABLE"
+msgstr "Bridge inaccessible"
+
+msgid "QT_NO_ANSWER"
+msgstr "Pas de réponse du téléphone"

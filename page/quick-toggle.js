@@ -13,6 +13,7 @@
 // after the answer, with nothing to see.
 import { BasePage } from '@zeppos/zml/base-page'
 import { loggedPage, infoLog, warnLog } from '../utils/remote-log.js'
+import { errorText } from '../utils/log-text.js'
 import { rememberOnOff, rememberLights, rememberGroups, cardLightIds, cardGroupIds, readShortcuts, findCardEntry } from '../utils/shortcuts.js'
 import { startBreath, stopPulses } from '../utils/pulse.js'
 import { back } from '@zos/router'
@@ -34,7 +35,11 @@ const RING_W = px(6)
 const NAME_W = px(320)
 // How long the new state shows before going back to the card
 const RESULT_MS = 700
-const ERROR_MS = 1500
+// An error stays longer: it is read
+const ERROR_MS = 2500
+// No answer from the phone in this time: said, and back to the card (the
+// phone gives up on the bridge after 4 s: CARD_BRIDGE_TIMEOUT_MS)
+const NO_ANSWER_MS = 9000
 
 Page(
   loggedPage('quick-toggle', BasePage({
@@ -179,6 +184,16 @@ Page(
     doToggle() {
       const t0 = Date.now()
       const isGroup = this.state.kind === 'group'
+      // The page used to breathe until left (13.9 s), with nothing said
+      this._noAnswer = setTimeout(() => {
+        this._noAnswer = null
+        if (this.state.status !== 'working') return
+        warnLog(`[quick-toggle] ${this.state.kind} ${this.state.lightId}: no answer from the phone in ${Date.now() - t0}ms`)
+        this.state.status = 'error'
+        this.state.error = getText('QT_NO_ANSWER')
+        this.renderUI()
+        this.goBackAfterDelay(ERROR_MS)
+      }, NO_ANSWER_MS)
       this.request({
         method: isGroup ? 'WIDGET_TOGGLE_GROUP' : 'WIDGET_TOGGLE_LIGHT',
         params: {
@@ -191,6 +206,7 @@ Page(
         }
       })
         .then(result => {
+          if (this.state.status !== 'working') return // said "no answer" already
           if (!result.success) throw result
           infoLog(`[quick-toggle] ${this.state.kind} ${this.state.lightId} now ${result.newState ? 'on' : 'off'}, ${Date.now() - t0}ms from the tap`)
           // The card shows every entry as it is now when it comes back
@@ -206,10 +222,14 @@ Page(
           this.goBackAfterDelay(RESULT_MS)
         })
         .catch(err => {
+          if (this.state.status !== 'working') return
           logger.error('Toggle error:', err)
-          warnLog(`[quick-toggle] ${this.state.kind} ${this.state.lightId}: failed after ${Date.now() - t0}ms`)
+          // The phone couldn't reach the bridge (app-side cardFirstRead)
+          const unreachable = !!err && (err.code === 'UNREACHABLE' || (err.error && err.error.code === 'UNREACHABLE') ||
+            /bridge unreachable/.test(String((err && (err.error && err.error.message || err.error || err.message)) || '')))
+          warnLog(`[quick-toggle] ${this.state.kind} ${this.state.lightId}: failed after ${Date.now() - t0}ms${unreachable ? ', bridge unreachable' : `: ${errorText(err)}`}`)
           this.state.status = 'error'
-          this.state.error = getText('ERROR')
+          this.state.error = getText(unreachable ? 'QT_BRIDGE_UNREACHABLE' : 'ERROR')
           this.renderUI()
           this.goBackAfterDelay(ERROR_MS)
         })
@@ -224,6 +244,7 @@ Page(
     },
 
     onDestroy() {
+      if (this._noAnswer) { clearTimeout(this._noAnswer); this._noAnswer = null }
       this.clearAllWidgets()
     }
   }))
