@@ -8,6 +8,10 @@ import { logs, LOG_LEVEL } from './config.js'
 
 const logger = getLogger('zhue-app')
 const TTL = 1000 * 5 // 5 seconds
+// How long a light page waits for a command sent from the group page: its
+// answer can be lost with that page (log 02:20:57: never came, and the light
+// page waited for it until closed, a power tap queued behind it)
+const IN_FLIGHT_MAX_MS = 5000
 
 // ── Remote log (shared rule: ../_shared/zeppos-ai-doc/logging.md) ──
 // The remote log's own console: @zos/utils directly, so app.js's own methods
@@ -252,16 +256,25 @@ App(
     // power sent the state the light already had
     trackLight(lightIds, ison, promise) {
       const inFlight = this.globalData.lightsInFlight
-      const entry = { promise, ison }
+      const entry = { promise, ison, at: Date.now() }
       const clear = () => lightIds.forEach((id) => { if (inFlight[id] === entry) delete inFlight[id] })
       lightIds.forEach((id) => { inFlight[id] = entry })
       promise.then(clear, clear)
       return promise
     },
 
-    // { promise, ison } or null
+    // { promise, ison, left } or null; left: how long to wait for it still.
+    // Older than IN_FLIGHT_MAX_MS it counts as lost
     lightInFlight(lightId) {
-      return this.globalData.lightsInFlight[lightId] || null
+      const inFlight = this.globalData.lightsInFlight
+      const entry = inFlight[lightId]
+      if (!entry) return null
+      const left = IN_FLIGHT_MAX_MS - (Date.now() - entry.at)
+      if (left <= 0) {
+        delete inFlight[lightId]
+        return null
+      }
+      return { ...entry, left }
     },
 
     setLightData(lightId, lightData) {

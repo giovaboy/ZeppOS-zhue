@@ -174,7 +174,7 @@ Page(
         const inFlight = app.lightInFlight(this.state.lightId)
         if (inFlight) this.state.light = { ...this.state.light, ison: inFlight.ison }
         this.renderPage()
-        if (inFlight) this.waitForCommand(inFlight.promise)
+        if (inFlight) this.waitForCommand(inFlight)
         else if (this._stale) setTimeout(() => this.refreshQuietly(), 10)
       } else {
         logger.warn('Unexpected state: no loading flag and no data')
@@ -583,12 +583,26 @@ Page(
     // answer put in the cache. (Without it the page showed the light as
     // before the tap, and a tap on power sent "on" to a light already
     // turning on.)
-    waitForCommand(promise) {
+    // Its answer can be lost with the group page: after inFlight.left (5 s
+    // from the tap at most) the light is read again instead, and a tap
+    // queued behind it goes
+    waitForCommand(inFlight) {
       const t0 = Date.now()
       const version = this._version
-      this._gate.run('toggle', () => busyOn(this, 'power', () => promise.then(() => {
+      const answer = new Promise((resolve) => {
+        let timer = setTimeout(() => { timer = null; resolve(false) }, Math.max(500, inFlight.left))
+        const done = () => { if (timer) { clearTimeout(timer); timer = null; resolve(true) } }
+        inFlight.promise.then(done, done)
+      })
+      this._gate.run('toggle', () => busyOn(this, 'power', () => answer.then((answered) => {
+        if (this._gone) return
+        if (!answered) {
+          warnLog(`[light-detail] the group page's request: no answer in ${Date.now() - t0}ms here (lost with its page?): the light read again`)
+          this.refreshQuietly()
+          return
+        }
         const cached = app.getCachedLight(this.state.lightId)
-        if (this._gone || !cached) return
+        if (!cached) return
         if (this._version !== version) {
           infoLog(`[light-detail] the group page's request answered in ${Date.now() - t0}ms, after one sent here: dropped`)
           return
