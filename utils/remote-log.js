@@ -87,12 +87,35 @@ export function loggedPage(name, options) {
     // For the screen's lines (app.js _watchScreen)
     if (a && a.globalData) { a.globalData.pageName = name; a.globalData.pageShownAt = Date.now() }
     const t0 = Date.now()
-    const out = build && build.apply(this, args)
+    let out
+    try {
+      out = build && build.apply(this, args)
+    } catch (e) {
+      warnLog(`[${name}] build failed after ${Date.now() - t0}ms: ${errorText(e)}`)
+      throw e
+    }
     if (LOG_TRACE) {
       const mem = memoryUsage()
       devLog(`[${name}] built in ${Date.now() - t0}ms${mem ? `: ${mem}` : ''}`)
     }
     return out
+  }
+
+  // A redraw that throws leaves the page cleared and not drawn again: a black
+  // screen with nothing in the log (seen opening a light, a group). Its error
+  // gets a line, the widgets left on the page with it; then it is thrown on
+  for (const key of ['renderPage', 'render', 'renderUI']) {
+    const draw = options[key]
+    if (typeof draw !== 'function') continue
+    options[key] = function (...args) {
+      try {
+        return draw.apply(this, args)
+      } catch (e) {
+        const left = Array.isArray(this.widgets) ? `, ${this.widgets.length} widgets left` : ''
+        warnLog(`[${name}] ${key} failed: ${errorText(e)}${left}`)
+        throw e
+      }
+    }
   }
 
   const onDestroy = options.onDestroy
