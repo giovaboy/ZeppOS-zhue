@@ -249,6 +249,43 @@ export const LIGHT_MODELS = {
   'default': { name: 'Light', icon: 'classic' }
 }
 
+// The icon for each lamp type the Hue app lets one pick for a light (its
+// "archetype", which the bridge sends with every light: config.archetype,
+// v1 "classicbulb", v2 "classic_bulb"). A model in LIGHT_MODELS keeps its own
+// icon; the type gives one to the models never mapped there (their model
+// ids were hard to match), each to the closest icon. Types without one
+// (hue go, plug...) get LIGHT_MODELS.default
+const ARCHETYPE_ICONS = {
+  classicbulb: 'a19', sultanbulb: 'a19', ellipsebulb: 'a19', trianglebulb: 'a19',
+  vintagebulb: 'filament_a19', edisonbulb: 'filament_a19',
+  smallglobebulb: 'filament_globe', largeglobebulb: 'filament_globe',
+  candlebulb: 'candle', vintagecandlebulb: 'filament_candle', lusterbulb: 'bulb-golfball-e14',
+  spotbulb: 'gu10', floodbulb: 'bulb-flood',
+  ceilinground: 'ceiling-fair', ceilingsquare: 'aurelle',
+  ceilinghorizontal: 'aurelle', ceilingtube: 'aurelle',
+  recessedceiling: 'amaze',
+  pendantround: 'ceiling-beyond', pendantlong: 'ensis', pendantspot: 'ceiling-explore',
+  singlespot: 'ceiling-buratto', doublespot: 'ceiling-buratto', wallspot: 'ceiling-buratto',
+  huecentris: 'ceiling-buckram',
+  tableshade: 'beyond', flexiblelamp: 'beyond', floorshade: 'signe',
+  floorlantern: 'pillar-turaco-tall', walllantern: 'pillar-turaco-short',
+  wallshade: 'sana', wallwasher: 'amarant',
+  bollard: 'pillar-tuar', groundspot: 'pillar-tuar', recessedfloor: 'pillar-tuar',
+  huelightstrip: 'lightstrip', huelightstriptv: 'lightstrip_gradient', huelightstrippc: 'lightstrip_gradient',
+  hueplay: 'play_bar', huetube: 'play_tube',
+  hueiris: 'iris', huebloom: 'bloom', huesigne: 'signe',
+  christmastree: 'festavia', stringlight: 'festavia'
+}
+
+// The icon file's name (icons/<name>.png) for a light: its model's, else
+// its type's, else the default
+export function lightIconName(light) {
+  const model = light && LIGHT_MODELS[light.modelid]
+  if (model) return model.icon
+  const type = light && typeof light.archetype === 'string' ? light.archetype.replace(/_/g, '') : ''
+  return ARCHETYPE_ICONS[type] || LIGHT_MODELS.default.icon
+}
+
 // Size of the icon PNGs (assets/default.*/icons and icons/groups): 70×70
 // masks, #333333 with the shape cut out, drawn over a FILL_RECT of the
 // light's or group's color

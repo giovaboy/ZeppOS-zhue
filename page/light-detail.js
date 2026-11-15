@@ -977,6 +977,7 @@ Page(
         lightId: this.state.lightId,
         lightName: this.state.lightName || this.state.light?.name || 'Light',
         modelid: this.state.light?.modelid || 'default',
+        archetype: this.state.light?.archetype,
         ...(this.state.light ? cardState(this.state.light) : {})
       })
       if (result === 'full') {

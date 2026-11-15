@@ -19,7 +19,7 @@ import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
 import { widget, align, event, text_style, prop, getTextLayout } from '@zos/ui'
 import { getText } from '@zos/i18n'
-import { BRI_RANGE, COLORS, PRESET_TYPES, LIGHT_MODELS, ICON_IMAGE_SIZE, btnPressColor, hexStringToInt, lightDisplayColor } from '../../utils/constants.js'
+import { BRI_RANGE, COLORS, PRESET_TYPES, lightIconName, ICON_IMAGE_SIZE, btnPressColor, hexStringToInt, lightDisplayColor } from '../../utils/constants.js'
 import { createPageView } from '../../utils/key-nav.js'
 import { renderLoading } from '../../utils/loading.js'
 import { renderCardRow, CARD_ROW_H } from './card-row.js'
@@ -303,7 +303,7 @@ function renderLampButton(pageContext, y, light, lightOn, onTap, nav, view) {
   const ringColor = lightOn ? COLORS.success : COLORS.toggleOff
   const reachable = light.reachable !== false
   const swatch = lightOn && reachable ? lightDisplayColor(light) : COLORS.inactive
-  const icon = `icons/${(LIGHT_MODELS[light.modelid] || LIGHT_MODELS.default).icon}.png`
+  const icon = `icons/${lightIconName(light)}.png`
 
   const button = pageContext.createTrackedWidget(widget.BUTTON, {
     ...box,

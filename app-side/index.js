@@ -133,7 +133,7 @@ async function cardLightStates(ids) {
     const all = await hueBridge.getLights()
     return all
       .filter((l) => wanted.has(String(l.id)))
-      .map((l) => ({ id: l.id, ison: l.ison, reachable: l.reachable, colormode: l.colormode, hex: l.hex, ct: l.ct, xy: l.xy, bri: l.bri, modelid: l.modelid }))
+      .map((l) => ({ id: l.id, ison: l.ison, reachable: l.reachable, colormode: l.colormode, hex: l.hex, ct: l.ct, xy: l.xy, bri: l.bri, modelid: l.modelid, archetype: l.archetype }))
   } catch (e) {
     wlog(`[card] states of ${ids.length} card lights not read: ${errorText(e)}`)
     return undefined
@@ -1219,6 +1219,7 @@ class HueBridgeManager {
   }
 
   _mapLightsV1(data) {
+    this.logArchetypes(data)
     return Object.entries(data).map(([id, l]) => ({
       id,
       name: l.name,
@@ -1230,10 +1231,24 @@ class HueBridgeManager {
       xy: l.state.xy,
       colormode: l.state.colormode,
       modelid: l.modelid,
+      // The lamp type set in the Hue app: the watch's icon for a model it
+      // doesn't know (utils/constants.js lightIconName)
+      archetype: l.config && l.config.archetype,
       type: l.type,
       reachable: l.state.reachable,
       hex: this.stateToHex(l.state)
     }))
+  }
+
+  // Each light's model and type, once per change (trace): to check the
+  // icons the watch picks
+  logArchetypes(data) {
+    if (!logs('trace')) return
+    const line = Object.entries(data || {})
+      .map(([id, l]) => `${id} ${l.modelid || '?'}/${(l.config && l.config.archetype) || '?'}`).join(', ')
+    if (line === this._archetypesLogged) return
+    this._archetypesLogged = line
+    vlog(`[hue] lights (model/type): ${line}`)
   }
 
   async toggleLight(id, state) {
@@ -1274,6 +1289,7 @@ class HueBridgeManager {
           xy: updatedLight.xy,
           colormode: updatedLight.colormode,
           modelid: updatedLight.modelid,
+          archetype: updatedLight.archetype,
           type: updatedLight.type,
           reachable: updatedLight.reachable,
           hex: updatedLight.hex,
@@ -1464,6 +1480,7 @@ class HueBridgeManager {
       xy: fullLight.state.xy || [0, 0],
       colormode: fullLight.state.colormode || '',
       modelid: fullLight.modelid || '',
+      archetype: (fullLight.config && fullLight.config.archetype) || '',
       type: fullLight.type || '',
       reachable: fullLight.state.reachable !== false,
       hex: this.stateToHex(fullLight.state),

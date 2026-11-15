@@ -21,7 +21,7 @@ import { createWidget, widget, deleteWidget, align, text_style, getTextLayout, s
 import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
 import { getText } from '@zos/i18n'
-import { COLORS, LIGHT_MODELS, ICON_IMAGE_SIZE, CARD_STATE_FRESH_MS, getGroupIconPath } from '../utils/constants'
+import { COLORS, lightIconName, ICON_IMAGE_SIZE, CARD_STATE_FRESH_MS, getGroupIconPath } from '../utils/constants'
 import { getLogger } from '../utils/logger'
 import { connectStatus } from '@zos/ble'
 
@@ -115,7 +115,7 @@ Page(
         x: ix, y: iy, w: ICON_IMAGE_SIZE, h: ICON_IMAGE_SIZE,
         src: this.state.kind === 'group'
           ? getGroupIconPath(entry.groupClass || 'Other')
-          : `icons/${(LIGHT_MODELS[entry.modelid] || LIGHT_MODELS.default).icon}.png`
+          : `icons/${lightIconName(entry)}.png`
       })
       if (ison !== null) {
         this.createTrackedWidget(widget.STROKE_RECT, {

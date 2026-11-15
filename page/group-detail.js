@@ -11,7 +11,7 @@ import { getText } from '@zos/i18n'
 import { createWidget, deleteWidget, showToast } from '@zos/ui'
 import { push } from '@zos/router'
 import { renderGroupDetailPage } from 'zosLoader:./group-detail.[pf].layout.js'
-import { DEFAULT_USER_SETTINGS, COLORS, LIGHT_MODELS, lightDisplayColor, hexStringToInt } from '../utils/constants.js'
+import { DEFAULT_USER_SETTINGS, COLORS, lightIconName, lightDisplayColor, hexStringToInt } from '../utils/constants.js'
 
 const logger = getLogger('zhue-group-detail-page')
 const app = getApp()
@@ -489,9 +489,7 @@ Page(
           this.state.lights.forEach(light => {
             const isOn = !!light.ison
             const reachable = light.reachable !== false
-            const modelInfo = LIGHT_MODELS[light.modelid] || LIGHT_MODELS.default
-
-            const finalIconPath = `icons/${modelInfo.icon}.png`
+            const finalIconPath = `icons/${lightIconName(light)}.png`
 
             const statusText = reachable ? (isOn ?
               `${getText('BRIGHTNESS')} ${Math.round(light.bri / 254 * 100)}%` :

@@ -5,7 +5,7 @@ import { localStorage } from '@zos/storage'
 import { push } from '@zos/router'
 import { px } from '@zos/utils'
 import { getText } from '@zos/i18n'
-import { COLORS, MAX_WIDGET_SHORTCUTS, WIDGET_SHORTCUTS_KEY, DEFAULT_WIDGET_SHORTCUTS, LIGHT_MODELS, ICON_IMAGE_SIZE, CARD_STATE_FRESH_MS, getGroupIconPath, btnPressColor } from '../utils/constants'
+import { COLORS, MAX_WIDGET_SHORTCUTS, WIDGET_SHORTCUTS_KEY, DEFAULT_WIDGET_SHORTCUTS, lightIconName, ICON_IMAGE_SIZE, CARD_STATE_FRESH_MS, getGroupIconPath, btnPressColor } from '../utils/constants'
 import { getLogger } from '../utils/logger.js'
 
 const logger = getLogger('zhue-app-widget')
@@ -264,7 +264,7 @@ AppWidget({
     passThrough(this.createTrackedWidget(widget.IMG, {
       x: ix, y: iy, w: ICON_IMAGE_SIZE, h: ICON_IMAGE_SIZE,
       // A light: its model's icon; a group: its room / zone class's
-      src: shortcut.kind === 'group' ? getGroupIconPath(shortcut.groupClass || 'Other') : `icons/${(LIGHT_MODELS[shortcut.modelid] || LIGHT_MODELS.default).icon}.png`
+      src: shortcut.kind === 'group' ? getGroupIconPath(shortcut.groupClass || 'Other') : `icons/${lightIconName(shortcut)}.png`
     }))
     if (isOn || isOff) {
       passThrough(this.createTrackedWidget(widget.STROKE_RECT, {

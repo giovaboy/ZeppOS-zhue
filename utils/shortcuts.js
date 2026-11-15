@@ -1,6 +1,6 @@
 // The shortcut card's entries (localStorage WIDGET_SHORTCUTS_KEY): up to
 // MAX_WIDGET_SHORTCUTS slots, each empty ({ lightId: null }) or
-//   a light: { lightId, lightName, modelid, ison, color, at }
+//   a light: { lightId, lightName, modelid, archetype, ison, color, at }
 //            (entries saved before groups came have no `kind`: lights)
 //   a group: { kind: 'group', groupId, name, groupClass, ison, color, at }
 //
@@ -97,11 +97,12 @@ function remember(kind, pairs) {
   const now = Date.now()
   let changed = 0
   let confirmed = 0
-  for (const [id, state, modelid] of pairs) {
+  for (const [id, state, modelid, archetype] of pairs) {
     if (!has(id) || !state) continue
     const slot = findCardEntry(list, kind, id)
     if (!slot) continue
-    const same = slot.ison === state.ison && slot.color === state.color && (!modelid || slot.modelid === modelid)
+    const same = slot.ison === state.ison && slot.color === state.color && (!modelid || slot.modelid === modelid) &&
+      (!archetype || slot.archetype === archetype)
     if (same && slot.at && now - slot.at < CONFIRM_EVERY_MS) continue
     if (same) confirmed++
     else changed++
@@ -109,6 +110,7 @@ function remember(kind, pairs) {
     slot.color = state.color
     slot.at = now
     if (modelid) slot.modelid = modelid
+    if (archetype) slot.archetype = archetype // the icon (lightIconName)
   }
   if ((changed || confirmed) && writeShortcuts(list) && LOG_TRACE) {
     devLog(`[card] ${kind}s: ${changed} changed, ${confirmed} confirmed`)
@@ -117,7 +119,7 @@ function remember(kind, pairs) {
 
 // Lights the app just saw: [[lightId, light], ...]
 export function rememberLights(pairs) {
-  remember('light', pairs.filter(([, l]) => l).map(([id, l]) => [id, cardState(l), l.modelid]))
+  remember('light', pairs.filter(([, l]) => l).map(([id, l]) => [id, cardState(l), l.modelid, l.archetype]))
 }
 
 export function rememberLight(lightId, light) {
