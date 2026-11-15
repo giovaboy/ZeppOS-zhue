@@ -264,7 +264,7 @@ const ARCHETYPE_ICONS = {
   ceilinground: 'ceiling-fair', ceilingsquare: 'aurelle',
   ceilinghorizontal: 'aurelle', ceilingtube: 'aurelle',
   recessedceiling: 'amaze',
-  pendantround: 'ceiling-beyond', pendantlong: 'ensis', pendantspot: 'ceiling-explore',
+  pendantround: 'ceiling-fair-semiflush', pendantlong: 'ensis', pendantspot: 'ceiling-explore',
   singlespot: 'ceiling-buratto', doublespot: 'ceiling-buratto', wallspot: 'ceiling-buratto',
   huecentris: 'ceiling-buckram',
   tableshade: 'beyond', flexiblelamp: 'beyond', floorshade: 'signe',
