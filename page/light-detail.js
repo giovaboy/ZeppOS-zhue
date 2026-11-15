@@ -7,7 +7,7 @@ import { bindKeyNav } from '../utils/key-nav.js'
 import { busyOn, stopPulses, contrastColor } from '../utils/pulse.js'
 import { rememberLight, cardState, isInCard, toggleInCard } from '../utils/shortcuts.js'
 import { localStorage } from '@zos/storage'
-import { setPageBrightTime } from '@zos/display'
+import { keepScreenOn } from '../utils/screen.js'
 import { setScrollLock, getScrollTop, scrollTo } from '@zos/page'
 import { getText } from '@zos/i18n'
 import { createWidget, deleteWidget, prop, showToast } from '@zos/ui'
@@ -63,6 +63,7 @@ Page(
       this._gate = createGate('light-detail')
       this._gone = false
       this._lastBriSent = null
+      this._briBeforeDrag = null
       this._briSending = null
 
       let params = {}
@@ -139,13 +140,13 @@ Page(
       logger.log('Building Light Detail page')
       logger.debug('Initial state - light:', !!this.state.light, 'isLoading:', this.state.isLoading)
 
-      setPageBrightTime({ brightTime: 60000 })
+      keepScreenOn('light-detail')
       // The page is one long list that scrolls as a whole; the slider locks
       // the scrolling while dragged (handleBrightnessDrag)
       setScrollLock({ lock: false })
       // The page's one onGesture: right swipe goes back, not while the
       // brightness slider is dragged (utils/drag-guard.js)
-      this._drag = createDragGuard('light-detail', back, () => this.endBrightnessDrag())
+      this._drag = createDragGuard('light-detail', back, () => this.endBrightnessDrag(), () => this.undoBrightnessDrag())
       // The page's one onKey: UP / DOWN between power, color, favorites, the
       // add tile and the shortcut row; SELECT acts, held SELECT deletes a
       // favorite (with no item focused: adds / removes the light from the
@@ -339,6 +340,8 @@ Page(
           if (dx < SLIDE_PX) return
           // Across: a brightness drag from here on
           slide.mode = 'drag'
+          // The brightness to go back to if the drag was a swipe (undoBrightnessDrag)
+          this._briBeforeDrag = this.state.light.bri
           if (this._drag) this._drag.start()
           setScrollLock({ lock: true })
           this.state.isDraggingBrightness = true
@@ -404,6 +407,33 @@ Page(
       // As a drag, whatever the touch state says: the page must scroll again
       this._slide = { mode: 'drag' }
       this.handleBrightnessDrag('UP', null)
+    },
+
+    // The drag was a back swipe started on the slider (drag guard): the
+    // brightness goes back to what it was. The value waiting is dropped, the
+    // one in flight answered first, then the old one sent; the page goes back
+    // once it has left (the gate, closed with the page, would drop it)
+    undoBrightnessDrag() {
+      const before = this._briBeforeDrag
+      this._briBeforeDrag = null
+      if (this._dragTimer) { clearTimeout(this._dragTimer); this._dragTimer = null }
+      this._slide = null
+      if (this.state.isDraggingBrightness) {
+        this.state.isDraggingBrightness = false
+        setScrollLock({ lock: false })
+      }
+      if (before === null || before === undefined) return
+      this._gate.drop('brightness')
+      this.state.tempBrightness = before
+      this.setBrightness(before, true) // the slider, at once
+      const t0 = Date.now()
+      return Promise.resolve(this._briSending).catch(() => {}).then(() => {
+        if (before === this.state.light.bri) return
+        infoLog(`[light-detail] brightness back to ${before} (${Date.now() - t0}ms for the one in flight)`)
+        this._lastBriSent = before
+        this.request({ method: 'SET_BRIGHTNESS', params: { lightId: this.state.lightId, bri: before } })
+          .catch(e => logger.error(e))
+      })
     },
 
     setBrightness(brightness, skipApiCall = false) {

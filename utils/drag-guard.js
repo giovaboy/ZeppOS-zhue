@@ -19,25 +19,43 @@
 // ignored too). The swipe is still not a back (it may be the drag itself),
 // but the drag ends there: onDragCut lets the page close it (send the
 // value, unlock the scrolling), and the next swipe goes back.
+//
+// Unless the drag was short (under QUICK_MS, during it or just after its
+// release): then it was the swipe itself, started on the control. The log
+// had them at 125 and 399 ms, each leaving the brightness near its top.
+// onQuickSwipe undoes the drag (it may return a promise: the undo sent),
+// then the page goes back.
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import { back } from '@zos/router'
 import { devLog, LOG_TRACE } from './remote-log.js'
 
 const GRACE_MS = 500
 const STALE_MS = 1500
+const QUICK_MS = 450
 
-export function createDragGuard(label, onBack = back, onDragCut = null) {
+export function createDragGuard(label, onBack = back, onDragCut = null, onQuickSwipe = null) {
   let dragging = false
   let startedAt = 0
   let lastMoveAt = 0
   let endedAt = 0
+  let leaving = false
 
   onGesture({
     callback: (event) => {
       if (event !== GESTURE_RIGHT) return false
+      if (leaving) return true
       const now = Date.now()
       const active = dragging && now - lastMoveAt < STALE_MS
       const sinceEnd = now - endedAt
+      const dragMs = active ? now - startedAt : sinceEnd < GRACE_MS ? endedAt - startedAt : null
+      if (onQuickSwipe && dragMs !== null && dragMs < QUICK_MS) {
+        if (LOG_TRACE) devLog(`[gesture] ${label}: right swipe over a ${dragMs}ms drag (${active ? 'under way' : `ended ${sinceEnd}ms ago`}): taken as back, the drag undone`)
+        leaving = true
+        dragging = false
+        endedAt = now
+        Promise.resolve().then(onQuickSwipe).catch(() => {}).then(() => onBack())
+        return true
+      }
       if (active) {
         if (LOG_TRACE) devLog(`[gesture] ${label}: right swipe ignored, drag under way (started ${now - startedAt}ms ago, last move ${now - lastMoveAt}ms ago): drag ended`)
         dragging = false
