@@ -12,6 +12,13 @@
 // release, after the drag's end: a swipe within GRACE_MS of it is ignored
 // too. A drag whose release never came (the finger left the control) stops
 // counting STALE_MS after its last move, so the back swipe can't stay off.
+//
+// A swipe reported during a drag means the system took the touch: no move
+// and no release come after it (log 01:57:50 and 01:58:05: the slider's own
+// 1.5 s timeout ended those drags, and a second swipe 1.4 s later was
+// ignored too). The swipe is still not a back (it may be the drag itself),
+// but the drag ends there: onDragCut lets the page close it (send the
+// value, unlock the scrolling), and the next swipe goes back.
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
 import { back } from '@zos/router'
 import { devLog, LOG_TRACE } from './remote-log.js'
@@ -19,8 +26,9 @@ import { devLog, LOG_TRACE } from './remote-log.js'
 const GRACE_MS = 500
 const STALE_MS = 1500
 
-export function createDragGuard(label, onBack = back) {
+export function createDragGuard(label, onBack = back, onDragCut = null) {
   let dragging = false
+  let startedAt = 0
   let lastMoveAt = 0
   let endedAt = 0
 
@@ -30,8 +38,15 @@ export function createDragGuard(label, onBack = back) {
       const now = Date.now()
       const active = dragging && now - lastMoveAt < STALE_MS
       const sinceEnd = now - endedAt
-      if (active || sinceEnd < GRACE_MS) {
-        if (LOG_TRACE) devLog(`[gesture] ${label}: right swipe ignored, ${active ? `drag under way (last move ${now - lastMoveAt}ms ago)` : `drag ended ${sinceEnd}ms ago`}`)
+      if (active) {
+        if (LOG_TRACE) devLog(`[gesture] ${label}: right swipe ignored, drag under way (started ${now - startedAt}ms ago, last move ${now - lastMoveAt}ms ago): drag ended`)
+        dragging = false
+        endedAt = now
+        if (onDragCut) onDragCut()
+        return true
+      }
+      if (sinceEnd < GRACE_MS) {
+        if (LOG_TRACE) devLog(`[gesture] ${label}: right swipe ignored, drag ended ${sinceEnd}ms ago`)
         return true
       }
       if (LOG_TRACE) devLog(`[gesture] ${label}: right swipe, back${endedAt ? ` (last drag ended ${sinceEnd}ms ago)` : ''}`)
@@ -41,7 +56,7 @@ export function createDragGuard(label, onBack = back) {
   })
 
   return {
-    start() { dragging = true; lastMoveAt = Date.now() },
+    start() { dragging = true; startedAt = lastMoveAt = Date.now() },
     move() { lastMoveAt = Date.now() },
     end() { dragging = false; endedAt = Date.now() }
   }

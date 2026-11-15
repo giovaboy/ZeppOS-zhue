@@ -62,6 +62,7 @@ Page(
       this.currentModal = null
       this._gate = createGate('light-detail')
       this._gone = false
+      this._lastBriSent = null
 
       let params = {}
       try {
@@ -141,7 +142,7 @@ Page(
       setScrollLock({ lock: false })
       // The page's one onGesture: right swipe goes back, not while the
       // brightness slider is dragged (utils/drag-guard.js)
-      this._drag = createDragGuard('light-detail')
+      this._drag = createDragGuard('light-detail', back, () => this.endBrightnessDrag())
       // The page's one onKey: UP / DOWN between power, color, favorites, the
       // add tile and the shortcut row; SELECT acts, held SELECT deletes a
       // favorite (with no item focused: adds / removes the light from the
@@ -367,7 +368,11 @@ Page(
         if (this._dragTimer) { clearTimeout(this._dragTimer); this._dragTimer = null }
         setScrollLock({ lock: false })
 
-        if (this.state.tempBrightness !== this.state.light.bri) {
+        // Not again if the drag already sent it (the light's bri is updated
+        // only on the answer: the release sent the value in flight twice,
+        // log 01:57:52)
+        const last = this._lastBriSent != null ? this._lastBriSent : this.state.light.bri
+        if (this.state.tempBrightness !== last) {
           this.setBrightness(this.state.tempBrightness, false)
         }
 
@@ -384,11 +389,18 @@ Page(
         this._dragTimer = null
         if (this.state.isDraggingBrightness) {
           warnLog('[light-detail] slider: no release 1.5 s after the last move, drag ended')
-          // As a drag, whatever the touch state says: the page must scroll again
-          this._slide = { mode: 'drag' }
-          this.handleBrightnessDrag('UP', null)
+          this.endBrightnessDrag()
         }
       }, 1500)
+    },
+
+    // The drag ends as on a release: the value is sent, the page scrolls
+    // again. Also when the system takes the touch for a swipe (drag guard)
+    endBrightnessDrag() {
+      if (!this.state.isDraggingBrightness) return
+      // As a drag, whatever the touch state says: the page must scroll again
+      this._slide = { mode: 'drag' }
+      this.handleBrightnessDrag('UP', null)
     },
 
     setBrightness(brightness, skipApiCall = false) {
@@ -413,6 +425,7 @@ Page(
       }
 
       if (skipApiCall) return
+      this._lastBriSent = brightness
 
       // A value: while one is in flight only the latest waits
       this._gate.run('brightness', () => this.request({
