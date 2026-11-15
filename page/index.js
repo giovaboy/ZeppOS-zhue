@@ -6,7 +6,7 @@ import { connectStatus } from '@zos/ble'
 import { renderMainWidgets } from 'zosLoader:./index.[pf].layout.js'
 import { getText } from '@zos/i18n'
 import { px } from '@zos/utils'
-import { setPageBrightTime } from '@zos/display'
+import { keepScreenOn } from '../utils/screen.js'
 import { getLogger } from '../utils/logger.js'
 import { cardLightIds, rememberLights, rememberGroups } from '../utils/shortcuts.js'
 
@@ -52,7 +52,7 @@ Page(
 
     build() {
       logger.log('Building index page')
-      setPageBrightTime({ brightTime: 60000 })
+      keepScreenOn('index')
       this.checkBluetoothConnection()
     },
 

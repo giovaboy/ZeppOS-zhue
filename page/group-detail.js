@@ -5,7 +5,7 @@ import { createGate } from '../utils/request-gate.js'
 import { bindKeyNav } from '../utils/key-nav.js'
 import { busyOn, stopPulses } from '../utils/pulse.js'
 import { rememberLight, rememberLights, rememberGroups, isInCard, toggleInCard, groupCardState } from '../utils/shortcuts.js'
-import { setPageBrightTime } from '@zos/display'
+import { keepScreenOn } from '../utils/screen.js'
 import { getLogger } from '../utils/logger.js'
 import { getText } from '@zos/i18n'
 import { createWidget, deleteWidget, showToast } from '@zos/ui'
@@ -101,7 +101,7 @@ Page(
         getItems: () => (this._nav && this._nav.items) || [],
         label: 'group-detail'
       })
-      setPageBrightTime({ brightTime: 60000 })
+      keepScreenOn('group-detail')
 
       // Se non abbiamo dati, carica
       if (this.state.lights.length === 0 && !this.state.isLoading && !this.state.error) {

@@ -4,7 +4,7 @@ import { loggedPage, devLog, LOG_TRACE } from '../utils/remote-log.js'
 import { createGate } from '../utils/request-gate.js'
 import { px } from '@zos/utils'
 import { setScrollLock } from '@zos/page'
-import { setPageBrightTime } from '@zos/display'
+import { keepScreenOn } from '../utils/screen.js'
 import { createWidget, deleteWidget, prop } from '@zos/ui'
 import { back } from '@zos/router'
 import { createDragGuard } from '../utils/drag-guard.js'
@@ -92,7 +92,7 @@ Page(
         build() {
             // The screen stays on 60 s, as on the other pages (it had no time
             // of its own: the system's, shorter, applied here)
-            setPageBrightTime({ brightTime: 60000 });
+            keepScreenOn('color-picker');
             setScrollLock({ lock: true });
             // The page's one onGesture: right swipe goes back, not while the
             // picker or a slider is dragged (utils/drag-guard.js)

@@ -9,7 +9,7 @@ import { createWidget, deleteWidget } from '@zos/ui'
 import { exit, push } from '@zos/router'
 import { getText } from '@zos/i18n'
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
-import { setPageBrightTime } from '@zos/display'
+import { keepScreenOn } from '../utils/screen.js'
 import { renderGroupsPage } from 'zosLoader:./groups.[pf].layout.js'
 import { getLogger } from '../utils/logger.js'
 
@@ -57,7 +57,7 @@ Page(
     },
 
     build() {
-      setPageBrightTime({ brightTime: 60000 })
+      keepScreenOn('groups')
 
       // Setup gesture di uscita
       onGesture({
