@@ -61,7 +61,7 @@ msgid "CLEAR_ALL_CONFIG_CONFIRM"
 msgstr "모든 설정을 삭제하시겠습니까?"
 
 msgid "HELP_STEP_1"
-msgstr "1. 시계에서 Hue 앱을 엽니다"
+msgstr "1. 시계에서 zhue를 엽니다"
 
 msgid "HELP_STEP_2"
 msgstr "2. 앱이 자동으로 브릿지를 검색합니다"

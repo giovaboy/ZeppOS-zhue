@@ -61,7 +61,7 @@ msgid "CLEAR_ALL_CONFIG_CONFIRM"
 msgstr "清除所有設定？"
 
 msgid "HELP_STEP_1"
-msgstr "1. 在手錶上開啟 Hue 應用程式"
+msgstr "1. 在手錶上開啟 zhue"
 
 msgid "HELP_STEP_2"
 msgstr "2. 應用程式將自動搜尋橋接器"

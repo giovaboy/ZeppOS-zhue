@@ -61,7 +61,7 @@ msgid "CLEAR_ALL_CONFIG_CONFIRM"
 msgstr "Gesamte Konfiguration löschen?"
 
 msgid "HELP_STEP_1"
-msgstr "1. Öffne die Hue App auf deiner Uhr"
+msgstr "1. Öffne zhue auf deiner Uhr"
 
 msgid "HELP_STEP_2"
 msgstr "2. Die App sucht automatisch nach deiner Bridge"

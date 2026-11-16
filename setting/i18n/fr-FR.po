@@ -16,7 +16,7 @@ msgid "BRIDGE_NOT_CONFIGURED"
 msgstr "Bridge non configuré. Utilisez l'app pour l'associer."
 
 msgid "HELP_TITLE"
-msgstr "Comment Associer Votre Bridge"
+msgstr "Comment associer votre Bridge"
 
 msgid "BRIDGE_CONFIGURATION"
 msgstr "Configuration du Bridge"
@@ -55,13 +55,13 @@ msgid "RESET_PRESETS_CONFIRM"
 msgstr "Réinitialiser les préréglages par défaut ?"
 
 msgid "CLEAR_ALL_CONFIG"
-msgstr "Effacer Toute la Configuration"
+msgstr "Effacer toute la configuration"
 
 msgid "CLEAR_ALL_CONFIG_CONFIRM"
 msgstr "Effacer toute la configuration ?"
 
 msgid "HELP_STEP_1"
-msgstr "1. Ouvrez l'app Hue sur votre montre"
+msgstr "1. Ouvrez zhue sur votre montre"
 
 msgid "HELP_STEP_2"
 msgstr "2. L'app recherchera automatiquement votre bridge"

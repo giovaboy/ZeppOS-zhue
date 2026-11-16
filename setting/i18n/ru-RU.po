@@ -61,7 +61,7 @@ msgid "CLEAR_ALL_CONFIG_CONFIRM"
 msgstr "Очистить всю конфигурацию?"
 
 msgid "HELP_STEP_1"
-msgstr "1. Откройте приложение Hue на часах"
+msgstr "1. Откройте zhue на часах"
 
 msgid "HELP_STEP_2"
 msgstr "2. Приложение автоматически найдёт ваш шлюз"

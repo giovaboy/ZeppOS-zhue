@@ -61,7 +61,7 @@ msgid "CLEAR_ALL_CONFIG_CONFIRM"
 msgstr "Clear All Configuration?"
 
 msgid "HELP_STEP_1"
-msgstr "1. Open the Hue app on your watch"
+msgstr "1. Open zhue on your watch"
 
 msgid "HELP_STEP_2"
 msgstr "2. The app will automatically search for your bridge"

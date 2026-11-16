@@ -138,14 +138,16 @@ AppSettingsPage({
           View({ style: { width: '10px', height: '10px', borderRadius: '5px', background: paired ? C.ok : C.danger, marginRight: '8px' } }, []),
           note(gettext(paired ? 'BRIDGE_CONFIGURED' : 'BRIDGE_NOT_CONFIGURED'), paired ? C.ok : C.danger, { fontWeight: '500' })
         ]),
-        TextInput({
+        // The address once a bridge is known (pairing finds it: an empty
+        // field under its label, before, said nothing)
+        ...(paired || bridgeIp ? [TextInput({
           label: gettext('BRIDGE_IP'),
           placeholder: gettext('BRIDGE_IP_PLACEHOLDER'),
           value: bridgeIp,
           onChange: (value) => storage.setItem('hue_bridge_ip', value),
           labelStyle: { fontSize: FONT.label, fontWeight: '600', color: C.text, marginTop: '14px' },
           subStyle: { fontSize: FONT.body, color: C.text }
-        }),
+        })] : []),
         ...(paired ? [
           // A column: in a plain View the two texts ran together on one line
           column([
@@ -156,10 +158,13 @@ AppSettingsPage({
           // What a new user needs first: how pairing goes
           View({ style: { marginTop: '14px', padding: '12px', background: C.page, borderRadius: '8px' } }, [
             label(gettext('HELP_TITLE'), { marginBottom: '6px' }),
-            note([1, 2, 3, 4, 5].map((n) => gettext(`HELP_STEP_${n}`)).join('\n'), C.textSecondary, { lineHeight: '1.6' })
+            // One text per step: joined with "\n" they ran on one line
+            column([1, 2, 3, 4, 5].map((n) => note(gettext(`HELP_STEP_${n}`), C.textSecondary, { lineHeight: '1.6' })))
           ])
         ]),
-        confirmAction(storage, CLEAR_CONFIG_CONFIRM_KEY, {
+        // Clearing once there is something to clear: right after it, the
+        // button stayed, with nothing left for it to do
+        ...(paired || bridgeIp ? [confirmAction(storage, CLEAR_CONFIG_CONFIRM_KEY, {
           text: gettext('CLEAR_ALL_CONFIG'),
           question: gettext('CLEAR_ALL_CONFIG_CONFIRM'),
           run: () => {
@@ -176,7 +181,7 @@ AppSettingsPage({
             // clearCardIfReset)
             storage.setItem('hue_config_reset_at', String(Date.now()))
           }
-        })
+        })] : [])
       ]),
 
       // ── What the watch shows
