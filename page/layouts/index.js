@@ -1,8 +1,9 @@
 import { getDeviceInfo } from '@zos/device'
 import { px } from '@zos/utils'
-import { widget, align, text_style, anim_status, setStatusBarVisible } from '@zos/ui'
+import { widget, align, text_style, setStatusBarVisible, getTextLayout } from '@zos/ui'
 import { getText } from '@zos/i18n'
 import { COLORS, btnPressColor } from '../../utils/constants.js'
+import { startDot } from '../../utils/pulse.js'
 
 const STATES = {
   LOADING: 'LOADING',
@@ -18,341 +19,125 @@ export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 
 setStatusBarVisible(false)
 
+// The start page's screens, in the app's style: black, white and grey texts
+// (28 / 24 / 20), the pulsing dot of every loading, a purple pill to retry;
+// each screen one block centered on the screen, its texts wrapped in TEXT_W
+// so nothing reaches the round edge. (They were an orange pairing screen with
+// a bar going back and forth and its last line cut by the edge, a red disc
+// for an error, a "🔵✕" for Bluetooth, a spinner and two progress bars.)
+const TEXT_W = px(360)
+const GAP = px(18)
+const DOT = px(18)
+
 export function renderMainWidgets(pageContext, state, callbacks = {}) {
-  const { animateSpinner, animateProgressBar, retryFunc } = callbacks
+  const { retryFunc } = callbacks
   const { currentState, error } = state
 
-  // Sfondo universale
   pageContext.createTrackedWidget(widget.FILL_RECT, {
-    x: 0,
-    y: 0,
-    w: DEVICE_WIDTH,
-    h: DEVICE_HEIGHT,
-    color: COLORS.background
+    x: 0, y: 0, w: DEVICE_WIDTH, h: DEVICE_HEIGHT, color: COLORS.background
   })
 
   switch (currentState) {
     case STATES.LOADING:
-      renderLoadingState(pageContext)
-      break
-
-    case STATES.SEARCHING_BRIDGE:
-      renderSearchingBridge(pageContext, animateSpinner, animateProgressBar)
-      break
-
-    case STATES.WAITING_FOR_PRESS:
-      renderWaitingForPress(pageContext, animateProgressBar)
+      renderStack(pageContext, [dot(), text(getText('LOADING'), px(24), COLORS.loading)])
       break
 
     case STATES.FETCHING_DATA:
-      // ✅ SEMPLIFICATO: Usa stesso layout di LOADING
-      renderLoadingState(pageContext, getText('LOADING_HUE_SETUP'))
+      renderStack(pageContext, [dot(), text(getText('LOADING_HUE_SETUP'), px(24), COLORS.loading)])
+      break
+
+    case STATES.SEARCHING_BRIDGE:
+      renderStack(pageContext, [
+        dot(),
+        text(getText('SEARCHING_BRIDGE'), px(24), COLORS.text),
+        text(getText('BRIDGE_POWERED_ON'), px(20), COLORS.textSubtitle)
+      ])
+      break
+
+    case STATES.WAITING_FOR_PRESS:
+      renderStack(pageContext, [
+        text(getText('BRIDGE_FOUND'), px(28), COLORS.text),
+        image('push-link.png', px(100), px(96)),
+        text(getText('PRESS_BUTTON_TO_PAIR'), px(24), COLORS.text),
+        dot()
+      ])
       break
 
     case STATES.ERROR:
-      renderError(pageContext, error, retryFunc)
+      renderStack(pageContext, [
+        text(getText('CONNECTION_ERROR'), px(28), COLORS.error),
+        text(error || getText('BRIDGE_CONNECTION_FAILED'), px(24), COLORS.text),
+        button(getText('RETRY'), retryFunc)
+      ])
       break
 
     case STATES.BT_ERROR:
-      renderBluetoothError(pageContext, error, retryFunc)
+      renderStack(pageContext, [
+        text(getText('BT_NOT_CONNECTED'), px(28), COLORS.error),
+        text(getText('BT_CONNECT_INSTRUCTIONS'), px(20), COLORS.textSubtitle),
+        text(getText('BT_AUTO_RETRY'), px(20), COLORS.textSubtitle),
+        button(getText('RETRY'), retryFunc)
+      ])
       break
   }
 }
 
-// ============================================
-// RENDER FUNCTIONS (Modularizzate)
-// ============================================
+// --- the block: items one under the other, GAP apart, centered ---
 
-function renderLoadingState(pageContext, customText = null) {
-  // Testo
-  pageContext.createTrackedWidget(widget.TEXT, {
-    x: 0,
-    y: (DEVICE_HEIGHT / 2) + px(155),
-    w: DEVICE_WIDTH,
-    h: px(40),
-    text_size: px(28),
-    color: COLORS.text,
-    align_h: align.CENTER_H,
-    align_v: align.CENTER_V,
-    text_style: text_style.WRAP,
-    text: customText || getText('LOADING')
-  })
-
-  // Animazione loading nativa
-  pageContext.createTrackedWidget(widget.IMG_ANIM, {
-    anim_path: 'anim',
-    anim_prefix: 'loading',
-    anim_ext: 'png',
-    anim_fps: 24,
-    anim_size: 54,
-    repeat_count: 0,
-    anim_status: anim_status.START,
-    x: (DEVICE_WIDTH / 2) - px(77.5),
-    y: DEVICE_HEIGHT / 2
-  })
+function text(value, size, color) {
+  const str = String(value || '')
+  let h = Math.round(size * 1.4)
+  try {
+    const layout = getTextLayout(str, { text_size: size, text_width: TEXT_W, wrapped: 1 })
+    if (layout && layout.height) h = layout.height + px(6)
+  } catch (e) {}
+  return {
+    h,
+    draw: (page, y) => page.createTrackedWidget(widget.TEXT, {
+      x: (DEVICE_WIDTH - TEXT_W) / 2, y, w: TEXT_W, h,
+      text: str, text_size: size, color,
+      align_h: align.CENTER_H, align_v: align.CENTER_V,
+      text_style: text_style.WRAP
+    })
+  }
 }
 
-function renderSearchingBridge(pageContext, animateSpinner, animateProgressBar) {
-  // Titolo
-  pageContext.createTrackedWidget(widget.TEXT, {
-    x: 0,
-    y: px(40),
-    w: DEVICE_WIDTH,
-    h: px(60),
-    text: getText('HUE_BRIDGE'),
-    text_size: px(34),
-    color: COLORS.text,
-    align_h: align.CENTER_H,
-    align_v: align.CENTER_V
-  })
-
-  // Animazione spinner
-  const spinner = pageContext.createTrackedWidget(widget.CIRCLE, {
-    center_x: DEVICE_WIDTH / 2,
-    center_y: px(180),
-    radius: px(40),
-    color: COLORS.highlight,
-    alpha: 150
-  })
-  if (animateSpinner) animateSpinner(spinner)
-
-  // Testo principale
-  pageContext.createTrackedWidget(widget.TEXT, {
-    x: px(40),
-    y: px(260),
-    w: DEVICE_WIDTH - px(80),
-    h: px(80),
-    text: getText('SEARCHING_BRIDGE'),
-    text_size: px(24),
-    color: COLORS.text,
-    align_h: align.CENTER_H,
-    align_v: align.CENTER_V,
-    text_style: text_style.WRAP
-  })
-
-  // Testo informativo
-  pageContext.createTrackedWidget(widget.TEXT, {
-    x: 0,
-    y: px(360),
-    w: DEVICE_WIDTH,
-    h: px(40),
-    text: getText('BRIDGE_POWERED_ON'),
-    text_size: px(20),
-    color: COLORS.inactive,
-    align_h: align.CENTER_H,
-    align_v: align.CENTER_V
-  })
-
-  // Barra di progresso
-  const progressBarMaxW = px(210)  // 10 + 2*100
-
-  const progressBar = pageContext.createTrackedWidget(widget.FILL_RECT, {
-    x: (DEVICE_WIDTH - progressBarMaxW) / 2,
-    y: px(420),
-    w: px(10),
-    h: px(6),
-    color: COLORS.highlight,
-    radius: px(3)
-  })
-  if (animateProgressBar) animateProgressBar(progressBar)
+function image(src, w, h) {
+  return {
+    h,
+    draw: (page, y) => page.createTrackedWidget(widget.IMG, { x: (DEVICE_WIDTH - w) / 2, y, w, h, src })
+  }
 }
 
-function renderWaitingForPress(pageContext, animateProgressBar) {
-  // Sfondo warning
-  pageContext.createTrackedWidget(widget.FILL_RECT, {
-    x: 0,
-    y: 0,
-    w: DEVICE_WIDTH,
-    h: DEVICE_HEIGHT,
-    color: COLORS.warning
-  })
-
-  // Titolo
-  pageContext.createTrackedWidget(widget.TEXT, {
-    x: 0,
-    y: px(50),
-    w: DEVICE_WIDTH,
-    h: px(50),
-    text: getText('BRIDGE_FOUND'),
-    text_size: px(34),
-    color: COLORS.warningText,
-    align_h: align.CENTER_H,
-    align_v: align.CENTER_V
-  })
-
-  // Icona bridge
-  pageContext.createTrackedWidget(widget.IMG, {
-    x: DEVICE_WIDTH / 2 - px(50),
-    y: DEVICE_HEIGHT / 2 - px(100),
-    src: 'push-linkv2.png'
-  })
-
-  // Istruzioni
-  pageContext.createTrackedWidget(widget.TEXT, {
-    x: px(40),
-    y: px(270),
-    w: DEVICE_WIDTH - px(80),
-    h: px(100),
-    text: getText('PRESS_BUTTON_TO_PAIR'),
-    text_size: px(28),
-    color: COLORS.warningText,
-    align_h: align.CENTER_H,
-    align_v: align.CENTER_V,
-    text_style: text_style.WRAP
-  })
-
-  // Sottotitolo
-  pageContext.createTrackedWidget(widget.TEXT, {
-    x: 0,
-    y: px(390),
-    w: DEVICE_WIDTH,
-    h: px(30),
-    text: getText('WAIT_PRESS'),
-    text_size: px(20),
-    color: COLORS.warningText,
-    align_h: align.CENTER_H,
-    align_v: align.CENTER_V
-  })
-
-  // Progress bar animata
-  const progressBarMaxW = px(210)
-
-  const progressBar = pageContext.createTrackedWidget(widget.FILL_RECT, {
-    x: (DEVICE_WIDTH - progressBarMaxW) / 2,
-    y: px(420),
-    w: px(10),
-    h: px(6),
-    color: COLORS.warningText,
-    radius: px(3)
-  })
-  if (animateProgressBar) animateProgressBar(progressBar)
+// The app's loading: a pulsing dot (utils/pulse.js), stopped with the page's
+// other animations
+function dot() {
+  return {
+    h: DOT,
+    draw: (page, y) => startDot(page, { cx: DEVICE_WIDTH / 2, cy: y + DOT / 2, size: DOT })
+  }
 }
 
-function renderError(pageContext, error, retryFunc) {
-  // Titolo errore
-  pageContext.createTrackedWidget(widget.TEXT, {
-    x: 0,
-    y: px(60),
-    w: DEVICE_WIDTH,
-    h: px(50),
-    text: getText('CONNECTION_ERROR'),
-    text_size: px(34),
-    color: COLORS.error,
-    align_h: align.CENTER_H,
-    align_v: align.CENTER_V
-  })
-
-  // Icona errore
-  pageContext.createTrackedWidget(widget.CIRCLE, {
-    center_x: DEVICE_WIDTH / 2,
-    center_y: px(160),
-    radius: px(45),
-    color: COLORS.error
-  })
-
-  // Messaggio di errore
-  pageContext.createTrackedWidget(widget.TEXT, {
-    x: px(40),
-    y: px(240),
-    w: DEVICE_WIDTH - px(80),
-    h: px(100),
-    text: error || getText('BRIDGE_CONNECTION_FAILED'),
-    text_size: px(24),
-    color: COLORS.text,
-    align_h: align.CENTER_H,
-    align_v: align.CENTER_V,
-    text_style: text_style.WRAP
-  })
-
-  // Bottone RETRY
-  pageContext.createTrackedWidget(widget.BUTTON, {
-    x: (DEVICE_WIDTH - px(300)) / 2,
-    y: px(360),
-    w: px(300),
-    h: px(60),
-    text: getText('RETRY'),
-    text_size: px(28),
-    normal_color: COLORS.highlight,
-    press_color: btnPressColor(COLORS.highlight),
-    radius: px(10),
-    click_func: retryFunc
-  })
+function button(label, onTap) {
+  const w = px(200), h = px(56)
+  return {
+    h: h + px(6), // a little more room above it
+    draw: (page, y) => page.createTrackedWidget(widget.BUTTON, {
+      x: (DEVICE_WIDTH - w) / 2, y: y + px(6), w, h,
+      text: label, text_size: px(24),
+      radius: h / 2,
+      normal_color: COLORS.highlight,
+      press_color: btnPressColor(COLORS.highlight),
+      click_func: onTap
+    })
+  }
 }
 
-function renderBluetoothError(pageContext, error, retryFunc) {
-  // Icona errore Bluetooth
-  pageContext.createTrackedWidget(widget.CIRCLE, {
-    center_x: DEVICE_WIDTH / 2,
-    center_y: DEVICE_HEIGHT / 2 - px(100),
-    radius: px(50),
-    color: COLORS.error,
-    alpha: 100
-  })
-
-  // Simbolo Bluetooth
-  pageContext.createTrackedWidget(widget.TEXT, {
-    x: 0,
-    y: DEVICE_HEIGHT / 2 - px(130),
-    w: DEVICE_WIDTH,
-    h: px(60),
-    text: '🔵✕',
-    text_size: px(48),
-    color: COLORS.error,
-    align_h: align.CENTER_H,
-    align_v: align.CENTER_V
-  })
-
-  // Titolo errore
-  pageContext.createTrackedWidget(widget.TEXT, {
-    x: px(20),
-    y: DEVICE_HEIGHT / 2 - px(40),
-    w: DEVICE_WIDTH - px(40),
-    h: px(60),
-    text: getText('BT_NOT_CONNECTED'),
-    text_size: px(24),
-    color: COLORS.error,
-    align_h: align.CENTER_H,
-    align_v: align.CENTER_V
-  })
-
-  // Istruzioni
-  pageContext.createTrackedWidget(widget.TEXT, {
-    x: px(30),
-    y: DEVICE_HEIGHT / 2 + px(30),
-    w: DEVICE_WIDTH - px(60),
-    h: px(100),
-    text: getText('BT_CONNECT_INSTRUCTIONS'),
-    text_size: px(20),
-    color: COLORS.textSubtitle,
-    align_h: align.CENTER_H,
-    align_v: align.CENTER_V,
-    text_style: text_style.WRAP
-  })
-
-  // Info auto-retry
-  pageContext.createTrackedWidget(widget.TEXT, {
-    x: px(30),
-    y: DEVICE_HEIGHT / 2 + px(140),
-    w: DEVICE_WIDTH - px(60),
-    h: px(60),
-    text: getText('BT_AUTO_RETRY'),
-    text_size: px(20),
-    color: COLORS.textSubtitle,
-    align_h: align.CENTER_H,
-    align_v: align.CENTER_V
-  })
-
-  // Bottone Retry manuale
-  pageContext.createTrackedWidget(widget.BUTTON, {
-    x: (DEVICE_WIDTH - px(160)) / 2,
-    y: DEVICE_HEIGHT - px(120),
-    w: px(160),
-    h: px(50),
-    text: getText('RETRY'),
-    text_size: px(24),
-    normal_color: COLORS.highlight,
-    press_color: btnPressColor(COLORS.highlight),
-    radius: px(25),
-    click_func: retryFunc
-  })
+function renderStack(page, items) {
+  const total = items.reduce((sum, it) => sum + it.h, 0) + GAP * (items.length - 1)
+  let y = Math.round((DEVICE_HEIGHT - total) / 2)
+  for (const it of items) {
+    it.draw(page, y)
+    y += it.h + GAP
+  }
 }

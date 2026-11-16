@@ -3,9 +3,6 @@
 msgid "LOADING"
 msgstr "載入中..."
 
-msgid "HUE_BRIDGE"
-msgstr "Hue 橋接器"
-
 msgid "BRIDGE_POWERED_ON"
 msgstr "請確認您的橋接器已接通電源"
 
@@ -17,9 +14,6 @@ msgstr "已找到橋接器！"
 
 msgid "PRESS_BUTTON_TO_PAIR"
 msgstr "按下 Hue 橋接器上的按鈕進行配對"
-
-msgid "WAIT_PRESS"
-msgstr "等待按下按鈕..."
 
 msgid "CONNECTION_ERROR"
 msgstr "連線錯誤"

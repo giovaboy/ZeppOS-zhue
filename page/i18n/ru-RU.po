@@ -3,9 +3,6 @@
 msgid "LOADING"
 msgstr "Загрузка..."
 
-msgid "HUE_BRIDGE"
-msgstr "Шлюз Hue"
-
 msgid "BRIDGE_POWERED_ON"
 msgstr "Убедитесь, что шлюз включен"
 
@@ -17,9 +14,6 @@ msgstr "Шлюз найден!"
 
 msgid "PRESS_BUTTON_TO_PAIR"
 msgstr "Нажмите кнопку на шлюзе Hue для сопряжения"
-
-msgid "WAIT_PRESS"
-msgstr "Ожидание нажатия кнопки..."
 
 msgid "CONNECTION_ERROR"
 msgstr "Ошибка подключения"

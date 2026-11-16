@@ -3,9 +3,6 @@
 msgid "LOADING"
 msgstr "Caricamento..."
 
-msgid "HUE_BRIDGE"
-msgstr "Hue Bridge"
-
 msgid "BRIDGE_POWERED_ON"
 msgstr "Assicurati che il tuo bridge sia acceso"
 
@@ -13,16 +10,13 @@ msgid "SEARCHING_BRIDGE"
 msgstr "Ricerca del Bridge Hue sulla rete..."
 
 msgid "BRIDGE_FOUND"
-msgstr "Bridge Trovato!"
+msgstr "Bridge trovato!"
 
 msgid "PRESS_BUTTON_TO_PAIR"
 msgstr "Premi il pulsante sul tuo Hue Bridge per l'associazione"
 
-msgid "WAIT_PRESS"
-msgstr "In attesa della pressione del pulsante..."
-
 msgid "CONNECTION_ERROR"
-msgstr "Errore di Connessione"
+msgstr "Errore di connessione"
 
 msgid "DISCOVERY_FAILED"
 msgstr "Ricerca fallita"

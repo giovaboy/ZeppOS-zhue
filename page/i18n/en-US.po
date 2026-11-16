@@ -3,9 +3,6 @@
 msgid "LOADING"
 msgstr "Loading..."
 
-msgid "HUE_BRIDGE"
-msgstr "Hue Bridge"
-
 msgid "BRIDGE_POWERED_ON"
 msgstr "Make sure your bridge is powered on"
 
@@ -13,16 +10,13 @@ msgid "SEARCHING_BRIDGE"
 msgstr "Searching for Hue Bridge on your network..."
 
 msgid "BRIDGE_FOUND"
-msgstr "Bridge Found!"
+msgstr "Bridge found!"
 
 msgid "PRESS_BUTTON_TO_PAIR"
 msgstr "Press the button on your Hue Bridge to pair"
 
-msgid "WAIT_PRESS"
-msgstr "Waiting for button press..."
-
 msgid "CONNECTION_ERROR"
-msgstr "Connection Error"
+msgstr "Connection error"
 
 msgid "DISCOVERY_FAILED"
 msgstr "Discovery failed"

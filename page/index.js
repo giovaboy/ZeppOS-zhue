@@ -1,11 +1,11 @@
 import { BasePage } from '@zeppos/zml/base-page'
 import { loggedPage, infoLog } from '../utils/remote-log.js'
-import { createWidget, deleteWidget, prop } from '@zos/ui'
+import { createWidget, deleteWidget } from '@zos/ui'
+import { stopPulses } from '../utils/pulse.js'
 import { push } from '@zos/router'
 import { connectStatus } from '@zos/ble'
 import { renderMainWidgets } from 'zosLoader:./index.[pf].layout.js'
 import { getText } from '@zos/i18n'
-import { px } from '@zos/utils'
 import { keepScreenOn } from '../utils/screen.js'
 import { getLogger } from '../utils/logger.js'
 import { cardLightIds, rememberLights, rememberGroups } from '../utils/shortcuts.js'
@@ -36,8 +36,6 @@ Page(
     },
 
     widgets: [],
-    progressInterval: null,
-    spinnerInterval: null,
     btCheckInterval: null,
 
     // 🐛 Debug flag - imposta true per vedere logs dettagliati
@@ -50,8 +48,6 @@ Page(
       this.state.currentState = STATES.LOADING
       this.state.error = null
       this.widgets = []
-      this.progressInterval = null
-      this.spinnerInterval = null
       this.btCheckInterval = null
     },
 
@@ -120,18 +116,8 @@ Page(
     },
 
     clearAllWidgets() {
-      if (this.progressInterval) {
-        clearInterval(this.progressInterval)
-        this.progressInterval = null
-      }
-      // The spinner has its own interval: sharing progressInterval with the
-      // bar, it was overwritten and never stopped (10 times a second while
-      // the page stayed open, on a widget already deleted)
-      if (this.spinnerInterval) {
-        clearInterval(this.spinnerInterval)
-        this.spinnerInterval = null
-      }
-
+      // The loading dot's animation (utils/pulse.js), with its widget
+      stopPulses(this)
       this.widgets.forEach(w => {
         try { deleteWidget(w) } catch (e) {
           logger.error('Delete widget:', e)
@@ -278,51 +264,8 @@ Page(
       this.clearAllWidgets()
 
       renderMainWidgets(this, this.state, {
-        retryFunc: () => this.retry(),
-        animateSpinner: (w) => this.animateSpinner(w),
-        animateProgressBar: (w) => this.animateProgressBar(w)
+        retryFunc: () => this.retry()
       })
-    },
-
-    // --- ANIMATIONS ---
-
-    animateSpinner(spinner) {
-      let alpha = 255
-      let direction = -1
-
-      if (this.spinnerInterval) clearInterval(this.spinnerInterval)
-
-      this.spinnerInterval = setInterval(() => {
-        alpha += direction * 15
-        if (alpha < 100) {
-          direction = 1
-        } else if (alpha > 255) {
-          direction = -1
-        }
-        try {
-          spinner.setProperty(prop.ALPHA, alpha)
-        } catch {
-          logger.error('spinner.setProperty failed')
-        }
-      }, 100)
-    },
-
-    animateProgressBar(progressBar) {
-      let progress = 0
-      if (this.progressInterval) clearInterval(this.progressInterval)
-      this.progressInterval = setInterval(() => {
-        if (!this.widgets.includes(progressBar)) {
-          clearInterval(this.progressInterval)
-          this.progressInterval = null
-          return
-        }
-        progress = (progress + 5) % 100
-        try {
-          progressBar.setProperty(prop.W, px(10 + 2 * progress))
-        } catch {
-          logger.error('progressBar.setProperty failed')
-        }
-      }, 150)
     },
 
     onDestroy() {

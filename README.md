@@ -151,6 +151,8 @@ addresses are removed). Set the level in `config.js`:
   come out translucent.
 - `node tools/gen-card-press.cjs`: makes the images of the button over each
   tile of the shortcut card (clear, and a dark disc while pressed).
+- `node tools/gen-push-link.cjs`: makes `push-link.png`, the bridge with its
+  link button on the pairing screen, white from `tools/push-link-src.png`.
 - `node tools/gen-settings-logo.cjs`: makes `setting/logo.js`, the app icon's
   wordmark for the settings page header. Run it after changing the icon.
 

@@ -3,9 +3,6 @@
 msgid "LOADING"
 msgstr "Cargando..."
 
-msgid "HUE_BRIDGE"
-msgstr "Puente Hue"
-
 msgid "BRIDGE_POWERED_ON"
 msgstr "Asegúrate de que el puente esté encendido"
 
@@ -17,9 +14,6 @@ msgstr "¡Puente encontrado!"
 
 msgid "PRESS_BUTTON_TO_PAIR"
 msgstr "Pulsa el botón de tu Puente Hue para vincular"
-
-msgid "WAIT_PRESS"
-msgstr "Esperando a que pulses el botón..."
 
 msgid "CONNECTION_ERROR"
 msgstr "Error de conexión"

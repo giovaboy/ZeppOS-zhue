@@ -1,5 +1,5 @@
 // PNG read and write for the tools (8-bit, non-interlaced): decode gives RGB
-// of an RGB or RGBA image, encode writes RGBA. (.cjs so that Zeus doesn't
+// of an RGB or RGBA image (and its alpha, 255 for RGB), encode writes RGBA. (.cjs so that Zeus doesn't
 // bundle it)
 const fs = require('fs')
 const zlib = require('zlib')
@@ -35,7 +35,11 @@ function decode(file) {
       px[y * stride + x] = v & 255
     }
   }
-  return { w, h, rgb: (x, y) => [...px.subarray((y * w + x) * bpp, (y * w + x) * bpp + 3)] }
+  return {
+    w, h,
+    rgb: (x, y) => [...px.subarray((y * w + x) * bpp, (y * w + x) * bpp + 3)],
+    alpha: (x, y) => (bpp === 4 ? px[(y * w + x) * 4 + 3] : 255)
+  }
 }
 
 function crc32(buf) {
