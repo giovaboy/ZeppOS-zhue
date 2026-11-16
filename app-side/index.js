@@ -1585,6 +1585,16 @@ async function cardFirstRead(url, res) {
   }
 }
 
+// The state a card tap asks: the opposite of what the card showed
+// (params.state, sent while the card's state was fresh), else the opposite of
+// the bridge's. Toggling the bridge's turned on a room the card showed on,
+// tapped to turn it off, off meanwhile (log 17:47:22)
+function cardWanted(params, isOn, what) {
+  if (typeof params.state !== 'boolean') return !isOn
+  if (params.state === isOn) vlog(`[card] ${what}: asked ${isOn ? 'on' : 'off'}, already so on the bridge (the card was out of date)`)
+  return params.state
+}
+
 function tapReply(req, firstRes) {
   const tapId = req.params && req.params.tapId
   const seen = tapId ? recentWidgetTaps.get(tapId) : null
@@ -2109,7 +2119,7 @@ AppSideService(
           if (Array.isArray(group) && group[0]?.error) throw new Error(group[0].error.description)
           anyOn = !!(group.state && group.state.any_on)
         }
-        const newState = !anyOn
+        const newState = cardWanted(req.params, anyOn, `group ${groupId}`)
         await hueBridge.toggleGroup(groupId, newState)
         res(null, { success: true, newState, ...(await cardStates(req.params)) })
       } catch (error) {
@@ -2138,7 +2148,7 @@ AppSideService(
           }
 
           // Toggle the light state
-          const newState = !light.ison
+          const newState = cardWanted(req.params, !!light.ison, `light ${lightId}`)
           hueBridge._handleDemoAction(lightId, { ison: newState })
 
           res(null, { success: true, newState, ...(await cardStates(req.params)) })
@@ -2158,7 +2168,7 @@ AppSideService(
         const lightData = typeof stateRes.body === 'string' ? JSON.parse(stateRes.body) : stateRes.body
 
         const currentState = lightData?.state?.on || false
-        const newState = !currentState
+        const newState = cardWanted(req.params, currentState, `light ${lightId}`)
 
         // Toggle
         const toggleUrl = `http://${hueBridge.bridgeIp}/api/${hueBridge.username}/lights/${lightId}/state`

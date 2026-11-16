@@ -198,6 +198,10 @@ Page(
         method: isGroup ? 'WIDGET_TOGGLE_GROUP' : 'WIDGET_TOGGLE_LIGHT',
         params: {
           ...(isGroup ? { groupId: this.state.lightId } : { lightId: this.state.lightId }),
+          // The opposite of what the card showed (and this page says:
+          // "Turning off…"), while its state was fresh; else the phone
+          // toggles the bridge's (app-side cardWanted)
+          ...this.wantedState(),
           // Names this tap: a request delivered twice toggles once (app-side tapReply)
           tapId: `${t0.toString(36)}${Math.floor(Math.random() * 1296).toString(36)}`,
           // The phone answers with the states of all the card's entries
@@ -233,6 +237,12 @@ Page(
           this.renderUI()
           this.goBackAfterDelay(ERROR_MS)
         })
+    },
+
+    wantedState() {
+      const entry = this.state.entry || {}
+      const known = typeof entry.at === 'number' && Date.now() - entry.at < CARD_STATE_FRESH_MS
+      return known && typeof entry.ison === 'boolean' ? { state: !entry.ison } : {}
     },
 
     goBackAfterDelay(ms) {
