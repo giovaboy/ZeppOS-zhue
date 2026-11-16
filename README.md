@@ -125,25 +125,6 @@ addresses are removed). Set the level in `config.js`:
 - `LOG_LEVEL = 'off'` for store releases: nothing is logged and the box is
   not shown.
 
-### Release checklist
-
-1. The version in `app.json` (`version.name`, and `version.code` + 1), `package.json`,
-   `setting/index.js` (`APP_VERSION`: the settings page can't read app.json) and
-   the badge at the top of this file.
-2. `LOG_LEVEL = 'off'` and `DEV = false` in `config.js`.
-3. On a watch, with the release build: clear the configuration from the
-   phone's settings and pair again (search, link button, rooms shown); a
-   light, a group, a scene, the color picker, the shortcut card.
-4. Screenshots: the watch's 480 px ones in `screenshots/` (the README's), the
-   store's 360×360 made from them in `screenshots/store/`:
-   `node ../_shared/tools/store-screenshots.cjs --round screenshots/store screenshots/{1..9}.png`
-   (the store asks 1–10 PNGs, 360×360, with a transparent background).
-5. The package to upload comes from the build tool (docker-zepp-dev), not from
-   a local `zeus build`: a local build only checks that the code compiles
-   (`npm install` first: without `node_modules` ZML isn't bundled and the
-   package can't talk to the phone), and `dist/` stays empty. Tag the commit
-   `vX.Y.Z`.
-
 ### Tools
 
 - `node tools/check-icon-masks.cjs`: the light and room icons are masks drawn
