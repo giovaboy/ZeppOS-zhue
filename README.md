@@ -10,10 +10,10 @@ for the lights you use most.
 
 ## Screenshots
 
-| ![Screenshot 1](screenshots/1.png) | ![Screenshot 2](screenshots/2.png) | ![Screenshot 3](screenshots/3.png) |
+| ![Rooms and zones](screenshots/1.png) | ![A group: its lights](screenshots/2.png) | ![A light](screenshots/3.png) |
 |---|---|---|
-| ![Screenshot 4](screenshots/4.png) | ![Screenshot 5](screenshots/5.png) | ![Screenshot 6](screenshots/6.png) |
-| ![Screenshot 7](screenshots/7.png) | ![Screenshot 8](screenshots/8.png) | ![Screenshot 9](screenshots/9.png) |
+| ![The color wheel](screenshots/4.png) | ![A white light](screenshots/5.png) | ![The shortcut card](screenshots/6.png) |
+| ![A light out of reach](screenshots/7.png) | ![Pairing](screenshots/8.png) | ![Looking for the bridge](screenshots/9.png) |
 
 ## Features
 
