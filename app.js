@@ -42,6 +42,13 @@ const PENDING_LOG_FILE = 'pending_log.json'
 // the phone busy, requests failed with "shake timeout". 20 s worked in zeppamp
 // and http-buttons (field-notes.md, "Messaging")
 const SHAKE_TIMEOUT_MS = 20000
+// A request's answer, once sent: 15 s, not ZML's 60. An answer lost with
+// its page (a page left before it came) kept that page in memory until then:
+// the app went from ~480 to ~750-850 KB for a minute (logs 02:21, 07:05).
+// Every request answers in under 3 s in the logs; the bridge search and the
+// pairing (10 tries 2 s apart, the link button) ask for longer themselves
+// (page/index.js LONG_REQUEST)
+const REQUEST_TIMEOUT_MS = 15000
 
 App(
   BaseApp({
@@ -72,9 +79,11 @@ App(
 
     onCreate(options) {
       logger.debug('Hue On-Off App Created')
-      // On the app's messaging object, beside ZML's requestTimeout (60 s);
-      // the pages' requests go through it too
-      if (this.messaging) this.messaging.shakeTimeout = SHAKE_TIMEOUT_MS
+      // On the app's messaging object; the pages' requests go through it too
+      if (this.messaging) {
+        this.messaging.shakeTimeout = SHAKE_TIMEOUT_MS
+        this.messaging.requestTimeout = REQUEST_TIMEOUT_MS
+      }
       this._loadPendingLog()
       this.remoteLog(`app started (log level ${LOG_LEVEL})${this.messaging ? '' : ', no messaging object: shake timeout left at 5 s'}`)
       this._watchScreen()

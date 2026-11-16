@@ -20,6 +20,11 @@ const STATES = {
   SUCCESS: 'SUCCESS'
 }
 
+// The bridge search and the pairing (10 tries 2 s apart while the link
+// button waits) take longer than the app's 15 s for an answer
+// (app.js REQUEST_TIMEOUT_MS)
+const LONG_REQUEST = { timeout: 60000 }
+
 const logger = getLogger('zhue-index-page')
 const app = getApp()
 
@@ -186,7 +191,7 @@ Page(
         return
       }
 
-      this.request({ method: 'DISCOVER_BRIDGES' })
+      this.request({ method: 'DISCOVER_BRIDGES' }, LONG_REQUEST)
         .then(result => {
           if (result.success && result.bridges?.length > 0) {
             this.setState(STATES.WAITING_FOR_PRESS)
@@ -201,7 +206,7 @@ Page(
     },
 
     startPairing() {
-      this.request({ method: 'PAIR' })
+      this.request({ method: 'PAIR' }, LONG_REQUEST)
         .then(result => {
           if (result.success) {
             this.setState(STATES.FETCHING_DATA)
