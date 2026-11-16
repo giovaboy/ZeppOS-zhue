@@ -16,6 +16,11 @@ export const COLORS = {
   success: 0x39935a, //0x2ecd6e,//0x00aa00,
   error: 0xff0000,
   inactive: 0xb3b3b3, //0x666666,
+  // The icon of a light (or room) that is off: behind its mask. #B3B3B3 was
+  // too close to a white light that is on (#FFFFFF): the two read alike.
+  // Dark grey, as the Hue app draws a light that is off; 2.2:1 on the mask's
+  // #333333, the shape still seen
+  lightOff: 0x666666,
   // Text on an "off" control filled with `inactive`: white on #B3B3B3 is
   // 2.1:1, under the 3:1 large text needs (design-guidelines.md, "Color");
   // black is 10:1. The group's header read poorly

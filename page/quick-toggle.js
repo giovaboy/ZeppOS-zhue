@@ -108,7 +108,7 @@ Page(
       const iy = top + (TILE - ICON_IMAGE_SIZE) / 2
       this.createTrackedWidget(widget.FILL_RECT, {
         x: ix + 1, y: iy + 1, w: ICON_IMAGE_SIZE - 2, h: ICON_IMAGE_SIZE - 2,
-        color: ison === true && color !== undefined ? color : COLORS.inactive
+        color: ison === true && color !== undefined ? color : COLORS.lightOff
       })
       const entry = this.state.entry || {}
       this.createTrackedWidget(widget.IMG, {

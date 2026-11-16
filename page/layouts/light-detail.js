@@ -302,7 +302,7 @@ function renderLampButton(pageContext, y, light, lightOn, onTap, nav, view) {
   const box = { x: cx - POWER / 2, y, w: POWER, h: POWER }
   const ringColor = lightOn ? COLORS.success : COLORS.toggleOff
   const reachable = light.reachable !== false
-  const swatch = lightOn && reachable ? lightDisplayColor(light) : COLORS.inactive
+  const swatch = lightOn && reachable ? lightDisplayColor(light) : COLORS.lightOff
   const icon = `icons/${lightIconName(light)}.png`
 
   const button = pageContext.createTrackedWidget(widget.BUTTON, {

@@ -268,7 +268,7 @@ AppWidget({
     const isOff = fresh && shortcut.ison === false
     passThrough(this.createTrackedWidget(widget.FILL_RECT, {
       x: ix + 1, y: iy + 1, w: CARD_ICON - 2, h: CARD_ICON - 2,
-      color: isOn && shortcut.color !== undefined ? shortcut.color : COLORS.inactive
+      color: isOn && shortcut.color !== undefined ? shortcut.color : COLORS.lightOff
     }))
     passThrough(this.createTrackedWidget(widget.IMG, {
       x: ix, y: iy, w: CARD_ICON, h: CARD_ICON,

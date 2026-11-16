@@ -332,7 +332,7 @@ function renderLightItem(container, light, yPos, COLORS, onToggle, onNavigate) {
             y: yPos + px(15) + 1,
             w: iconSize - 2,
             h: iconSize - 2,
-            color: light.swatch_bg_color || COLORS.inactive
+            color: light.swatch_bg_color || COLORS.lightOff
         })
         // light mask
         container.createWidget(widget.IMG, {

@@ -441,7 +441,7 @@ Page(
     // (full brightness); grey for a scene that turns them off; none when the
     // phone couldn't read it. (The demo's scenes bring a hex.)
     sceneDotColor(scene) {
-      if (scene.off) return COLORS.inactive
+      if (scene.off) return COLORS.lightOff
       if (scene.light) return lightDisplayColor(scene.light)
       if (scene.color) return hexStringToInt(scene.color)
       return null
@@ -449,7 +449,7 @@ Page(
 
     getLightSwatchColor(light) {
       if (!light.ison || light.reachable === false) {
-        return COLORS.inactive
+        return COLORS.lightOff
       }
 
       // Its hue at full brightness (a white light at 20% came near black)

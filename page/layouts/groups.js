@@ -179,7 +179,7 @@ function renderGroupItem(container, group, index, yPos, itemHeight, onItemClick,
             y: yPos + ((itemHeight - iconSize) / 2) + 1,
             w: iconSize - 2,
             h: iconSize - 2,
-            color: isOn ? COLORS.white : COLORS.inactive
+            color: isOn ? COLORS.white : COLORS.lightOff
         })
 
     const iconClass = group.raw?.class || 'Other'
