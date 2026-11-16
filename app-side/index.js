@@ -1838,8 +1838,11 @@ AppSideService(
     // watch, ~1-1.5 s each, at every start. Reading the groups tells as much
     // (an unknown key or an unreachable bridge fails the same way).
     async handleStart(req, res) {
+      // When the configuration was last cleared from the settings page: the
+      // watch empties its shortcut card once for each
+      const resetAt = settingsLib.getItem('hue_config_reset_at') || undefined
       if (!hueBridge.demo && (!hueBridge.bridgeIp || !hueBridge.username)) {
-        res(null, { connected: false, reason: 'Not configured' })
+        res(null, { connected: false, reason: 'Not configured', resetAt })
         return
       }
       try {
@@ -1856,11 +1859,12 @@ AppSideService(
             zones: groups.zones,
             userSettings: hueBridge.getUserSettings()
           },
-          cardLights
+          cardLights,
+          resetAt
         })
       } catch (error) {
         cerr('Start error:', error)
-        res(null, { connected: false, reason: error.message })
+        res(null, { connected: false, reason: error.message, resetAt })
       }
     },
 

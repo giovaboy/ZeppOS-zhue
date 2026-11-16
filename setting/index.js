@@ -171,6 +171,10 @@ AppSettingsPage({
             storage.setItem('hue_display_order', 'LIGHTS_FIRST')
             storage.setItem('hue_demo_mode', 'false')
             storage.setItem('hue_favorite_colors', JSON.stringify(DEFAULT_PRESETS))
+            // The watch's shortcut card lives on the watch: this tells it,
+            // at the app's next start, to empty it too (utils/shortcuts.js
+            // clearCardIfReset)
+            storage.setItem('hue_config_reset_at', String(Date.now()))
           }
         })
       ]),

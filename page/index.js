@@ -8,7 +8,7 @@ import { renderMainWidgets } from 'zosLoader:./index.[pf].layout.js'
 import { getText } from '@zos/i18n'
 import { keepScreenOn } from '../utils/screen.js'
 import { getLogger } from '../utils/logger.js'
-import { cardLightIds, rememberLights, rememberGroups } from '../utils/shortcuts.js'
+import { cardLightIds, rememberLights, rememberGroups, clearCardIfReset } from '../utils/shortcuts.js'
 
 const STATES = {
   LOADING: 'LOADING',
@@ -149,6 +149,8 @@ Page(
       // The card's lights go with it: the phone sends their states back
       this.request({ method: 'START', params: { cardLightIds: cardLightIds() } })
         .then(result => {
+          // Cleared on the phone since: the card goes too
+          clearCardIfReset(result && result.resetAt)
           if (result.connected && result.data) {
             app.setGroupsData(result.data)
             // The shortcut card's lights as they are now (each app start)

@@ -38,6 +38,25 @@ export function readShortcuts() {
   return DEFAULT_WIDGET_SHORTCUTS.map((s) => ({ ...s }))
 }
 
+// "Clear all configuration" on the phone emptied the phone's side only: the
+// card kept lights of a bridge maybe gone. The phone sends when it was last
+// cleared (START, resetAt); the card is emptied once for each. True if it was
+const RESET_SEEN_KEY = 'card_config_reset_seen'
+
+export function clearCardIfReset(resetAt) {
+  if (!resetAt) return false
+  try {
+    if (localStorage.getItem(RESET_SEEN_KEY) === String(resetAt)) return false
+    localStorage.setItem(RESET_SEEN_KEY, String(resetAt))
+  } catch (e) {
+    return false
+  }
+  const had = readShortcuts().filter((s) => !isEmptySlot(s)).length
+  writeShortcuts(DEFAULT_WIDGET_SHORTCUTS.map((s) => ({ ...s })))
+  if (LOG_TRACE) devLog(`[card] emptied (${had} entries): the configuration was cleared on the phone`)
+  return true
+}
+
 export function writeShortcuts(list) {
   try {
     localStorage.setItem(WIDGET_SHORTCUTS_KEY, JSON.stringify(list))
