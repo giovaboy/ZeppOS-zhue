@@ -9,7 +9,7 @@ import { COLORS } from './constants.js'
 import { startDot } from './pulse.js'
 
 const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
-const DOT = px(18)
+const DOT = px(24) // its full size (utils/pulse.js: it pulses from a third)
 const GAP = px(14)
 const LINE_H = px(40)
 

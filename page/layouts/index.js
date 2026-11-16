@@ -27,7 +27,7 @@ setStatusBarVisible(false)
 // for an error, a "🔵✕" for Bluetooth, a spinner and two progress bars.)
 const TEXT_W = px(360)
 const GAP = px(18)
-const DOT = px(18)
+const DOT = px(24) // as utils/loading.js
 
 export function renderMainWidgets(pageContext, state, callbacks = {}) {
   const { retryFunc } = callbacks

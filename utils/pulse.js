@@ -19,8 +19,9 @@ import { devLog, LOG_TRACE } from './remote-log.js'
 const TICK_MS = 40 // 25 frames per second, a frame every other tick
 // One breath (~1 s): stroke widths, a frame each
 const BREATH = [1, 2, 3, 4, 5, 5, 4, 3, 2, 1, 1, 1]
-// One pulse of the dot (~1 s): its size, as a share of the full one
-const DOT = [0.5, 0.6, 0.72, 0.84, 0.95, 1, 1, 0.95, 0.84, 0.72, 0.6, 0.5]
+// One pulse of the dot (~1 s): its size, as a share of the full one, eased.
+// From a third of it (was half, at 18 px: it barely moved)
+const DOT = [0.32, 0.4, 0.54, 0.7, 0.86, 0.97, 1, 0.97, 0.86, 0.7, 0.54, 0.4]
 
 const running = new Set()
 let ticker = null
