@@ -11,25 +11,14 @@ export const { width: DEVICE_WIDTH, height: DEVICE_HEIGHT } = getDeviceInfo()
 // the narrowing edge
 const SLIDER_UP = getDeviceInfo().screenShape === SCREEN_SHAPE_SQUARE ? px(55) : px(90)
 
-// The white temperature in kelvin, under the white wheel (the wheels are a
-// little smaller for it, both alike: 244 px on a 480 px screen, were 270)
-const KELVIN_H = px(30)
-
-// Mireds → "2700 K", to the nearest 50 K
-export function kelvinText(ct) {
-    const k = ct > 0 ? Math.round(1000000 / ct / 50) * 50 : 0
-    return k ? `${k} K` : ''
-}
-
 // Configurazione Layout
 export const LAYOUT_CONFIG = {
     sliderW: px(300),
     sliderH: px(50),
     sliderX: (DEVICE_WIDTH - px(300)) / 2,
     sliderY: DEVICE_HEIGHT - SLIDER_UP,
-    // The wheels (color, white), between the tabs and the kelvin line above
-    // the slider's touch area
-    wheel: wheelBox(TAB_Y + TAB_H + px(6), DEVICE_HEIGHT - SLIDER_UP - px(20) - KELVIN_H)
+    // The wheels (color, white), between the tabs and the slider's touch area
+    wheel: wheelBox(TAB_Y + TAB_H + px(6), DEVICE_HEIGHT - SLIDER_UP - px(20))
 }
 
 export function renderColorPickerPage(pageContext, state, callbacks) {
@@ -75,18 +64,6 @@ function renderHueSatPicker(pageContext, state, callbacks) {
 function renderCTPicker(pageContext, state, callbacks) {
     // A wheel, warm at the top, cold at the bottom (page/layouts/wheel.js)
     renderCtWheel(pageContext, LAYOUT_CONFIG.wheel, state.ct, callbacks.onDragCT)
-    // Its temperature, under it (updated while dragged: page's updateCTUI)
-    const box = LAYOUT_CONFIG.wheel
-    const label = pageContext.createTrackedWidget(widget.TEXT, {
-        x: 0, y: box.bottom, w: DEVICE_WIDTH, h: KELVIN_H,
-        text: kelvinText(state.ct),
-        text_size: px(22),
-        color: COLORS.textSubtitle,
-        align_h: align.CENTER_H,
-        align_v: align.CENTER_V
-    })
-    try { label.setEnable(false) } catch (e) {}
-    pageContext.state.kelvinLabel = label
 }
 
 

@@ -13,7 +13,7 @@ import { getLogger } from '../utils/logger.js'
 import { HUE_RANGE, SAT_RANGE, BRI_RANGE, hsb2hex, ct2hexString } from '../utils/constants.js'
 
 // Import Layout
-import { renderColorPickerPage, LAYOUT_CONFIG, kelvinText } from 'zosLoader:./color-picker.[pf].layout.js'
+import { renderColorPickerPage, LAYOUT_CONFIG } from 'zosLoader:./color-picker.[pf].layout.js'
 import { xyToHs, xyToCt, moveHsCursor, moveCtCursor } from './layouts/wheel.js'
 
 const logger = getLogger('zhue-color-picker-page')
@@ -33,7 +33,6 @@ Page(
             isDragging: false,
             cursorWidgets: null,
             ctCursorWidgets: null,
-            kelvinLabel: null,
             briFillWidget: null,
             brightnessLabel: null
         },
@@ -48,7 +47,6 @@ Page(
                 isDragging: false,
                 cursorWidgets: null,
                 ctCursorWidgets: null,
-            kelvinLabel: null,
                 briFillWidget: null,
                 brightnessLabel: null
             });
@@ -130,7 +128,6 @@ Page(
             this.widgets = [];
             this.state.cursorWidgets = null;
             this.state.ctCursorWidgets = null;
-            this.state.kelvinLabel = null;
             this.state.briFillWidget = null;
             this.state.brightnessLabel = null;
         },
@@ -258,9 +255,6 @@ Page(
         updateCTUI(ctVal, x, y) {
             this.state.ct = ctVal
             moveCtCursor(this, LAYOUT_CONFIG.wheel, ctVal, x, y);
-            if (this.state.kelvinLabel) {
-                try { this.state.kelvinLabel.setProperty(prop.TEXT, kelvinText(ctVal)) } catch (e) {}
-            }
         },
 
         sendCT(ctVal, final = true) {
