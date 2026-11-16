@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENCE)
 [![Zepp OS](https://img.shields.io/badge/Platform-Zepp%20OS%203.0%2B-blue.svg)](https://docs.zepp.com/)
-[![Version](https://img.shields.io/badge/Version-1.0.1-green.svg)](#)
+[![Version](https://img.shields.io/badge/Version-1.1.0-green.svg)](#)
 
 Control your Philips Hue lights from a Zepp OS watch: rooms and zones, single
 lights, brightness, colors and white temperature, scenes, and a shortcut card
@@ -21,17 +21,24 @@ for the lights you use most.
   that switches the whole group.
 - **Lights of a group**: each light with its state and brightness; tap the
   icon to switch it, tap the name to open it. The group's scenes are listed
-  too (before or after the lights, as set on the phone).
-- **A light**: on/off, a brightness slider, favorite presets (whites,
-  temperatures, colors) and a color picker:
-  - color: hue across, saturation down, brightness on the slider below;
-  - white: temperature from cool to warm.
-  The light changes when you lift the finger.
+  too, each with a dot in its own color (before or after the lights, as set
+  on the phone).
+- **A light**: on/off, a brightness slider, favorite presets and a color
+  picker with two wheels, as in the Hue app: color (hue around, saturation
+  from the center) and white (warm at the top, cool at the bottom). The light
+  follows the finger.
+- **Icons as in the Hue app**: each light shows its model's icon, or the icon
+  of the lamp type set for it in the Hue app (a bulb in a pendant shows the
+  pendant).
 - **Favorite colors**: add the light's current color from its page, delete one
   with a long press; reset them from the phone.
-- **Shortcut card**: up to 9 lights on a card in the watch's shortcuts; a tap
-  switches the light. On a light's page, long-press SELECT adds or removes it;
-  long-press BACK clears the card.
+- **Shortcut card**: up to 9 lights, rooms or zones on a card in the watch's
+  shortcuts; a tap switches one, and the card shows each as last seen (green
+  ring on, grey off; no ring when not seen for 10 minutes). Add or remove
+  them from a light's or a group's page.
+- **Fast**: pages seen before open at once and refresh in the background.
+- **Physical buttons**: up / down between items, select to act, held select
+  for the second action, back.
 - **Demo mode**: try the app without a bridge (sample rooms, zones, lights
   and scenes).
 - **9 languages**: English, Italian, German, Spanish, French, Russian, Korean,

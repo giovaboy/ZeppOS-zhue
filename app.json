@@ -5,8 +5,8 @@
     "appName": "zhue",
     "appType": "app",
     "version": {
-      "code": 2,
-      "name": "1.0.1"
+      "code": 3,
+      "name": "1.1.0"
     },
     "icon": "icon.png",
     "vender": "giova",
