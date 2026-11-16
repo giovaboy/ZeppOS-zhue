@@ -41,7 +41,10 @@ let AVAILABLE_W
 let BUTTON_W
 let WIDGET_MARGIN  // Distance from screen edge to widget area
 
-const NO_BUTTONS_TEXT_HINT_H = px(100)
+// The hint of an empty card: a message, 24 px (zeppamp's scale, ours: messages
+// 24, nothing under 20; it was 20, small on the card), on up to 3 lines
+const HINT_TEXT_SIZE = px(24)
+const NO_BUTTONS_TEXT_HINT_H = px(110)
 
 // Minimum widget height (header + hint text, no shortcuts)
 const MIN_WIDGET_H = PADDING_Y + HEADER_H + HEADER_GAP + NO_BUTTONS_TEXT_HINT_H + PADDING_Y
@@ -194,7 +197,7 @@ AppWidget({
         w: AVAILABLE_W,
         h: NO_BUTTONS_TEXT_HINT_H,
         color: COLORS.textSubtitle || 0xaaaaaa,
-        text_size: px(20),
+        text_size: HINT_TEXT_SIZE,
         align_h: align.CENTER_H,
         align_v: align.CENTER_V,
         text_style: text_style.WRAP,
