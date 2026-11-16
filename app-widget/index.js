@@ -22,7 +22,14 @@ const HEADER_GAP = px(16)
 // A shortcut: a tile with the light's icon (a 70 px mask, ICON_IMAGE_SIZE),
 // its name under it
 const ICON_SIZE = px(80) // the tile
-const TILE_RADIUS = px(20)
+// Round, as the app's tiles (the light's page, quick-toggle). The 70 px
+// mask is a #333333 square: its corners would show past a circle that
+// small, on the system's card background. Drawn at CARD_ICON, the largest
+// square inside the circle (less its edge), its corners stay on the tile's
+// own #333333. A bigger circle with the full mask made the card taller than
+// the screen with 3 rows (Zepp: a card no taller than one screen)
+const TILE_RADIUS = ICON_SIZE / 2
+const CARD_ICON = Math.floor((ICON_SIZE - px(2)) / Math.SQRT2)
 const TEXT_SIZE = px(18)
 const TEXT_H = (TEXT_SIZE + px(8)) * 2  // Enough for 2 lines of text
 const BUTTON_H = ICON_SIZE + TEXT_H  // 80 + 52
@@ -242,9 +249,10 @@ AppWidget({
   // state was confirmed less than CARD_STATE_FRESH_MS ago (an app start, a
   // tap on the card, the light seen in the app): older, it is unknown, grey
   // with no ring (the lights may have changed meanwhile). The icon is a
-  // #333333 mask: it sits on a tile of that grey, whatever the card's own
-  // background (#303030 in the simulator). The tile doesn't darken when
-  // pressed (the mask's square would show); the tap opens quick-toggle at once
+  // #333333 mask: it sits on a round tile of that grey, whatever the card's
+  // own background (#303030 in the simulator), small enough for its corners
+  // to stay on it (CARD_ICON). The tile doesn't darken when pressed (the
+  // mask's square would show); the tap opens quick-toggle at once
   renderShortcutTile(x, y, shortcut) {
     const box = { x, y, w: ICON_SIZE, h: ICON_SIZE }
     const passThrough = (w) => { try { w.setEnable(false) } catch (e) {} return w }
@@ -256,17 +264,18 @@ AppWidget({
       press_color: COLORS.lightBg,
       click_func: () => this.onShortcutClick(shortcut)
     })
-    const ix = x + (ICON_SIZE - ICON_IMAGE_SIZE) / 2
-    const iy = y + (ICON_SIZE - ICON_IMAGE_SIZE) / 2
+    const ix = x + Math.round((ICON_SIZE - CARD_ICON) / 2)
+    const iy = y + Math.round((ICON_SIZE - CARD_ICON) / 2)
     const fresh = typeof shortcut.at === 'number' && Date.now() - shortcut.at < CARD_STATE_FRESH_MS
     const isOn = fresh && shortcut.ison === true
     const isOff = fresh && shortcut.ison === false
     passThrough(this.createTrackedWidget(widget.FILL_RECT, {
-      x: ix + 1, y: iy + 1, w: ICON_IMAGE_SIZE - 2, h: ICON_IMAGE_SIZE - 2,
+      x: ix + 1, y: iy + 1, w: CARD_ICON - 2, h: CARD_ICON - 2,
       color: isOn && shortcut.color !== undefined ? shortcut.color : COLORS.inactive
     }))
     passThrough(this.createTrackedWidget(widget.IMG, {
-      x: ix, y: iy, w: ICON_IMAGE_SIZE, h: ICON_IMAGE_SIZE,
+      x: ix, y: iy, w: CARD_ICON, h: CARD_ICON,
+      auto_scale: CARD_ICON !== ICON_IMAGE_SIZE,
       // A light: its model's icon; a group: its room / zone class's
       src: shortcut.kind === 'group' ? getGroupIconPath(shortcut.groupClass || 'Other') : `icons/${lightIconName(shortcut)}.png`
     }))
