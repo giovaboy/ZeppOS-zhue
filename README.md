@@ -134,7 +134,11 @@ addresses are removed). Set the level in `config.js`:
 3. On a watch, with the release build: clear the configuration from the
    phone's settings and pair again (search, link button, rooms shown); a
    light, a group, a scene, the color picker, the shortcut card.
-4. `zeus build`: the package to upload is in `dist/`. Tag the commit `vX.Y.Z`.
+4. Screenshots: the watch's 480 px ones in `screenshots/` (the README's), the
+   store's 360×360 made from them in `screenshots/store/`:
+   `node ../_shared/tools/store-screenshots.cjs --round screenshots/store screenshots/{1..9}.png`
+   (the store asks 1–10 PNGs, 360×360, with a transparent background).
+5. `zeus build`: the package to upload is in `dist/`. Tag the commit `vX.Y.Z`.
 
 ### Tools
 
