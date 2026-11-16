@@ -164,12 +164,11 @@ AppWidget({
     const numConfigured = this.state.configuredShortcuts.length
 
     // ==========================================
-    // HEADER - the app's button: a purple pill on the left, 16 px from the
-    // card's side (it was centered; a grey row as wide as the card, tried
-    // next, didn't look right)
+    // HEADER - the app's button: a purple pill, centered (a grey row as wide
+    // as the card, then the pill on the left, were tried)
     // ==========================================
     this.createTrackedWidget(widget.BUTTON, {
-      x: WIDGET_MARGIN + px(16),
+      x: WIDGET_MARGIN + Math.round((WIDGET_W - px(100)) / 2),
       y: currentY,
       w: px(100),
       h: HEADER_H,
@@ -252,18 +251,16 @@ AppWidget({
   // #333333 mask: it sits on a round tile of that grey, whatever the card's
   // own background (#303030 in the simulator), small enough for its corners
   // to stay on it (CARD_ICON). The tile doesn't darken when pressed (the
-  // mask's square would show); the tap opens quick-toggle at once
+  // mask's square would show): a button over it darkens all of it while
+  // pressed; the tap opens quick-toggle at once
   renderShortcutTile(x, y, shortcut) {
     const box = { x, y, w: ICON_SIZE, h: ICON_SIZE }
     const passThrough = (w) => { try { w.setEnable(false) } catch (e) {} return w }
-    this.createTrackedWidget(widget.BUTTON, {
+    passThrough(this.createTrackedWidget(widget.FILL_RECT, {
       ...box,
-      text: '',
       radius: TILE_RADIUS,
-      normal_color: COLORS.lightBg,
-      press_color: COLORS.lightBg,
-      click_func: () => this.onShortcutClick(shortcut)
-    })
+      color: COLORS.lightBg
+    }))
     const ix = x + Math.round((ICON_SIZE - CARD_ICON) / 2)
     const iy = y + Math.round((ICON_SIZE - CARD_ICON) / 2)
     const fresh = typeof shortcut.at === 'number' && Date.now() - shortcut.at < CARD_STATE_FRESH_MS
@@ -289,6 +286,15 @@ AppWidget({
         color: isOn ? COLORS.success : CARD_OFF_RING
       }))
     }
+    // On top, the tap: clear, a dark disc while pressed (tools/
+    // gen-card-press.cjs), so the tile, icon and ring darken together
+    this.createTrackedWidget(widget.BUTTON, {
+      ...box,
+      text: '',
+      normal_src: 'card-tile-normal.png',
+      press_src: 'card-tile-press.png',
+      click_func: () => this.onShortcutClick(shortcut)
+    })
   },
 
   truncateName(name, maxLen) {

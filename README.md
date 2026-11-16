@@ -131,6 +131,8 @@ addresses are removed). Set the level in `config.js`:
   fixture), from hass-hue-icons' SVGs in `tools/hue-svgs/` (downloaded if
   missing). It converts each mask as Zeus will and fixes the ones that would
   come out translucent.
+- `node tools/gen-card-press.cjs`: makes the images of the button over each
+  tile of the shortcut card (clear, and a dark disc while pressed).
 - `node tools/gen-settings-logo.cjs`: makes `setting/logo.js`, the app icon's
   wordmark for the settings page header. Run it after changing the icon.
 
