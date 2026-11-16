@@ -20,9 +20,13 @@
 // but the drag ends there: onDragCut lets the page close it (send the
 // value, unlock the scrolling), and the next swipe goes back.
 //
-// Unless the drag was short (under QUICK_MS, during it or just after its
-// release): then it was the swipe itself, started on the control. The log
-// had them at 125 and 399 ms, each leaving the brightness near its top.
+// Unless the drag moved only briefly (under QUICK_MS from its first move to
+// its last, the swipe under way or just after its release): then it was the
+// swipe itself, started on the control. The system reports the swipe late:
+// the log had swipes 125, 399 and 619 ms after their drag started, but
+// moving for 72, 76 and 58 ms; the 619 ms one, measured from the start,
+// passed for a drag and left the brightness at its top. A real drag moves
+// longer.
 // onQuickSwipe undoes the drag (it may return a promise: the undo sent),
 // then the page goes back.
 import { onGesture, GESTURE_RIGHT } from '@zos/interaction'
@@ -31,7 +35,7 @@ import { devLog, LOG_TRACE } from './remote-log.js'
 
 const GRACE_MS = 500
 const STALE_MS = 1500
-const QUICK_MS = 450
+const QUICK_MS = 300
 
 export function createDragGuard(label, onBack = back, onDragCut = null, onQuickSwipe = null) {
   let dragging = false
@@ -47,9 +51,10 @@ export function createDragGuard(label, onBack = back, onDragCut = null, onQuickS
       const now = Date.now()
       const active = dragging && now - lastMoveAt < STALE_MS
       const sinceEnd = now - endedAt
-      const dragMs = active ? now - startedAt : sinceEnd < GRACE_MS ? endedAt - startedAt : null
-      if (onQuickSwipe && dragMs !== null && dragMs < QUICK_MS) {
-        if (LOG_TRACE) devLog(`[gesture] ${label}: right swipe over a ${dragMs}ms drag (${active ? 'under way' : `ended ${sinceEnd}ms ago`}): taken as back, the drag undone`)
+      // How long the finger moved: first move to last
+      const movedMs = active || sinceEnd < GRACE_MS ? lastMoveAt - startedAt : null
+      if (onQuickSwipe && movedMs !== null && movedMs < QUICK_MS) {
+        if (LOG_TRACE) devLog(`[gesture] ${label}: right swipe over a drag that moved ${movedMs}ms (${active ? 'under way' : `ended ${sinceEnd}ms ago`}): taken as back, the drag undone`)
         leaving = true
         dragging = false
         endedAt = now
@@ -57,7 +62,7 @@ export function createDragGuard(label, onBack = back, onDragCut = null, onQuickS
         return true
       }
       if (active) {
-        if (LOG_TRACE) devLog(`[gesture] ${label}: right swipe ignored, drag under way (started ${now - startedAt}ms ago, last move ${now - lastMoveAt}ms ago): drag ended`)
+        if (LOG_TRACE) devLog(`[gesture] ${label}: right swipe ignored, drag under way (started ${now - startedAt}ms ago, moved ${lastMoveAt - startedAt}ms, last move ${now - lastMoveAt}ms ago): drag ended`)
         dragging = false
         endedAt = now
         if (onDragCut) onDragCut()
