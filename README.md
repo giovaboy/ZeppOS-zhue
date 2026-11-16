@@ -125,6 +125,17 @@ addresses are removed). Set the level in `config.js`:
 - `LOG_LEVEL = 'off'` for store releases: nothing is logged and the box is
   not shown.
 
+### Release checklist
+
+1. The version in `app.json` (`version.name`, and `version.code` + 1), `package.json`,
+   `setting/index.js` (`APP_VERSION`: the settings page can't read app.json) and
+   the badge at the top of this file.
+2. `LOG_LEVEL = 'off'` and `DEV = false` in `config.js`.
+3. On a watch, with the release build: clear the configuration from the
+   phone's settings and pair again (search, link button, rooms shown); a
+   light, a group, a scene, the color picker, the shortcut card.
+4. `zeus build`: the package to upload is in `dist/`. Tag the commit `vX.Y.Z`.
+
 ### Tools
 
 - `node tools/check-icon-masks.cjs`: the light and room icons are masks drawn
