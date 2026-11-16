@@ -21,8 +21,10 @@ import { devLog, LOG_TRACE } from './remote-log.js'
 // A group on the card, while on: a warm white (a group has no one color)
 export const GROUP_ON_COLOR = COLORS.defaultSwatchColor
 
-// An unchanged state is confirmed again (its `at` written) at most this often
-const CONFIRM_EVERY_MS = 5 * 60 * 1000
+// An unchanged state is confirmed again (its `at` written) at most this often:
+// well under CARD_STATE_FRESH_MS (10 min), or a state just seen could count
+// as unknown
+const CONFIRM_EVERY_MS = 2 * 60 * 1000
 
 export function readShortcuts() {
   try {
