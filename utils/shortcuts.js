@@ -57,6 +57,30 @@ export function clearCardIfReset(resetAt) {
   return true
 }
 
+// The home the card's entries belong to: the demo's or the bridge's. The
+// demo's shortcuts stayed with the demo turned off (their ids, 1, 2, 7…, may
+// be real lights' too: a tap would switch one of those). Each start notes the
+// home (START: the demo flag of its settings); another one than last time
+// empties the card. The first start that notes one empties nothing
+const HOME_KEY = 'card_home'
+
+export function clearCardIfHomeChanged(home) {
+  if (home !== 'demo' && home !== 'bridge') return false
+  let before = null
+  try {
+    before = localStorage.getItem(HOME_KEY)
+    if (before === home) return false
+    localStorage.setItem(HOME_KEY, home)
+  } catch (e) {
+    return false
+  }
+  if (!before) return false
+  const had = readShortcuts().filter((s) => !isEmptySlot(s)).length
+  writeShortcuts(DEFAULT_WIDGET_SHORTCUTS.map((s) => ({ ...s })))
+  if (LOG_TRACE) devLog(`[card] emptied (${had} entries): ${before} → ${home}`)
+  return true
+}
+
 export function writeShortcuts(list) {
   try {
     localStorage.setItem(WIDGET_SHORTCUTS_KEY, JSON.stringify(list))

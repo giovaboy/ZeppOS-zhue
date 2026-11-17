@@ -8,7 +8,7 @@ import { renderMainWidgets } from 'zosLoader:./index.[pf].layout.js'
 import { getText } from '@zos/i18n'
 import { keepScreenOn } from '../utils/screen.js'
 import { getLogger } from '../utils/logger.js'
-import { cardLightIds, rememberLights, rememberGroups, clearCardIfReset } from '../utils/shortcuts.js'
+import { cardLightIds, rememberLights, rememberGroups, clearCardIfReset, clearCardIfHomeChanged } from '../utils/shortcuts.js'
 
 const STATES = {
   LOADING: 'LOADING',
@@ -152,6 +152,8 @@ Page(
           // Cleared on the phone since: the card goes too
           clearCardIfReset(result && result.resetAt)
           if (result.connected && result.data) {
+            // The demo turned on or off since: the card goes too
+            clearCardIfHomeChanged(result.data.userSettings && result.data.userSettings.demo_mode === true ? 'demo' : 'bridge')
             app.setGroupsData(result.data)
             // The shortcut card's lights as they are now (each app start)
             if (result.cardLights) rememberLights(result.cardLights.map((l) => [l.id, l]))
