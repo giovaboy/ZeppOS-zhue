@@ -9,7 +9,7 @@ const LOGO_SHOWN_WIDTH = 200
 
 // Keep in step with app.json version.name (the settings page can't import
 // @zos/app to read it)
-const APP_VERSION = '1.1.0'
+const APP_VERSION = '1.1.1'
 const APP_NAME = 'zhue'
 
 // ── Look ────────────────────────────────────────────────────────────────────

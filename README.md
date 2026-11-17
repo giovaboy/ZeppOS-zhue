@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENCE)
 [![Zepp OS](https://img.shields.io/badge/Platform-Zepp%20OS%203.0%2B-blue.svg)](https://docs.zepp.com/)
-[![Version](https://img.shields.io/badge/Version-1.1.0-green.svg)](#)
+[![Version](https://img.shields.io/badge/Version-1.1.1-green.svg)](#)
 
 Control your Philips Hue lights from a Zepp OS watch: rooms and zones, single
 lights, brightness, colors and white temperature, scenes, and a shortcut card

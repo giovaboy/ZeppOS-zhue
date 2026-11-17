@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.1
+
+### Fixed
+- The shortcut card kept the demo's shortcuts after the demo was turned off
+  (a tap could switch a real light with the same number): the card is now
+  emptied when the demo is turned on or off.
+
 ## 1.1.0
 
 ### New
